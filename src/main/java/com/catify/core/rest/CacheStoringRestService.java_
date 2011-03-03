@@ -1,0 +1,96 @@
+package com.catify.core.rest;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import org.apache.camel.component.hazelcast.HazelcastConstants;
+
+import akka.camel.CamelContextManager;
+import akka.camel.Message;
+
+public class CacheStoringRestService extends DefaultRestService {
+	
+	public CacheStoringRestService(String cacheName){
+		this.cacheName 			= cacheName;
+		this.cacheEndpoint 		= String.format("hazelcast://%s-cache?%s=%s&%s=%s", cacheName, HazelcastConstants.STORAGE_NAME, cacheName, HazelcastConstants.STORAGE_TYPE, HazelcastConstants.MAP);
+	}
+	
+	private String cacheName;
+	private String cacheEndpoint;
+	
+	@Override
+	public String getEndpointUri() {
+		return String.format("restlet:http://localhost:%s/rest/%s/{file_id}?restletMethods=get,post,put,delete", 9080, this.cacheName);
+	}
+	
+	@Override
+	public void delete(Message message) {
+		String fileId = this.getFileId(message);
+		CamelContextManager.getMandatoryTemplate().requestBodyAndHeaders(	
+				this.cacheEndpoint,
+				null,
+				this.setHeaders(fileId, HazelcastConstants.DELETE));
+		
+		this.reply(null);
+	}
+
+	@Override
+	public void get(Message message) {
+		String fileId = this.getFileId(message);
+		String xml = (String) CamelContextManager.getMandatoryTemplate().requestBodyAndHeaders(	
+				this.cacheEndpoint,
+				null,
+				this.setHeaders(fileId, HazelcastConstants.GET));
+	    
+		this.reply(xml);
+
+	}
+
+	@Override
+	public void post(Message message) {
+		this.add(message);
+		this.reply(null);
+	}
+
+	@Override
+	public void put(Message message) {
+		this.add(message);
+		this.reply(null);
+	}
+	
+	private void reply(String payload){
+		
+		//replay the result
+	    getContext().replySafe(payload);
+	}
+	
+	private Map<String, Object> setHeaders(String oid, int operation){
+		
+		Map<String, Object> headers = new HashMap<String, Object>();
+		
+		headers.put(HazelcastConstants.OBJECT_ID, oid);
+		headers.put(HazelcastConstants.OPERATION, operation);
+		
+		return headers;
+	}
+ 	
+	/**
+	 * adds the payload to the cache
+	 * 
+	 * @param message
+	 */
+	private void add(Message message){
+		String body = message.getBodyAs(String.class);
+		String fileId = this.getFileId(message);
+		
+		CamelContextManager.getMandatoryTemplate().requestBodyAndHeaders(	
+				this.cacheEndpoint,
+				body,
+				this.setHeaders(fileId, HazelcastConstants.PUT));
+	}
+	
+	private String getFileId(Message message){
+		return message.getHeaderAs("file_id", String.class);
+	}
+
+}

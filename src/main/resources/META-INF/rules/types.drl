@@ -1,0 +1,6 @@
+package com.catify.types
+
+declare Decision
+	result : String
+	state : int
+end

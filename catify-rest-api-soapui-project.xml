@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<con:soapui-project name="catify rest api" soapui-version="3.5.1" xmlns:con="http://eviware.com/soapui/config"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.actions.iface.tools.soapui.TestRunnerAction@values-local"><![CDATA[<xml-fragment xmlns:con="http://eviware.com/soapui/config">
+  <con:entry key="Global Properties" value=""/>
+  <con:entry key="TestSuite" value="catify rest api TestSuite"/>
+  <con:entry key="Report to Generate" value=""/>
+  <con:entry key="Password" value=""/>
+  <con:entry key="soapui-setings.xml Password" value=""/>
+  <con:entry key="TestRunner Path" value=""/>
+  <con:entry key="Tool Args" value=""/>
+  <con:entry key="Ignore Errors" value="false"/>
+  <con:entry key="Host:Port" value=""/>
+  <con:entry key="WSS Password Type" value=""/>
+  <con:entry key="Save Project" value="false"/>
+  <con:entry key="Enable UI" value="false"/>
+  <con:entry key="System Properties" value=""/>
+  <con:entry key="Domain" value=""/>
+  <con:entry key="Coverage Report" value="false"/>
+  <con:entry key="Export JUnit Results" value="false"/>
+  <con:entry key="Open Report" value="false"/>
+  <con:entry key="Project Properties" value=""/>
+  <con:entry key="Project Password" value=""/>
+  <con:entry key="Export All" value="false"/>
+  <con:entry key="Report Format(s)" value=""/>
+  <con:entry key="TestCase" value="pipeline TestCase"/>
+  <con:entry key="Print Report" value="false"/>
+  <con:entry key="Username" value=""/>
+  <con:entry key="Root Folder" value=""/>
+  <con:entry key="Save After" value="false"/>
+  <con:entry key="Add Settings" value="false"/>
+  <con:entry key="Endpoint" value=""/>
+</xml-fragment>]]></con:setting></con:settings><con:interface xsi:type="con:RestService" wadlVersion="http://wadl.dev.java.net/2009/02" name="catify rest api" type="rest" basePath="/catify" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:settings/><con:definitionCache type="TEXT" rootPart=""/><con:endpoints><con:endpoint>http://localhost:9080/catify/deploy_pipeline/4711</con:endpoint></con:endpoints><con:resource name="process" path="deploy_process"><con:settings/><con:parameters/><con:method name="deployProcess" method="POST"><con:settings/><con:parameters/><con:representation type="REQUEST"><con:mediaType>application/xml</con:mediaType><con:params/><con:element xmlns:ns="http://www.catify.com/api/1.0">ns:process</con:element></con:representation><con:representation type="RESPONSE"><con:mediaType>text/plain</con:mediaType><con:status>200</con:status><con:params/><con:element xmlns:ns="http://www.catify.com/api/1.0">ns:process</con:element></con:representation><con:request name="deployProcess" mediaType="application/xml" postQueryString="false"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers">&lt;xml-fragment/></con:setting></con:settings><con:endpoint>http://localhost:9080/catify/deploy_process</con:endpoint><con:request><![CDATA[<process processVersion="1.0" processName="process01" accountName="sbk" xmlns="http://www.catify.com/api/1.0" xmlns:n1="http://www.catify.com/api/1.0" >
+	<start n1:name="start"/>
+	<request n1:name="bam_step_01"/>
+	<receive n1:name="wait_for_payload">
+		<timeEvent n1:time="60000">
+			<request n1:name="throw_time_out_exception"/>
+			<end n1:name="end_time_out"/>
+		</timeEvent>
+	</receive>
+	<request n1:name="bam_step_02"/>
+	<end n1:name="end"/>
+</process>]]></con:request><con:jmsConfig JMSDeliveryMode="PERSISTENT"/><con:jmsPropertyConfig/><con:parameters/></con:request></con:method></con:resource><con:resource name="pipeline" path="deploy_pipeline"><con:settings/><con:parameters/><con:method name="deployPipelineForRequest01" method="POST"><con:settings/><con:parameters/><con:representation type="FAULT"><con:mediaType>text/plain</con:mediaType><con:status>500</con:status><con:params/><con:element>data</con:element></con:representation><con:representation type="REQUEST"><con:mediaType>application/xml</con:mediaType><con:params/><con:element>data</con:element></con:representation><con:representation type="RESPONSE"><con:mediaType>text/plain</con:mediaType><con:status>200</con:status><con:params/><con:element>data</con:element></con:representation><con:request name="deployPipelineForRequest01" mediaType="application/xml" postQueryString="false"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers">&lt;xml-fragment/></con:setting></con:settings><con:endpoint>http://localhost:9080/catify/deploy_pipeline/4712</con:endpoint><con:request><![CDATA[<routes xmlns="http://camel.apache.org/schema/spring">
+	<route id="out-18105b19823a55855d936410564e604f">
+		<from uri="activemq:queue:out_queue?selector=catify_taskId%3D%2718105b19823a55855d936410564e604f%27"/>
+		<setHeader headerName="catify_taskId">
+        		<constant>a22d59661ac00a7e6f73c7c4445d261b</constant>
+   		</setHeader>
+		<process ref="taskInstanceIdProcessor"/>
+		<delay>
+            		<constant>50</constant>
+        	</delay>
+		<log message="request01: ${body}"/>
+		<to uri="activemq:queue:in_queue"/>
+	</route>
+</routes>]]></con:request><con:jmsConfig JMSDeliveryMode="PERSISTENT"/><con:jmsPropertyConfig/><con:parameters/></con:request></con:method><con:method name="deployPipelineForProcessStart" method="POST"><con:settings/><con:parameters/><con:representation type="RESPONSE"><con:mediaType>text/plain</con:mediaType><con:status>200</con:status><con:params/><con:element>data</con:element></con:representation><con:representation type="REQUEST"><con:mediaType>application/xml</con:mediaType><con:params/><con:element>data</con:element></con:representation><con:request name="deployPipelineForProcessStart" mediaType="application/xml" postQueryString="false"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers">&lt;xml-fragment/></con:setting></con:settings><con:endpoint>http://localhost:9080/catify/deploy_pipeline/4711</con:endpoint><con:request><![CDATA[<routes xmlns="http://camel.apache.org/schema/spring">
+	<route id="in-68106b1419878a5415672183c94b2f32">
+		<from uri="file:../files?delete=true"/>
+		<log message="consuming file..."/>
+		<setHeader headerName="catify_accountName">
+        		<constant>sbk</constant>
+   		</setHeader>
+		<setHeader headerName="catify_processName">
+        		<constant>process01</constant>
+   		</setHeader>
+		<setHeader headerName="catify_processVersion">
+        		<constant>1.0</constant>
+   		</setHeader>
+		<setHeader headerName="catify_taskId">
+        		<constant>start</constant>
+   		</setHeader>
+		<process ref="processIdProcessor"/>
+		<split stopOnException="false" streaming="true">
+			<tokenize token="\n"/>
+			<process ref="csvMarshallProcessor"/>
+			<process ref="initProcessProcessor"/>
+			<log message="started: ${header.catify_instanceId}"/>
+			<to uri="activemq:queue:in_queue"/>
+		</split>
+	</route>
+</routes>]]></con:request><con:jmsConfig JMSDeliveryMode="PERSISTENT"/><con:jmsPropertyConfig/><con:parameters/></con:request></con:method><con:method name="deployPipelineForRequest02" method="POST"><con:settings/><con:parameters/><con:representation type="REQUEST"><con:mediaType>application/xml</con:mediaType><con:params/><con:element>data</con:element></con:representation><con:representation type="RESPONSE"><con:mediaType>text/plain</con:mediaType><con:status>200</con:status><con:params/><con:element>data</con:element></con:representation><con:request name="deployPipelineForRequest02" mediaType="application/xml" postQueryString="false"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers">&lt;xml-fragment/></con:setting></con:settings><con:endpoint>http://localhost:9080/catify/deploy_pipeline/4713</con:endpoint><con:request><![CDATA[<routes xmlns="http://camel.apache.org/schema/spring">
+	<route id="out-e98f75cf1f8349f257872f9cdcf8378e">
+		<from uri="activemq:queue:out_queue?selector=catify_taskId%3D%27e98f75cf1f8349f257872f9cdcf8378e%27"/>
+		<log message="ended: ${body}"/>
+	</route>
+</routes>]]></con:request><con:jmsConfig JMSDeliveryMode="PERSISTENT"/><con:jmsPropertyConfig/><con:parameters/></con:request></con:method></con:resource></con:interface><con:testSuite name="catify rest api TestSuite"><con:description>TestSuite generated for REST Service [catify rest api]</con:description><con:settings/><con:runType>SEQUENTIAL</con:runType><con:testCase failOnError="true" failTestCaseOnErrors="true" keepSession="false" maxResults="0" name="process TestCase" searchProperties="true"><con:description>TestCase generated for REST Resource [process] located at [/deploy_process]</con:description><con:settings/><con:properties/></con:testCase><con:testCase failOnError="true" failTestCaseOnErrors="true" keepSession="false" maxResults="0" name="pipeline TestCase" searchProperties="true" id="c347afa7-803f-4554-99b4-8dc93ca669a8"><con:description>TestCase generated for REST Resource [pipeline] located at [/deploy_pipeline]</con:description><con:settings/><con:testStep type="restrequest" name="deployProcess"><con:settings/><con:config service="catify rest api" resourcePath="/catify/deploy_process" methodName="deployProcess" xsi:type="con:RestRequestStep" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:restRequest name="deployProcess" mediaType="application/xml" postQueryString="false"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers">&lt;xml-fragment/></con:setting></con:settings><con:endpoint>http://localhost:9080/catify/deploy_process</con:endpoint><con:request><![CDATA[<process processVersion="1.0" processName="process01" accountName="sbk" xmlns="http://www.catify.com/api/1.0" xmlns:n1="http://www.catify.com/api/1.0" >
+	<start n1:name="start"/>
+	<request n1:name="bam_step_01"/>
+	<receive n1:name="wait_for_payload">
+		<timeEvent n1:time="60000">
+			<request n1:name="throw_time_out_exception"/>
+			<end n1:name="end_time_out"/>
+		</timeEvent>
+	</receive>
+	<request n1:name="bam_step_02"/>
+	<end n1:name="end"/>
+</process>]]></con:request><con:jmsConfig JMSDeliveryMode="PERSISTENT"/><con:jmsPropertyConfig/><con:parameters/></con:restRequest></con:config></con:testStep><con:testStep type="delay" name="d0"><con:settings/><con:config><delay>1000</delay></con:config></con:testStep><con:testStep type="restrequest" name="deployPipelineForRequest01"><con:settings/><con:config service="catify rest api" resourcePath="/catify/deploy_pipeline" methodName="deployPipelineForRequest01" xsi:type="con:RestRequestStep" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:restRequest name="deployPipelineForRequest01" mediaType="application/xml" postQueryString="false"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers">&lt;xml-fragment/></con:setting></con:settings><con:endpoint>http://localhost:9080/catify/deploy_pipeline/4712</con:endpoint><con:request><![CDATA[<routes xmlns="http://camel.apache.org/schema/spring">
+	<route id="out-18105b19823a55855d936410564e604f">
+		<from uri="activemq:queue:out_queue?selector=catify_taskId%3D%2718105b19823a55855d936410564e604f%27"/>
+		<setHeader headerName="catify_taskId">
+        		<constant>a22d59661ac00a7e6f73c7c4445d261b</constant>
+   		</setHeader>
+		<process ref="taskInstanceIdProcessor"/>
+		<delay>
+            		<constant>50</constant>
+        	</delay>
+		<log message="request01 --> ${header.catify_instanceId}"/>
+		<to uri="activemq:queue:in_queue"/>
+	</route>
+</routes>]]></con:request><con:jmsConfig JMSDeliveryMode="PERSISTENT"/><con:jmsPropertyConfig/><con:parameters/></con:restRequest></con:config></con:testStep><con:testStep type="delay" name="d1"><con:settings/><con:config><delay>50</delay></con:config></con:testStep><con:testStep type="restrequest" name="deployPipelineForProcessStart"><con:settings/><con:config service="catify rest api" resourcePath="/catify/deploy_pipeline" methodName="deployPipelineForProcessStart" xsi:type="con:RestRequestStep" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:restRequest name="deployPipelineForProcessStart" mediaType="application/xml" postQueryString="false"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers">&lt;xml-fragment/></con:setting></con:settings><con:endpoint>http://localhost:9080/catify/deploy_pipeline/4711</con:endpoint><con:request><![CDATA[<routes xmlns="http://camel.apache.org/schema/spring">
+	<route id="in-68106b1419878a5415672183c94b2f32">
+		<from uri="file:../files?delete=true"/>
+		<log message="consuming file..."/>
+		<setHeader headerName="catify_accountName">
+        		<constant>sbk</constant>
+   		</setHeader>
+		<setHeader headerName="catify_processName">
+        		<constant>process01</constant>
+   		</setHeader>
+		<setHeader headerName="catify_processVersion">
+        		<constant>1.0</constant>
+   		</setHeader>
+		<setHeader headerName="catify_taskId">
+        		<constant>start</constant>
+   		</setHeader>
+		<process ref="processIdProcessor"/>
+		<split stopOnException="false" streaming="true">
+			<tokenize token="\n"/>
+			<process ref="csvMarshallProcessor"/>
+			<process ref="initProcessProcessor"/>
+			<setBody>
+				<simple>${header.catify_instanceId}</simple>
+			</setBody>
+			<log message="started --> ${body}"/>
+			<to uri="activemq:queue:in_queue"/>
+		</split>
+	</route>
+</routes>]]></con:request><con:jmsConfig JMSDeliveryMode="PERSISTENT"/><con:jmsPropertyConfig/><con:parameters/></con:restRequest></con:config></con:testStep><con:testStep type="delay" name="d2"><con:settings/><con:config><delay>50</delay></con:config></con:testStep><con:testStep type="restrequest" name="deployPipelineForRequest02"><con:settings/><con:config service="catify rest api" resourcePath="/catify/deploy_pipeline" methodName="deployPipelineForRequest02" xsi:type="con:RestRequestStep" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:restRequest name="deployPipelineForRequest02" mediaType="application/xml" postQueryString="false"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers">&lt;xml-fragment/></con:setting></con:settings><con:endpoint>http://localhost:9080/catify/deploy_pipeline/4713</con:endpoint><con:request><![CDATA[<routes xmlns="http://camel.apache.org/schema/spring">
+	<route id="out-e98f75cf1f8349f257872f9cdcf8378e">
+		<from uri="activemq:queue:out_queue?selector=catify_taskId%3D%27e98f75cf1f8349f257872f9cdcf8378e%27"/>
+		<log message="ended --> ${header.catify_instanceId}"/>
+	</route>
+</routes>]]></con:request><con:jmsConfig JMSDeliveryMode="PERSISTENT"/><con:jmsPropertyConfig/><con:parameters/></con:restRequest></con:config></con:testStep><con:properties/></con:testCase><con:properties/></con:testSuite><con:properties/><con:wssContainer/></con:soapui-project>

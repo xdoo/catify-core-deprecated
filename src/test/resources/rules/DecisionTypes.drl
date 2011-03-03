@@ -1,0 +1,9 @@
+package com.catify.tester
+
+declare Payload
+	value : int
+end
+
+declare cfd7332952eff5ecdbfba16124067d70
+	payload : Payload
+end

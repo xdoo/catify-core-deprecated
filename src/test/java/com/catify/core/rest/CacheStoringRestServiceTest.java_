@@ -1,0 +1,126 @@
+package com.catify.core.rest;
+
+import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.test.CamelSpringTestSupport;
+import org.springframework.context.support.AbstractXmlApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+import akka.actor.ActorRef;
+import akka.actor.UntypedActor;
+import akka.actor.UntypedActorFactory;
+
+import com.hazelcast.core.Hazelcast;
+import com.hazelcast.core.IMap;
+
+public class CacheStoringRestServiceTest extends CamelSpringTestSupport {
+	
+	public void testAddFileOverRest() throws InterruptedException{
+		
+		IMap<String, Object> map = Hazelcast.getMap("foo");
+		assertTrue(map.isEmpty());
+		
+		ActorRef service = UntypedActor.actorOf(new UntypedActorFactory() {
+			  public UntypedActor create() {
+				    return new CacheStoringRestService("foo");
+				   }
+				}).start();
+		
+		Thread.sleep(500);
+		
+		//put
+		template.sendBody("restlet:http://localhost:9080/rest/foo/4711?restletMethod=put", "foo_put");
+		
+		//post
+		template.sendBody("restlet:http://localhost:9080/rest/foo/4712?restletMethod=post", "foo_post");
+		
+		assertFalse(map.isEmpty());
+		assertEquals("foo_put", map.get("4711"));
+		assertEquals("foo_post", map.get("4712"));
+		
+		service.stop();
+		map.remove("4711");
+		map.remove("4712");
+		
+	}
+	
+	public void  testGetFileOverRest() throws InterruptedException {
+		
+		IMap<String, Object> map = Hazelcast.getMap("foo");
+		assertTrue(map.isEmpty());
+		
+		map.put("4711", "bar");
+		
+		ActorRef service = UntypedActor.actorOf(new UntypedActorFactory() {
+			  public UntypedActor create() {
+				    return new CacheStoringRestService("foo");
+				   }
+				}).start();
+		
+		Thread.sleep(500);
+		
+		template.sendBody("direct:get", null);
+		String body = (String) consumer.receiveBody("seda:get", 1500);
+		
+		assertNotNull(body);
+		assertEquals("bar", body);
+		
+		service.stop();
+		map.remove("4711");
+		
+	}
+	
+	public void testDeleteOverRest() throws InterruptedException{
+		
+		IMap<String, Object> map = Hazelcast.getMap("foo");
+		assertTrue(map.isEmpty());
+		
+		map.put("4711", "foobar");
+		assertTrue(map.containsKey("4711"));
+		
+		ActorRef service = UntypedActor.actorOf(new UntypedActorFactory() {
+			  public UntypedActor create() {
+				    return new CacheStoringRestService("foo");
+				   }
+				}).start();
+		
+		Thread.sleep(500);
+		
+		//delete
+		template.sendBody("restlet:http://localhost:9080/rest/foo/4711?restletMethod=delete", null);
+		
+		assertTrue(map.isEmpty());
+		service.stop();
+	}
+	
+	public void testRestApi() throws InterruptedException{
+		
+		ActorRef service = UntypedActor.actorOf(new UntypedActorFactory() {
+			  public UntypedActor create() {
+				    return new CacheStoringRestService("schema");
+				   }
+				}).start();
+		
+//		Thread.sleep(60 * 1000);
+	}
+	
+	@Override
+	protected RouteBuilder createRouteBuilder() throws Exception {
+		
+        return new RouteBuilder() {
+            @Override
+            public void configure() throws Exception {
+            	
+            	from("direct:get")
+            	.to("restlet:http://localhost:9080/rest/foo/4711?restletMethod=get")
+            	.to("seda:get");
+            	
+            }           
+        };
+	}
+
+	@Override
+	protected AbstractXmlApplicationContext createApplicationContext() {
+		return new ClassPathXmlApplicationContext("/META-INF/spring/camel-context.xml");
+	}
+	
+}

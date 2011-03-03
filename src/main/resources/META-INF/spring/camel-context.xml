@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+	<!--
+		Licensed to the Apache Software Foundation (ASF) under one or more
+		contributor license agreements. See the NOTICE file distributed with
+		this work for additional information regarding copyright ownership.
+		The ASF licenses this file to You under the Apache License, Version
+		2.0 (the "License"); you may not use this file except in compliance
+		with the License. You may obtain a copy of the License at
+
+		http://www.apache.org/licenses/LICENSE-2.0 Unless required by
+		applicable law or agreed to in writing, software distributed under the
+		License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+		CONDITIONS OF ANY KIND, either express or implied. See the License for
+		the specific language governing permissions and limitations under the
+		License.
+	-->
+
+	<!-- Configures the Camel Context-->
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:camel="http://camel.apache.org/schema/spring"
+	xmlns:amq="http://activemq.apache.org/schema/core"
+	xmlns:akka="http://www.akkasource.org/schema/akka"
+	xmlns:drools="http://drools.org/schema/drools-spring"
+	xsi:schemaLocation="
+       http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd
+       http://activemq.apache.org/schema/core http://activemq.apache.org/schema/core/activemq-core.xsd
+       http://www.akkasource.org/schema/akka http://scalablesolutions.se/akka/akka-1.0-SNAPSHOT.xsd
+       http://drools.org/schema/drools-spring http://anonsvn.jboss.org/repos/labs/labs/jbossrules/trunk/drools-container/drools-spring/src/main/resources/org/drools/container/spring/drools-spring-1.0.0.xsd">
+
+	<!-- camel -->
+	<camel:camelContext id="camelContext" trace="false">
+		<camel:routeBuilder ref="processRoutes" />
+		<camel:routeBuilder ref="pipelineRoutes" />
+		<camel:routeBuilder ref="eventRoutes" />
+		<camel:routeBuilder ref="configurationRoutes" />
+		<!-- <camel:routeBuilder ref="playRoutes" /> -->
+	</camel:camelContext>
+
+	<!-- drools -->
+	<drools:kbase id="kbase">
+		<drools:resources>
+			<drools:resource type="DRL" source="classpath:META-INF/rules/types.drl"/>
+		</drools:resources>
+		<drools:configuration>
+	      <drools:mbeans enabled="true" />
+	      <drools:event-processing-mode mode="STREAM" />
+	    </drools:configuration>
+	</drools:kbase>
+
+	<!-- routes -->
+	<bean id="processRoutes" class="com.catify.core.routes.ProcessRoutes" />
+	<bean id="pipelineRoutes" class="com.catify.core.routes.PipelineRoutes" />
+	<bean id="playRoutes" class="com.catify.core.routes.PlayRoutes" />
+	<bean id="eventRoutes" class="com.catify.core.routes.EventRoutes" />
+	<bean id="configurationRoutes" class="com.catify.core.routes.ConfigurationRoutes" />
+
+	<!-- processors -->
+	<bean id="initProcessProcessor" class="com.catify.core.process.processors.InitProcessProcessor"/>
+	<bean id="pipelineDeploymentProcessor" class="com.catify.core.process.processors.PipelineDeploymentProcessor"/>
+	<bean id="processDeploymentProcessor" class="com.catify.core.process.processors.ProcessDeploymentProcessor"/>
+	<bean id="processIdProcessor" class="com.catify.core.process.processors.ProcessIdProcessor"/>
+	<bean id="processRegistrationProcessor" class="com.catify.core.process.processors.ProcessRegistrationProcessor"/>
+	<bean id="taskInstanceIdProcessor" class="com.catify.core.process.processors.TaskInstanceIdProcessor"/>
+	<bean id="transformDecisionPayloadProcessor" class="com.catify.core.process.processors.TransformDecisionPayloadProcessor"/>
+	
+	<!-- data marshalling -->
+	<bean id="csvMarshallProcessor" class="com.catify.core.data.marshall.CsvMarshallProcessor"/>
+
+	
+	<!-- This creates an embedded ActiveMQ Broker -->
+	<broker brokerName="${hostname}" xmlns="http://activemq.apache.org/schema/core" useJmx="false"
+		persistent="false">
+		<networkConnectors>
+	      <networkConnector uri="multicast://default"
+	        dynamicOnly="true" 
+	        networkTTL="3" 
+	        prefetchSize="1" 
+	        duplex="true"
+	        decreaseNetworkConsumerPriority="false" />
+	    </networkConnectors>
+		<transportConnectors>
+			<transportConnector name="openwire" uri="tcp://0.0.0.0:61616" discoveryUri="multicast://default" />
+		</transportConnectors>
+	</broker>
+
+	<!--
+		Lets connect the Camel ActiveMQ component to the embedded broker. See
+		http://camel.apache.org/activemq.html for more information.
+	-->
+	<bean id="activemq" class="org.apache.activemq.camel.component.ActiveMQComponent">
+		<property name="brokerURL" value="tcp://localhost:61616" />
+	</bean>
+
+	<!-- bean for the transformation component -->
+	<bean id="transformerFactory" class="org.apache.xalan.xsltc.trax.TransformerFactoryImpl" />
+
+	<!-- properties -->
+	<bean id="propertyPlaceholder"
+		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="location" value="classpath:network.properties" />
+	</bean>
+
+</beans>
