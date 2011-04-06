@@ -141,6 +141,39 @@ public class TestXmlPipelineBuilder extends CamelSpringTestSupport {
 		assertMockEndpointsSatisfied(10000, TimeUnit.MILLISECONDS);
 	}
 	
+	public void testCallProcessTwice() throws InterruptedException{
+		Process process = template.requestBody("direct:xml", this.xmlProcess2(), com.catify.core.process.xml.model.Process.class);
+		XmlProcessBuilder processBuilder = (XmlProcessBuilder) applicationContext.getBean("xmlProcessBuilder");
+		
+		ProcessDefinition definition = processBuilder.build(process);
+		
+		this.insertXslts();
+		
+		ProcessDeployer deployer = new ProcessDeployer(context, this.createKnowledgeBase());
+		
+		deployer.deployProcess(definition);
+		
+		assertNotNull(context.getRoute("in-rest-e8c2eb9abd37d710f4447af1f4da99ef"));
+		Endpoint rest1 = context.getRoute("in-rest-e8c2eb9abd37d710f4447af1f4da99ef").getEndpoint();
+		Endpoint rest2 = context.getRoute("in-rest-3e68dd4a3a52369301021ceb61158950").getEndpoint();
+		
+		MockEndpoint end = getMockEndpoint("mock:end");
+		end.expectedMessageCount(2);
+		
+		//send message to process
+		System.out.println("--------------------------> sending message to init process");
+		template.sendBody(rest1 , this.getXml1());
+		
+		//send message to receive node
+		Thread.sleep(5000);
+		System.out.println("--------------------------> sending 1. message to 'wait_for_payload'");
+		template.sendBody(rest2, this.getXml2());
+		System.out.println("--------------------------> sending 2. message to 'wait_for_payload'");
+		template.sendBody(rest2, this.getXml2());
+		
+		assertMockEndpointsSatisfied(10000, TimeUnit.MILLISECONDS);
+	}
+	
 	@Override
 	protected RouteBuilder createRouteBuilder(){
 		
@@ -275,6 +308,57 @@ public class TestXmlPipelineBuilder extends CamelSpringTestSupport {
 				"			</toEndpoint>\n" +
 				"		</outPipeline>\n" +
 				"	</request>" +
+				"	<end ns:name=\"end\"/>\n" +
+				"</process>";
+	}
+	
+	private String xmlProcess2(){
+		return 	"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+				"<process processVersion=\"1.0\" processName=\"process01\" accountName=\"tester\"  xmlns=\"http://www.catify.com/api/1.0\" xmlns:ns=\"http://www.catify.com/api/1.0\" >\n" +
+				"	<start ns:name=\"start\">\n" +
+				"		<inPipeline>\n" +
+				"			<fromEndpoint>\n" +
+				"				<rest />\n" +
+				"			</fromEndpoint>\n" +
+				"			<correlation>\n" +
+				"				<xpath>/foo/a</xpath>\n" +
+				"				<xpath>/foo/b</xpath>\n" +
+				"				<xpath>/foo/c/y</xpath>\n" +
+				"			</correlation>\n" +
+				"		</inPipeline>\n" +
+				"	</start>\n" +
+				"	<request ns:name=\"send_to_hazelcast\">\n" +
+				"		<outPipeline>\n" +
+				"			<toEndpoint>\n" +
+				"				<hazelcast ns:uri=\"hazelcast:map:foo\" ns:operation=\"put\"/>\n" +
+				"			</toEndpoint>\n" +
+				"		</outPipeline>\n" +
+				"	</request>" +
+				"	<receive ns:name=\"wait_for_payload\">\n" +
+				"		<timeEvent ns:time=\"60000\">\n" +
+				"			<end ns:name=\"end_time_out\"/>\n" +
+				"		</timeEvent>\n" +
+				"		<inPipeline>\n" +
+				"			<fromEndpoint>\n" +
+				"				<rest/>\n" +
+				"			</fromEndpoint>\n" +
+				"			<correlation>\n" +
+				"				<xpath>/bar/a</xpath>\n" +
+				"				<xpath>/bar/b</xpath>\n" +
+				"				<xpath>/bar/c/y</xpath>\n" +
+				"			</correlation>\n" +
+				"		</inPipeline>\n" +
+				"	</receive>" +
+				"	<request ns:name=\"send_to_rest\">\n" +
+				"		<outPipeline>\n" +
+				"			<toEndpoint>\n" +
+				"				<rest ns:uri=\"restlet:http://localhost:9080/answer?restletMethod=post\"/>\n" +
+				"			</toEndpoint>\n" +
+				"		</outPipeline>\n" +
+				"	</request>\n" +
+				"	<sleep>\n" +
+				"		<timeEvent time=\"20000\"/>\n" +
+				"	</sleep>\n" +
 				"	<end ns:name=\"end\"/>\n" +
 				"</process>";
 	}
