@@ -41,9 +41,9 @@ public class TestXmlPipelineBuilder extends CamelSpringTestSupport {
 		
 		ProcessDefinition definition = processBuilder.build(process);
 		
-		System.out.println(definition.getStartPipeline());
+//		System.out.println(definition.getStartPipeline());
 		
-		System.out.println("-------------------------------------------------->");
+//		System.out.println("-------------------------------------------------->");
 		
 		//insert xslt to caches
 		this.insertXslts();
@@ -71,9 +71,9 @@ public class TestXmlPipelineBuilder extends CamelSpringTestSupport {
 		
 		ProcessDefinition definition = processBuilder.build(process);
 		
-		System.out.println(definition.getInPipelines().get(0));
+//		System.out.println(definition.getInPipelines().get(0));
 		
-		System.out.println("-------------------------------------------------->");
+//		System.out.println("-------------------------------------------------->");
 		
 		//insert xslt to caches
 		this.insertXslts();
@@ -95,9 +95,9 @@ public class TestXmlPipelineBuilder extends CamelSpringTestSupport {
 		
 		ProcessDefinition definition = processBuilder.build(process);
 		
-		System.out.println(definition.getOutPipelines().get(0));
+//		System.out.println(definition.getOutPipelines().get(0));
 		
-		System.out.println("-------------------------------------------------->");
+//		System.out.println("-------------------------------------------------->");
 		
 		//insert xslt to caches
 		this.insertXslts();
@@ -328,10 +328,10 @@ public class TestXmlPipelineBuilder extends CamelSpringTestSupport {
 	
 	private void insertXslts(){
 		//insert xslt to caches
-//		Hazelcast.getMap(CacheConstants.CORRELATION_RULE_CACHE).put("3e68dd4a3a52369301021ceb61158950", this.getCorrelation());
+		Hazelcast.getMap(CacheConstants.CORRELATION_RULE_CACHE).put("3e68dd4a3a52369301021ceb61158950", this.getCorrelation());
 		Hazelcast.getMap(CacheConstants.TRANSFORMATION_CACHE).put("3e68dd4a3a52369301021ceb61158950", this.getTransformation());
 		
-//		Hazelcast.getMap(CacheConstants.CORRELATION_RULE_CACHE).put("e8c2eb9abd37d710f4447af1f4da99ef", this.getCorrelation());
+		Hazelcast.getMap(CacheConstants.CORRELATION_RULE_CACHE).put("e8c2eb9abd37d710f4447af1f4da99ef", this.getCorrelation());
 		Hazelcast.getMap(CacheConstants.TRANSFORMATION_CACHE).put("e8c2eb9abd37d710f4447af1f4da99ef", this.getTransformation());
 		
 		Hazelcast.getMap(CacheConstants.TRANSFORMATION_CACHE).put("a600aa727f9df80c45b0674eda578fea", this.getTransformation());
