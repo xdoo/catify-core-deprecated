@@ -1,141 +1,146 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- edited with XMLSpy v2010 (http://www.altova.com) by Claus Straube (Hochschule 
-	München SCE-catify) -->
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://www.catify.com/api/1.0"
-	targetNamespace="http://www.catify.com/api/1.0" elementFormDefault="unqualified"
-	attributeFormDefault="unqualified">
-	<!-- ####################################### PIPELINE ####################################### -->
-	<xs:element name="inPipeline" type="InPipeline" />
+<!-- edited with XMLSpy v2010 (http://www.altova.com) by Claus Straube (Hochschule München SCE-catify) -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://www.catify.com/api/1.0" targetNamespace="http://www.catify.com/api/1.0" elementFormDefault="unqualified" attributeFormDefault="unqualified">
+	<!--
+    #######################################
+	#                          PIPELINE                        #
+	#######################################
+	-->
+	<xs:element name="inPipeline" type="InPipeline"/>
 	<xs:complexType name="InPipeline">
 		<xs:sequence>
-			<xs:element ref="fromEndpoint" />
-			<xs:element ref="marshaller" minOccurs="0" />
-			<xs:element ref="split" minOccurs="0" />
-			<xs:element ref="correlation" minOccurs="0" />
+			<xs:element ref="fromEndpoint"/>
+			<xs:element ref="marshaller" minOccurs="0"/>
+			<xs:element ref="split" minOccurs="0"/>
+			<xs:element ref="correlation" minOccurs="0"/>
 		</xs:sequence>
 	</xs:complexType>
-	<xs:element name="outPipeline" type="OutPipeline" />
+	<xs:element name="outPipeline" type="OutPipeline"/>
 	<xs:complexType name="OutPipeline">
 		<xs:sequence>
-			<xs:element ref="toEndpoint" />
-			<xs:element ref="marshaller" minOccurs="0" />
-			<xs:element ref="correlation" minOccurs="0" />
+			<xs:element ref="toEndpoint"/>
+			<xs:element ref="marshaller" minOccurs="0"/>
+			<xs:element ref="correlation" minOccurs="0"/>
 		</xs:sequence>
 	</xs:complexType>
-	<!-- from... -->
-	<xs:element name="fromEndpoint" type="FromEndpoint" />
+	<!-- from...-->
+	<xs:element name="fromEndpoint" type="FromEndpoint"/>
 	<xs:complexType name="FromEndpoint">
-		<xs:group ref="endpoints" maxOccurs="unbounded" />
+		<xs:group ref="endpoints" maxOccurs="unbounded"/>
 	</xs:complexType>
-	<!-- to... -->
-	<xs:element name="toEndpoint" type="ToEndpoint" />
+	<!-- to...-->
+	<xs:element name="toEndpoint" type="ToEndpoint"/>
 	<xs:complexType name="ToEndpoint">
-		<xs:group ref="endpoints" />
+		<xs:group ref="endpoints"/>
 	</xs:complexType>
 	<!-- endpoints -->
 	<xs:group name="endpoints">
 		<xs:choice>
-			<xs:element ref="ftp" />
-			<xs:element ref="rest" />
-			<xs:element ref="file" />
-			<xs:element ref="hazelcast" />
+			<xs:element ref="ftp"/>
+			<xs:element ref="rest"/>
+			<xs:element ref="file"/>
+			<xs:element ref="hazelcast"/>
 		</xs:choice>
 	</xs:group>
 	<xs:complexType name="Endpoint">
-		<xs:attribute ref="uri" />
+		<xs:attribute ref="uri"/>
 	</xs:complexType>
-	<xs:element name="ftp" type="FtpEndpoint" />
+	<xs:element name="ftp" type="FtpEndpoint"/>
 	<xs:complexType name="FtpEndpoint">
 		<xs:complexContent>
 			<xs:extension base="Endpoint">
-				<xs:sequence />
+				<xs:sequence/>
 			</xs:extension>
 		</xs:complexContent>
 	</xs:complexType>
-	<xs:element name="rest" type="RestEndpoint" />
+	<xs:element name="rest" type="RestEndpoint"/>
 	<xs:complexType name="RestEndpoint">
 		<xs:complexContent>
 			<xs:extension base="Endpoint">
-				<xs:sequence />
+				<xs:sequence/>
 			</xs:extension>
 		</xs:complexContent>
 	</xs:complexType>
-	<xs:element name="file" type="FileEndpoint" />
+	<xs:element name="file" type="FileEndpoint"/>
 	<xs:complexType name="FileEndpoint">
 		<xs:complexContent>
 			<xs:extension base="Endpoint">
-				<xs:sequence />
+				<xs:sequence/>
 			</xs:extension>
 		</xs:complexContent>
 	</xs:complexType>
-	<xs:element name="hazelcast" type="HazelcastEndpoint" />
+	<xs:element name="hazelcast" type="HazelcastEndpoint"/>
 	<xs:complexType name="HazelcastEndpoint">
 		<xs:complexContent>
 			<xs:extension base="Endpoint">
-				<xs:sequence />
-				<xs:attribute ref="operation" />
-				<xs:attribute ref="id" />
+				<xs:sequence/>
+				<xs:attribute ref="operation" use="required"/>
+				<xs:attribute ref="id" use="optional"/>
 			</xs:extension>
 		</xs:complexContent>
 	</xs:complexType>
 	<!-- marshaller -->
-	<xs:element name="marshaller" type="Marshaller" />
+	<xs:element name="marshaller" type="Marshaller"/>
 	<xs:complexType name="Marshaller">
-		<xs:attribute ref="type" />
+		<xs:attribute ref="type"/>
 	</xs:complexType>
 	<!-- splitter -->
-	<xs:element name="split" type="Split" />
+	<xs:element name="split" type="Split"/>
 	<xs:complexType name="Split">
-		<xs:attribute ref="xpath" />
+		<xs:attribute ref="xpath"/>
 	</xs:complexType>
-	<xs:attribute name="xpath" type="xs:string" />
+	<xs:attribute name="xpath" type="xs:string"/>
 	<!-- correlation -->
-	<xs:element name="correlation" type="Correlation" />
+	<xs:element name="correlation" type="Correlation"/>
 	<xs:complexType name="Correlation">
 		<xs:sequence>
-			<xs:element ref="xpath" maxOccurs="unbounded" />
+			<xs:element ref="xpath" maxOccurs="unbounded"/>
 		</xs:sequence>
 	</xs:complexType>
-	<xs:element name="xpath" type="xs:string" />
-	<!-- ####################################### PROCESS ####################################### -->
-	<xs:element name="process" type="Process" />
+	<xs:element name="xpath" type="xs:string"/>
+	<!--
+    #######################################
+	#                          PROCESS                       #
+	#######################################
+	-->
+	<xs:element name="process" type="Process"/>
 	<xs:complexType name="Process">
 		<xs:sequence>
-			<xs:element ref="start" />
-			<xs:group ref="events" minOccurs="0" />
-			<xs:group ref="nodes" maxOccurs="unbounded" />
+			<xs:element ref="start"/>
+			<xs:group ref="events" minOccurs="0"/>
+			<xs:group ref="nodes" maxOccurs="unbounded"/>
 		</xs:sequence>
-		<xs:attribute name="accountName" type="xs:string" use="required" />
-		<xs:attribute name="processName" type="xs:string" use="required" />
-		<xs:attribute name="processVersion" type="xs:string" use="required" />
-		<xs:attribute name="processId" type="xs:string" use="optional" />
+		<xs:attribute name="accountName" type="xs:string" use="required"/>
+		<xs:attribute name="processName" type="xs:string" use="required"/>
+		<xs:attribute name="processVersion" type="xs:string" use="required"/>
+		<xs:attribute name="processId" type="xs:string" use="optional"/>
 	</xs:complexType>
-	<xs:element name="start" />
-	<xs:element name="request" type="Request" />
-	<xs:element name="reply" type="Reply" />
-	<xs:element name="receive" type="Receive" />
-	<xs:element name="fork" type="Fork" />
-	<xs:element name="decision" type="Decision" />
-	<xs:element name="sleep" type="Sleep" />
-	<xs:element name="end" type="End" />
-	<xs:element name="terminate" type="Terminate" />
-	<!-- -->
-	<xs:element name="line" type="Line" />
-	<xs:element name="group" type="Group" />
+	<xs:element name="start" type="Start"/>
+	<xs:element name="request" type="Request"/>
+	<xs:element name="reply" type="Reply"/>
+	<xs:element name="receive" type="Receive"/>
+	<xs:element name="fork" type="Fork"/>
+	<xs:element name="decision" type="Decision"/>
+	<xs:element name="sleep" type="Sleep"/>
+	<xs:element name="end" type="End"/>
+	<xs:element name="terminate" type="Terminate"/>
+	<!--  -->
+	<xs:element name="line" type="Line"/>
+	<xs:element name="group" type="Group"/>
 	<!-- events -->
-	<xs:element name="timeEvent" type="TimeEvent" />
-	<xs:element name="messageEvent" type="MessageEvent" />
-	<xs:element name="exceptionEvent" type="ExceptionEvent" />
+	<xs:element name="timeEvent" type="TimeEvent"/>
+	<xs:element name="messageEvent" type="MessageEvent"/>
+	<xs:element name="exceptionEvent" type="ExceptionEvent"/>
 	<!-- base types -->
 	<xs:complexType name="Node">
-		<xs:attribute ref="name" use="required" />
-		<xs:attribute ref="id" use="optional" />
+		<xs:attribute ref="name" use="optional"/>
+		<xs:attribute ref="id" use="optional"/>
 	</xs:complexType>
 	<xs:complexType name="SplitNode">
 		<xs:complexContent>
 			<xs:extension base="Node">
 				<xs:sequence>
-					<xs:element ref="line" minOccurs="2" maxOccurs="unbounded" />
+					<xs:element ref="line" minOccurs="2" maxOccurs="unbounded"/>
 				</xs:sequence>
 			</xs:extension>
 		</xs:complexContent>
@@ -144,8 +149,7 @@
 		<xs:complexContent>
 			<xs:extension base="Node">
 				<xs:sequence>
-					<xs:element ref="exceptionEvent" minOccurs="0"
-						maxOccurs="unbounded" />
+					<xs:element ref="exceptionEvent" minOccurs="0" maxOccurs="unbounded"/>
 				</xs:sequence>
 			</xs:extension>
 		</xs:complexContent>
@@ -154,7 +158,7 @@
 		<xs:complexContent>
 			<xs:extension base="Node">
 				<xs:sequence>
-					<xs:group ref="nodes" maxOccurs="unbounded" />
+					<xs:group ref="nodes" maxOccurs="unbounded"/>
 				</xs:sequence>
 			</xs:extension>
 		</xs:complexContent>
@@ -164,7 +168,7 @@
 		<xs:complexContent>
 			<xs:extension base="Node">
 				<xs:sequence>
-					<xs:element ref="inPipeline" />
+					<xs:element ref="inPipeline" minOccurs="0"/>
 				</xs:sequence>
 			</xs:extension>
 		</xs:complexContent>
@@ -173,7 +177,7 @@
 		<xs:complexContent>
 			<xs:extension base="ServiceNode">
 				<xs:sequence>
-					<xs:element ref="outPipeline" minOccurs="0" />
+					<xs:element ref="outPipeline" minOccurs="0"/>
 				</xs:sequence>
 			</xs:extension>
 		</xs:complexContent>
@@ -182,8 +186,8 @@
 		<xs:complexContent>
 			<xs:extension base="ServiceNode">
 				<xs:sequence>
-					<xs:element ref="timeEvent" minOccurs="0" />
-					<xs:element ref="inPipeline" minOccurs="0" />
+					<xs:element ref="timeEvent" minOccurs="0"/>
+					<xs:element ref="inPipeline" minOccurs="0"/>
 				</xs:sequence>
 			</xs:extension>
 		</xs:complexContent>
@@ -192,31 +196,31 @@
 		<xs:complexContent>
 			<xs:extension base="ServiceNode">
 				<xs:sequence>
-					<xs:element ref="outPipeline" minOccurs="0" />
+					<xs:element ref="outPipeline" minOccurs="0"/>
 				</xs:sequence>
 			</xs:extension>
 		</xs:complexContent>
 	</xs:complexType>
 	<xs:complexType name="Fork">
 		<xs:complexContent>
-			<xs:extension base="SplitNode" />
+			<xs:extension base="SplitNode"/>
 		</xs:complexContent>
 	</xs:complexType>
 	<xs:complexType name="Decision">
 		<xs:complexContent>
-			<xs:extension base="SplitNode" />
+			<xs:extension base="SplitNode"/>
 		</xs:complexContent>
 	</xs:complexType>
 	<xs:complexType name="Line">
 		<xs:complexContent>
-			<xs:extension base="StructureNode" />
+			<xs:extension base="StructureNode"/>
 		</xs:complexContent>
 	</xs:complexType>
 	<xs:complexType name="Group">
 		<xs:complexContent>
 			<xs:extension base="StructureNode">
 				<xs:sequence>
-					<xs:group ref="events" minOccurs="0" />
+					<xs:group ref="events" minOccurs="0"/>
 				</xs:sequence>
 			</xs:extension>
 		</xs:complexContent>
@@ -225,67 +229,67 @@
 		<xs:complexContent>
 			<xs:extension base="Node">
 				<xs:sequence>
-					<xs:element ref="timeEvent" />
+					<xs:element ref="timeEvent"/>
 				</xs:sequence>
 			</xs:extension>
 		</xs:complexContent>
 	</xs:complexType>
 	<xs:complexType name="Terminate">
 		<xs:complexContent>
-			<xs:extension base="Node" />
+			<xs:extension base="Node"/>
 		</xs:complexContent>
 	</xs:complexType>
 	<xs:complexType name="TimeEvent">
 		<xs:complexContent>
 			<xs:extension base="StructureNode">
-				<xs:attribute ref="time" use="required" />
+				<xs:attribute ref="time" use="required"/>
 			</xs:extension>
 		</xs:complexContent>
 	</xs:complexType>
 	<xs:complexType name="MessageEvent">
 		<xs:complexContent>
-			<xs:extension base="StructureNode" />
+			<xs:extension base="StructureNode"/>
 		</xs:complexContent>
 	</xs:complexType>
 	<xs:complexType name="ExceptionEvent">
 		<xs:complexContent>
 			<xs:extension base="StructureNode">
-				<xs:attribute ref="type" use="required" />
+				<xs:attribute ref="type" use="required"/>
 			</xs:extension>
 		</xs:complexContent>
 	</xs:complexType>
 	<xs:complexType name="End">
 		<xs:complexContent>
-			<xs:extension base="Node" />
+			<xs:extension base="Node"/>
 		</xs:complexContent>
 	</xs:complexType>
 	<!-- groups -->
 	<xs:group name="nodes">
 		<xs:choice>
-			<xs:element ref="request" />
-			<xs:element ref="reply" />
-			<xs:element ref="receive" />
-			<xs:element ref="fork" />
-			<xs:element ref="decision" />
-			<xs:element ref="sleep" />
-			<xs:element ref="group" />
-			<xs:element ref="terminate" />
-			<xs:element ref="end" />
+			<xs:element ref="request"/>
+			<xs:element ref="reply"/>
+			<xs:element ref="receive"/>
+			<xs:element ref="fork"/>
+			<xs:element ref="decision"/>
+			<xs:element ref="sleep"/>
+			<xs:element ref="group"/>
+			<xs:element ref="terminate"/>
+			<xs:element ref="end"/>
 		</xs:choice>
 	</xs:group>
 	<xs:group name="events">
 		<xs:sequence>
-			<xs:element ref="messageEvent" minOccurs="0" maxOccurs="unbounded" />
-			<xs:element ref="timeEvent" minOccurs="0" />
-			<xs:element ref="exceptionEvent" minOccurs="0" maxOccurs="unbounded" />
+			<xs:element ref="messageEvent" minOccurs="0" maxOccurs="unbounded"/>
+			<xs:element ref="timeEvent" minOccurs="0"/>
+			<xs:element ref="exceptionEvent" minOccurs="0" maxOccurs="unbounded"/>
 		</xs:sequence>
 	</xs:group>
 	<!-- attributes -->
-	<xs:attribute name="name" type="xs:ID" />
-	<xs:attribute name="time" type="xs:long" />
-	<xs:attribute name="reference" type="xs:string" />
-	<xs:attribute name="type" type="xs:string" />
-	<xs:attribute name="id" type="xs:string" />
-	<xs:attribute name="uri" type="xs:string" />
-	<xs:attribute name="operation" type="xs:string" />
+	<xs:attribute name="name" type="xs:string"/>
+	<xs:attribute name="time" type="xs:long"/>
+	<xs:attribute name="reference" type="xs:string"/>
+	<xs:attribute name="type" type="xs:string"/>
+	<xs:attribute name="id" type="xs:string"/>
+	<xs:attribute name="uri" type="xs:string"/>
+	<xs:attribute name="operation" type="xs:string"/>
 </xs:schema>

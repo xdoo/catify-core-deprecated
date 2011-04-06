@@ -21,14 +21,28 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
 	xmlns:camel="http://camel.apache.org/schema/spring"
 	xmlns:amq="http://activemq.apache.org/schema/core"
-	xmlns:akka="http://www.akkasource.org/schema/akka"
 	xmlns:drools="http://drools.org/schema/drools-spring"
 	xsi:schemaLocation="
        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
        http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd
        http://activemq.apache.org/schema/core http://activemq.apache.org/schema/core/activemq-core.xsd
-       http://www.akkasource.org/schema/akka http://scalablesolutions.se/akka/akka-1.0-SNAPSHOT.xsd
        http://drools.org/schema/drools-spring http://anonsvn.jboss.org/repos/labs/labs/jbossrules/trunk/drools-container/drools-spring/src/main/resources/org/drools/container/spring/drools-spring-1.0.0.xsd">
+
+	<!-- catify -->
+	<bean id="xmlPipelineBuilder" class="com.catify.core.process.xml.XmlPipelineBuilder">
+		<constructor-arg name="config" ref="globalConfiguration"/>
+		<constructor-arg name="correlationRuleBuilder" ref="correlationRuleBuilder"/>
+	</bean>
+	<bean id="xmlProcessBuilder" class="com.catify.core.process.xml.XmlProcessBuilder">
+		<constructor-arg name="pipelineBuilder" ref="xmlPipelineBuilder"/>
+	</bean>
+	<bean id="correlationRuleBuilder" class="com.catify.core.process.xml.CorrelationRuleBuilder"/>
+	
+	
+	<!-- configuration -->
+	<bean id="globalConfiguration" class="com.catify.core.configuration.GlobalConfiguration"/>
+	
+
 
 	<!-- camel -->
 	<camel:camelContext id="camelContext" trace="false">
@@ -62,9 +76,16 @@
 	<bean id="pipelineDeploymentProcessor" class="com.catify.core.process.processors.PipelineDeploymentProcessor"/>
 	<bean id="processDeploymentProcessor" class="com.catify.core.process.processors.ProcessDeploymentProcessor"/>
 	<bean id="processIdProcessor" class="com.catify.core.process.processors.ProcessIdProcessor"/>
-	<bean id="processRegistrationProcessor" class="com.catify.core.process.processors.ProcessRegistrationProcessor"/>
+	<bean id="processRegistrationProcessor" class="com.catify.core.process.processors.ProcessRegistrationProcessor">
+		<constructor-arg name="processBuilder" ref="xmlProcessBuilder"/>
+	</bean>
 	<bean id="taskInstanceIdProcessor" class="com.catify.core.process.processors.TaskInstanceIdProcessor"/>
 	<bean id="transformDecisionPayloadProcessor" class="com.catify.core.process.processors.TransformDecisionPayloadProcessor"/>
+	<bean id="writeCorrelationProcessor" class="com.catify.core.process.processors.WriteCorrelationProcessor"/>
+	<bean id="readCorrelationProcessor" class="com.catify.core.process.processors.ReadCorrelationProcessor"/>
+	
+	<!-- routers -->
+	<!-- <bean id="receiveRouter" class="com.catify.core.process.routers.ReceiveRouter"/> -->
 	
 	<!-- data marshalling -->
 	<bean id="csvMarshallProcessor" class="com.catify.core.data.marshall.CsvMarshallProcessor"/>
