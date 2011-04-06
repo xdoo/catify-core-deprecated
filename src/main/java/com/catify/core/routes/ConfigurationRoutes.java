@@ -6,6 +6,7 @@ import org.apache.camel.converter.jaxb.JaxbDataFormat;
 import org.apache.camel.spi.DataFormat;
 
 import com.catify.core.constants.CacheConstants;
+import com.catify.core.constants.GlobalConstants;
 import com.catify.core.process.processors.PipelineDeploymentProcessor;
 import com.catify.core.process.processors.ProcessDeploymentProcessor;
 import com.catify.core.process.processors.ProcessRegistrationProcessor;
@@ -28,16 +29,17 @@ public class ConfigurationRoutes extends RouteBuilder {
 		.routeId("put_process_into_cache")
 		//TODO --> transformation + validation
 		.unmarshal(jaxb)
-		.process(new ProcessRegistrationProcessor())
+		.processRef("processRegistrationProcessor")
 		.marshal(jaxb);
 		
 		//listen to new process definitions
 		from(String.format("hazelcast:%s%s", HazelcastConstants.MAP_PREFIX, CacheConstants.PROCESS_CACHE))
 		.routeId("deploy_process")
-		.log("process added...")
+		.log("process...")
 		.choice()
 			.when(header(HazelcastConstants.LISTENER_ACTION).isEqualTo(HazelcastConstants.ADDED))
-			.process(new ProcessDeploymentProcessor());
+				.log("...added to cache")
+				.process(new ProcessDeploymentProcessor());
 		
 		//---------------------------------------------
 		// pipelines
@@ -47,7 +49,7 @@ public class ConfigurationRoutes extends RouteBuilder {
 		from("restlet:http://localhost:9080/catify/deploy_pipeline/{nodeid}?restletMethod=post")
 		.routeId("put_pipeline_into_cache")
 		//TODO --> transform + validate
-		//unmarshallk
+		//unmarshal
 		.marshal().string("UTF-8")
 		//put it into cache
 		.setHeader(HazelcastConstants.OBJECT_ID, header("nodeid"))
@@ -102,6 +104,27 @@ public class ConfigurationRoutes extends RouteBuilder {
 		.setHeader(HazelcastConstants.OBJECT_ID, header("nodeid"))
         .setHeader(HazelcastConstants.OPERATION, constant(HazelcastConstants.GET_OPERATION))
         .to(String.format("hazelcast:%s%s", HazelcastConstants.MAP_PREFIX, CacheConstants.VALIDATION_CACHE));
+		
+		//---------------------------------------------
+		// correlation
+		//---------------------------------------------
+		
+		//put correlation rule (xslt) into the cache
+		fromF("restlet:http://localhost:%s/catify/deploy_correlation_rule/{nodeid}?restletMethod=post", GlobalConstants.HTTP_PORT)
+		.routeId("put_correlation_rule_into_cache")
+		//TODO --> validate
+		//put it into the cache
+		.setHeader(HazelcastConstants.OBJECT_ID, header("nodeid"))
+        .setHeader(HazelcastConstants.OPERATION, constant(HazelcastConstants.PUT_OPERATION))
+        .toF("hazelcast:%s%s", HazelcastConstants.MAP_PREFIX, CacheConstants.CORRELATION_RULE_CACHE);
+		
+		//get the correlation rule (xslt) out of the cache
+		fromF("restlet:http://localhost:%s/catify/get_correlation_rule/{nodeid}?restletMethod=get", GlobalConstants.HTTP_PORT)
+		.routeId("read_correlation_rule")
+		//read it from cache
+		.setHeader(HazelcastConstants.OBJECT_ID, header("nodeid"))
+        .setHeader(HazelcastConstants.OPERATION, constant(HazelcastConstants.GET_OPERATION))
+        .toF("hazelcast:%s%s", HazelcastConstants.MAP_PREFIX, CacheConstants.CORRELATION_RULE_CACHE);
 
 	}
 
