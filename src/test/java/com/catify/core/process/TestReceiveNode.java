@@ -78,6 +78,11 @@ public class TestReceiveNode extends BaseNode {
 		
 	}
 	
+	/**
+	 * TODO --> change this to XML process definition
+	 * 
+	 * @throws Exception
+	 */
 	public void testReceiveTimeOut() throws Exception{		
 		ProcessDeployer deployer = new ProcessDeployer(context, this.createKnowledgeBase());
 		ProcessDefinition definition = this.getReceiveProcess("process01");

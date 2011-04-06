@@ -6,12 +6,17 @@ import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.converter.jaxb.JaxbDataFormat;
 import org.apache.camel.spi.DataFormat;
 import org.apache.camel.test.CamelSpringTestSupport;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.support.AbstractXmlApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import com.catify.core.constants.MessageConstants;
 
 public class TestProcessDeploymentProcessor extends CamelSpringTestSupport {
+	
+	static final Logger LOG = LoggerFactory
+			.getLogger(TestProcessDeploymentProcessor.class);
 	
 	@Override
 	protected AbstractXmlApplicationContext createApplicationContext() {
@@ -28,15 +33,21 @@ public class TestProcessDeploymentProcessor extends CamelSpringTestSupport {
 		super.tearDown();
 	}
 	
+	public void testDirectMarshalling(){
+		String body = template.requestBody("direct:xml", this.xml3(), String.class);
+		System.out.println(body);
+	}
+	
 	public void testSimpleMarshalling() throws Exception{		
-		String body = template.requestBody("restlet:http://localhost:9080/catify/deploy_process?restletMethod=post", this.xml2(), String.class);
+		String body = template.requestBody("restlet:http://localhost:9080/catify/deploy_process?restletMethod=post", this.xml2(), String.class);	
+
+//		System.out.println(body);
 		
 		assertNotNull(body);
-		assertTrue(body.contains("<ns1:process xmlns:ns1=\"http://www.catify.com/api/1.0\" accountName=\"tester\" processName=\"process01\" processVersion=\"1.0\" processId=\"e8c2eb9abd37d710f4447af1f4da99ef\">"));
 		assertTrue(body.contains("<ns1:start ns1:name=\"start\" ns1:id=\"05cc5b277e32985b01d5a44b20a491d7\"/>"));
 		assertTrue(body.contains("<ns1:end ns1:name=\"end\" ns1:id=\"59ab3cb6320ef9940aa3cb5ea64b9600\"/>"));
 		
-		Thread.sleep(1500);
+		Thread.sleep(2 * 1000);
 		
 		assertNotNull(context.getRoute("process-e8c2eb9abd37d710f4447af1f4da99ef"));
 		assertNotNull(context.getRoute("node-59ab3cb6320ef9940aa3cb5ea64b9600"));
@@ -92,9 +103,12 @@ public class TestProcessDeploymentProcessor extends CamelSpringTestSupport {
 				
 				DataFormat jaxb = new JaxbDataFormat("com.catify.core.process.xml.model");
 				
+				errorHandler(loggingErrorHandler());
+				
 				from("direct:xml")
 				.unmarshal(jaxb)
-				.process(new ProcessDeploymentProcessor())
+				.log("${body}")
+//				.process(new ProcessDeploymentProcessor())
 				.marshal(jaxb);
 				
 				from("direct:send")
