@@ -246,9 +246,9 @@
 	</build>
 	<profiles>
 		<profile>
-			<id>jdk1.5</id>
+			<id>jdk1.6</id>
 			<activation>
-				<jdk>1.5</jdk>
+				<jdk>1.6</jdk>
 			</activation>
 			<dependencies>
 				<dependency>
