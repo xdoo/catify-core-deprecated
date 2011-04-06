@@ -5,6 +5,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.catify.core.process.model.ProcessDefinition;
 import com.catify.core.process.nodes.DecisionNode;
 import com.catify.core.process.nodes.EndNode;
@@ -21,8 +24,10 @@ import com.catify.core.process.nodes.TimerEventNode;
 import com.catify.core.process.xml.model.Decision;
 import com.catify.core.process.xml.model.End;
 import com.catify.core.process.xml.model.Fork;
+import com.catify.core.process.xml.model.InPipeline;
 import com.catify.core.process.xml.model.Line;
 import com.catify.core.process.xml.model.Node;
+import com.catify.core.process.xml.model.OutPipeline;
 import com.catify.core.process.xml.model.Process;
 import com.catify.core.process.xml.model.Receive;
 import com.catify.core.process.xml.model.Reply;
@@ -35,8 +40,17 @@ public class XmlProcessBuilder {
 	
 	private String current;
 	private ProcessDefinition definition;
+	private XmlPipelineBuilder pipelineBuilder;
+	
+	static final Logger LOG = LoggerFactory.getLogger(XmlProcessBuilder.class);
+	
+	public XmlProcessBuilder(XmlPipelineBuilder pipelineBuilder){
+		this.pipelineBuilder = pipelineBuilder;
+	}
 	
 	public ProcessDefinition build(Process process){
+		
+		LOG.info(String.format("building process --> name = %s | version = %s | account = %s", process.getProcessName(), process.getProcessVersion(), process.getAccountName()));
 		
 		String accountName = process.getAccountName();
 		String processName = process.getProcessName();
@@ -64,6 +78,12 @@ public class XmlProcessBuilder {
 		
 		//set start node id
 		definition.setStartNodeId(startNode.getNodeId());
+		
+		//build pipeline if available
+		InPipeline pipeline = start.getInPipeline();
+		if(pipeline != null){
+			definition.addStartPipeline(this.pipelineBuilder.buildStartPipeline(pipeline, definition));
+		}
 		
 		start.setId(startNode.getNodeId());
 		this.current = startNode.getNodeId();
@@ -169,6 +189,12 @@ public class XmlProcessBuilder {
 		//add timer event
 		this.addTimerEventNode(node.getTimeEvent(), node.getName());
 		
+		//build pipeline if available
+		InPipeline pipeline = node.getInPipeline();
+		if(pipeline != null){
+			definition.addInPipeline(this.pipelineBuilder.buildInPipeline(pipeline, node.getId(), definition));
+		}
+		
 		//set receive node back to current
 		this.current = node.getId();
 			
@@ -183,6 +209,12 @@ public class XmlProcessBuilder {
 
 	private void addRequestNode(Request node) {
 		node.setId(this.addNodeWithCurrent(new RequestNode(this.definition.getProcessId(), node.getName(), "1")));
+		
+		//build pipeline if available
+		OutPipeline pipeline = node.getOutPipeline();
+		if(pipeline != null){
+			definition.addOutPipeline(this.pipelineBuilder.buildOutPipeline(pipeline, node.getId()));
+		}
 	}
 	
 	private String addNodeWithCurrent(com.catify.core.process.nodes.Node node){

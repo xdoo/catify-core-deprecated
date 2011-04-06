@@ -24,7 +24,7 @@ public class ProcessDeploymentProcessor extends BaseProcessor {
 		ProcessDeployer deployer = new ProcessDeployer(context, KnowledgeBaseFactory.newKnowledgeBase());
 		deployer.deployProcess(ex.getIn().getBody(ProcessDefinition.class));
 		
-		LOG.info("process deployed...");
+//		LOG.info(String.format("process deployed --> name = %s | version = %s | account = %s", definition.getProcessName(), definition.getProcessVersion(), definition.getAccountName()));
 		
 		super.copyBodyAndHeaders(ex);
 	}

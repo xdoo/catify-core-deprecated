@@ -1,6 +1,7 @@
 package com.catify.core.process.model;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -8,9 +9,11 @@ import java.util.Map;
 
 import org.apache.commons.codec.digest.DigestUtils;
 // MultiValueMap is not serializable - so we have to use MultiHashMap here
+import org.apache.commons.collections.ListUtils;
 import org.apache.commons.collections.MultiHashMap;
 import org.apache.commons.collections.MultiMap;
 
+import com.catify.core.constants.PipelineConstants;
 import com.catify.core.process.nodes.Node;
 
 public class ProcessDefinition implements Serializable {
@@ -26,6 +29,9 @@ public class ProcessDefinition implements Serializable {
 	private MultiMap leftTransitions;
 	private MultiMap rightTransitions;
 	private Map<String, Node> nodes;
+	
+	private MultiMap pipelines;
+	private Map<String, String> correlationRules;
 
 	public ProcessDefinition(String accountName, String processName, String processVersion){
 		
@@ -42,6 +48,12 @@ public class ProcessDefinition implements Serializable {
 		
 		//create the node map
 		this.nodes = new HashMap<String, Node>();
+		
+		//create pipeline map
+		this.pipelines = new MultiHashMap();
+		
+		//create the correlation rule map
+		this.correlationRules = new HashMap<String,String>();
 	}
 	
 	public void addTransition(String from, String to){
@@ -74,6 +86,66 @@ public class ProcessDefinition implements Serializable {
 	
 	public void addNodes(Map<String, Node> nodes){
 		nodes.putAll(nodes);
+	}
+	
+	public void addStartPipeline(String pipeline){
+		this.pipelines.put(PipelineConstants.START_PIPELINE, pipeline);
+	}
+	
+	public void addInPipeline(String pipeline){
+		this.pipelines.put(PipelineConstants.IN_PIPELINE, pipeline);
+	}
+	
+	public void addOutPipeline(String pipeline){
+		this.pipelines.put(PipelineConstants.OUT_PIPELINE, pipeline);
+	}
+	
+	public String getStartPipeline(){
+		if(this.pipelines.get(PipelineConstants.START_PIPELINE) != null){
+			return ((List<String>) this.pipelines.get(PipelineConstants.START_PIPELINE)).get(0);
+		} else {
+			return null;
+		}
+	}
+	
+	public List<String> getInPipelines(){
+		return (List<String>) this.pipelines.get(PipelineConstants.IN_PIPELINE);
+	}
+	
+	public List<String> getOutPipelines(){
+		return (List<String>) this.pipelines.get(PipelineConstants.OUT_PIPELINE);
+	}
+	
+	public List<String> getPipelines(){
+		
+		//put all pipelines in one list
+		List<String> pipelines = new ArrayList<String>();
+		
+		if(this.getOutPipelines() != null){
+			pipelines.addAll(getOutPipelines());
+		}
+		
+		if(this.getInPipelines() != null){
+			pipelines.addAll(this.getInPipelines());
+		}
+		
+		if(this.getStartPipeline() != null){
+			pipelines.add(getStartPipeline());
+		}
+		
+		return pipelines;
+	}
+	
+	public void addCorrelationRule(String nodeId, String rule){
+		this.correlationRules.put(nodeId, rule);
+	}
+	
+	public String getCorrelationRule(String nodeId){
+		return this.correlationRules.get(nodeId);
+	}
+	
+	public Map<String,String> getAllCorrelationRules(){
+		return this.correlationRules;
 	}
 	
 	public List<String> getTransitionsFromNode(Node node){

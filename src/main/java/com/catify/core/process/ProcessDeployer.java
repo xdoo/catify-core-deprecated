@@ -1,14 +1,18 @@
 package com.catify.core.process;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.camel.CamelContext;
 import org.apache.camel.Endpoint;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.hazelcast.HazelcastConstants;
+import org.apache.camel.model.RoutesDefinition;
 import org.drools.KnowledgeBase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,6 +32,8 @@ import com.catify.core.process.processors.TransformDecisionPayloadProcessor;
 import com.catify.core.process.routers.CheckMergeRouter;
 import com.catify.core.process.routers.DecisionRouter;
 import com.catify.core.process.routers.ReceiveRouter;
+import com.hazelcast.core.Hazelcast;
+import com.hazelcast.core.IMap;
 
 public class ProcessDeployer {
 
@@ -35,7 +41,7 @@ public class ProcessDeployer {
 	private KnowledgeBase kbase;
 
 	static final Logger LOG = LoggerFactory.getLogger(ProcessDeployer.class);
-	static final LoggingLevel LEVEL = LoggingLevel.INFO;
+	static final LoggingLevel LEVEL = LoggingLevel.DEBUG;
 
 	public ProcessDeployer(CamelContext context, KnowledgeBase kbase) {
 		this.context = context;
@@ -44,13 +50,19 @@ public class ProcessDeployer {
 
 	public void deployProcess(ProcessDefinition definition) {
 
-		LOG.info("deploying process...");
-
 		// first create process start
 		this.addToContext(this.createProcessStart(definition));
 
 		// create routes for the nodes
 		this.createProcessRoutes(definition);
+		
+		// deploy correlation rules
+		this.deployCorrelationRules(definition.getAllCorrelationRules());
+		
+		// create in and out pipelines
+		this.deployPipelines(definition.getPipelines());
+		
+		LOG.info(String.format("deployed process --> name = %s | version = %s | account = %s", definition.getProcessName(), definition.getProcessVersion(), definition.getAccountName()));
 
 	}
 
@@ -157,6 +169,47 @@ public class ProcessDeployer {
 
 		}
 	}
+	
+	private void deployCorrelationRules(Map<String, String> allCorrelationRules) {
+		
+		Iterator<String> it = allCorrelationRules.keySet().iterator();
+		
+		while (it.hasNext()) {
+			
+			String id = it.next();
+			
+			// the xslt templates have to be in the cache BEFORE
+			// deploying the pipelines. So we have to put them directly
+			// into the correlation rule cache.
+			IMap<Object, Object> correlationruleCache = Hazelcast.getMap(CacheConstants.CORRELATION_RULE_CACHE);
+			correlationruleCache.put(id, allCorrelationRules.get(id));
+		}
+	}
+	
+	private void deployPipelines(List<String> pipelines){
+		
+		Iterator<String> it = pipelines.iterator();
+		
+		while (it.hasNext()) {
+			this.deployPipeline(it.next());
+		}
+		
+	}
+	
+	private void deployPipeline(String pipeline){
+		
+		if(pipeline != null){
+			InputStream is = new ByteArrayInputStream(pipeline.getBytes());
+			RoutesDefinition routes;
+			try {
+				routes = context.loadRoutesDefinition(is);
+				context.addRouteDefinitions(routes.getRoutes());
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+	}
 
 	private void addToContext(RouteBuilder builder) {
 		try {
@@ -185,6 +238,10 @@ public class ProcessDeployer {
 	// ----------------------------------------------------> nodes
 
 	private RouteBuilder createProcessStart(final ProcessDefinition definition) {
+		
+		LOG.info(String.format("creating start for PROCESS '%s' with id '%s'.",
+				definition.getProcessName(), definition.getProcessId()));
+		
 		return new RouteBuilder() {
 
 			@Override
@@ -212,6 +269,7 @@ public class ProcessDeployer {
 	}
 
 	private RouteBuilder createStartNode(final ProcessDefinition definition) {
+		
 		return new RouteBuilder() {
 
 			@Override
@@ -559,7 +617,7 @@ public class ProcessDeployer {
 								String.format("RECEIVE NODE '%s'", definition
 										.getNode(nodeId).getNodeName()),
 								String.format(
-										"received message from seda.   process name --> '%s' | process version --> '%s' | instanceId --> ${header.%s}",
+										"received message (from seda).   process name --> '%s' | process version --> '%s' | instanceId --> ${header.%s}",
 										definition.getProcessName(),
 										definition.getProcessVersion(),
 										MessageConstants.INSTANCE_ID))
@@ -587,7 +645,9 @@ public class ProcessDeployer {
 										definition.getProcessName(),
 										definition.getProcessVersion(),
 										MessageConstants.INSTANCE_ID))
+						.process(new TaskInstanceIdProcessor())
 						.dynamicRouter(bean(new ReceiveRouter(nodeId), "route"))
+						.log("remove header...")
 						.removeHeader(ReceiveRouter.WAIT);
 
 				// go! case
@@ -598,7 +658,9 @@ public class ProcessDeployer {
 								String.format("RECEIVE NODE '%s'", definition
 										.getNode(nodeId).getNodeName()),
 								String.format(
-										"going to next node.   process name --> '%s' | process version --> '%s' | instanceId --> ${header.%s}",
+										"received go. going to node '%s' (id: %s).   process name --> '%s' | process version --> '%s' | instanceId --> ${header.%s}",
+										definition.getNode(defaultTransition).getNodeName(),
+										defaultTransition,
 										definition.getProcessName(),
 										definition.getProcessVersion(),
 										MessageConstants.INSTANCE_ID))
