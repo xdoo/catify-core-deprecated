@@ -36,6 +36,7 @@
 	<!-- endpoints -->
 	<xs:group name="endpoints">
 		<xs:choice>
+			<xs:element ref="generic"/>
 			<xs:element ref="ftp"/>
 			<xs:element ref="rest"/>
 			<xs:element ref="file"/>
@@ -55,6 +56,14 @@
 	</xs:complexType>
 	<xs:element name="rest" type="RestEndpoint"/>
 	<xs:complexType name="RestEndpoint">
+		<xs:complexContent>
+			<xs:extension base="Endpoint">
+				<xs:sequence/>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:element name="generic" type="GenericEndpoint"/>
+	<xs:complexType name="GenericEndpoint">
 		<xs:complexContent>
 			<xs:extension base="Endpoint">
 				<xs:sequence/>
@@ -140,6 +149,7 @@
 		<xs:complexContent>
 			<xs:extension base="Node">
 				<xs:sequence>
+					<xs:element ref="timeEvent" minOccurs="0"/>
 					<xs:element ref="line" minOccurs="2" maxOccurs="unbounded"/>
 				</xs:sequence>
 			</xs:extension>
@@ -203,7 +213,9 @@
 	</xs:complexType>
 	<xs:complexType name="Fork">
 		<xs:complexContent>
-			<xs:extension base="SplitNode"/>
+			<xs:extension base="SplitNode">
+				<xs:attribute ref="receivingLines"/>
+			</xs:extension>
 		</xs:complexContent>
 	</xs:complexType>
 	<xs:complexType name="Decision">
@@ -292,4 +304,5 @@
 	<xs:attribute name="id" type="xs:string"/>
 	<xs:attribute name="uri" type="xs:string"/>
 	<xs:attribute name="operation" type="xs:string"/>
+	<xs:attribute name="receivingLines" type="xs:int" default="-1"/>
 </xs:schema>
