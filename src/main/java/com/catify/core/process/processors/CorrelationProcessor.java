@@ -10,6 +10,7 @@ public abstract class CorrelationProcessor extends BaseProcessor {
 	
 	protected void generateCorrelationId(Exchange ex){
 		
+//		creates a md5 hash as correlation id for the given string
 		String correlationId = DigestUtils.md5Hex(ex.getIn().getBody(String.class));
 		
 		super.copyBodyAndHeaders(ex);

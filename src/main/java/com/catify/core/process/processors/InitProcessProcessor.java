@@ -19,6 +19,7 @@ public class InitProcessProcessor extends BaseProcessor {
 		
 		super.copyBodyAndHeaders(exchange);
 		
+//		if there is an instance id set in the header create no new one
 		if(!exchange.getIn().getHeaders().containsKey(MessageConstants.INSTANCE_ID)){
 			exchange.getOut().setHeader(MessageConstants.INSTANCE_ID, Long.toString(idGenerator.newId()));
 		}
