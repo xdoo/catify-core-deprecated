@@ -157,8 +157,10 @@ public class XmlPipelineBuilder {
 			this.appendGetCorrelation(builder, nodeId);
 			
 			//create correlation rule
-			if(in.getCorrelation().getXpath() != null){
-				definition.addCorrelationRule(nodeId, this.correlationRuleBuilder.buildCorrelationDefinition(in.getCorrelation().getXpath()));
+			if(in.getCorrelation() != null) {
+				if(in.getCorrelation().getXpath() != null){
+					definition.addCorrelationRule(nodeId, this.correlationRuleBuilder.buildCorrelationDefinition(in.getCorrelation().getXpath()));
+				}
 			}
 			
 			//open multicast
