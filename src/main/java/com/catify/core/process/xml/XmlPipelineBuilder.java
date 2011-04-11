@@ -12,6 +12,7 @@ import com.catify.core.process.model.ProcessDefinition;
 import com.catify.core.process.xml.model.Endpoint;
 import com.catify.core.process.xml.model.FileEndpoint;
 import com.catify.core.process.xml.model.FtpEndpoint;
+import com.catify.core.process.xml.model.GenericEndpoint;
 import com.catify.core.process.xml.model.HazelcastEndpoint;
 import com.catify.core.process.xml.model.InPipeline;
 import com.catify.core.process.xml.model.OutPipeline;
@@ -235,6 +236,10 @@ public class XmlPipelineBuilder {
 			this.appendToRest(builder, out.getToEndpoint().getRest().getUri());
 		}
 		
+		if(out.getToEndpoint().getGeneric() != null){
+			this.appendToGeneric(builder, out.getToEndpoint().getGeneric().getUri());
+		}
+		
 		this.appendEndRoute(builder);
 		
 		//create save payload route
@@ -244,7 +249,7 @@ public class XmlPipelineBuilder {
 		
 		return builder.toString();
 	}
-	
+
 	private void openRoutes(StringBuilder builder){
 		builder.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
 		builder.append("<routes xmlns=\"http://camel.apache.org/schema/spring\">\n");
@@ -404,6 +409,12 @@ public class XmlPipelineBuilder {
 			}
 		}
 		
+//		the generic endpoint stands for all endpoints available over apache camel
+		if(endpoint instanceof GenericEndpoint){
+			builder.append(String.format("\t<route id=\"in-generic-%s\">\n", nodeId));
+			builder.append(String.format("\t\t<from uri=\"%s\"/>\n", endpoint.getUri()));
+		}
+		
 		
 	}
 	
@@ -421,6 +432,10 @@ public class XmlPipelineBuilder {
 		builder.append(String.format("\t\t<setHeader headerName=\"%s\">\n", key));
 		builder.append(String.format("\t\t\t<simple>%s</simple>\n", value));
 		builder.append("\t\t</setHeader>\n");
+	}
+	
+	private void appendToGeneric(StringBuilder builder, String uri) {
+		builder.append(String.format("\t\t<to uri=\"%s\"/>\n", uri));
 	}
 	
 	private void appendToRest(StringBuilder builder, String uri){
