@@ -41,7 +41,7 @@ public class ProcessDeployer {
 	private KnowledgeBase kbase;
 
 	static final Logger LOG = LoggerFactory.getLogger(ProcessDeployer.class);
-	static final LoggingLevel LEVEL = LoggingLevel.DEBUG;
+	static final LoggingLevel LEVEL = LoggingLevel.INFO;
 
 	public ProcessDeployer(CamelContext context, KnowledgeBase kbase) {
 		this.context = context;
@@ -191,7 +191,9 @@ public class ProcessDeployer {
 		Iterator<String> it = pipelines.iterator();
 		
 		while (it.hasNext()) {
-			this.deployPipeline(it.next());
+			
+			String pipeline = it.next();
+			this.deployPipeline(pipeline);
 		}
 		
 	}
@@ -446,6 +448,7 @@ public class ProcessDeployer {
 								HazelcastConstants.MAP_PREFIX,
 								CacheConstants.PAYLOAD_CACHE))
 						.process(new TransformDecisionPayloadProcessor())
+//						set signal header in line node to be here thread safe...
 						.dynamicRouter(bean(new DecisionRouter(kbase), "route"));
 			}
 		};
@@ -496,10 +499,22 @@ public class ProcessDeployer {
 						// ...put it into the cache...
 						.wireTap("direct:working")
 						// ...call next node...
-						.to(String.format("seda:node-%s", definition
-								.getTransitionsFromNode(nodeId).get(0)))
+						.log(LEVEL,
+								String.format("LINE END NODE '%s'", definition
+										.getNode(nodeId).getNodeName()),
+								String.format(
+										"received signal. going to merge node (%s).   process name --> '%s' | process version --> '%s' | instanceId --> ${header.%s}",
+										this.getTransition(),
+										definition.getProcessName(),
+										definition.getProcessVersion(),
+										MessageConstants.INSTANCE_ID))
+						.to(this.getTransition())
 						// ...remove own state.
 						.to("direct:destroy");
+			}
+			
+			private String getTransition(){
+				return String.format("seda:node-%s", definition.getTransitionsFromNode(nodeId).get(0));
 			}
 		};
 	}
@@ -507,9 +522,6 @@ public class ProcessDeployer {
 	private RouteBuilder createMergeNode(final ProcessDefinition definition,
 			final String nodeId) {
 		return new RouteBuilder() {
-
-			private int awaitedHits = ((MergeNode) definition.getNode(nodeId))
-					.getAwaitedHits();
 
 			@Override
 			public void configure() throws Exception {
@@ -520,7 +532,15 @@ public class ProcessDeployer {
 						.process(new TaskInstanceIdProcessor())
 						// ...set the awaited hits...
 						.setHeader(MessageConstants.AWAITED_HITS,
-								constant(awaitedHits))
+								constant(getAwaitedHits()))
+						.log(LEVEL,
+								String.format("MERGE NODE '%s'", definition
+										.getNode(nodeId).getNodeName()),
+								String.format(
+										"received signal. going to dynamic router.   process name --> '%s' | process version --> '%s' | instanceId --> ${header.%s}",
+										definition.getProcessName(),
+										definition.getProcessVersion(),
+										MessageConstants.INSTANCE_ID))
 						// ...check how many nodes have been received yet...
 						.dynamicRouter(bean(CheckMergeRouter.class, "route"));
 
@@ -534,6 +554,18 @@ public class ProcessDeployer {
 						// ...remove own state.
 						.to("direct:destroy");
 
+			}
+			
+			private int getAwaitedHits(){
+				
+				int awaitedHits = ((MergeNode) definition.getNode(nodeId)).getAwaitedHits();
+				
+				// the -1 stands for 'all' lines
+				if(awaitedHits == -1){
+					awaitedHits = definition.getTransitionsToNode(nodeId).size();
+				}
+				
+				return awaitedHits;
 			}
 		};
 	}

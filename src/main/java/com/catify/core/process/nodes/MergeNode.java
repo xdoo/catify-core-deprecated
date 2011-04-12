@@ -7,10 +7,15 @@ public class MergeNode extends Node {
 	
 	private static final long serialVersionUID = -7210011525686028810L;
 	
-	private int awaitedHits = 0;
+	private int awaitedHits = -1;
 
 	public MergeNode(String processId, String nodeName) {
 		super(processId, nodeName);
+	}
+	
+	public MergeNode(String processId, String nodeName, int awaitedHits) {
+		super(processId, nodeName);
+		this.awaitedHits = awaitedHits;
 	}
 
 	@Override

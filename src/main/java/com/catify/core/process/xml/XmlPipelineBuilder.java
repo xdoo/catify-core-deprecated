@@ -125,8 +125,6 @@ public class XmlPipelineBuilder {
 		
 		Iterator<Endpoint> it = in.getFromEndpoint().getEndpoints().iterator();
 		
-		boolean correlation = Boolean.FALSE;
-		
 		while (it.hasNext()) {
 			String tab = "\t\t";
 			
@@ -139,7 +137,7 @@ public class XmlPipelineBuilder {
 			this.appendHeaders(builder, definition);
 			this.appendConstantHeader(builder, MessageConstants.TASK_ID, nodeId);
 			
-			//check if there is a marshaler needed (e.g. from EDI to XML)
+			//check if there is a marshaler needed
 			if(in.getMarshaller() != null){
 				this.appendMarshaler(builder, in.getMarshaller().getType());
 			}

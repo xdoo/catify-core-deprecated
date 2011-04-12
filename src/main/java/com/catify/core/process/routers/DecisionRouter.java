@@ -76,8 +76,6 @@ public class DecisionRouter {
 			
 			String result = (String) decisionType.get(decision, "result");
 			
-//			System.out.println(String.format("%s --> %s", payload.subSequence(69, 71), result));
-			
 			return String.format("seda:%s", result);
 			
 		} else {

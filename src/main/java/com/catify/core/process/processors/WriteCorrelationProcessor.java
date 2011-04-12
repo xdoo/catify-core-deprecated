@@ -10,7 +10,7 @@ public class WriteCorrelationProcessor extends CorrelationProcessor {
 		
 		super.generateCorrelationId(ex);
 		
-		//the hazelcast component need the instance id as body
+		//the hazelcast component needs the instance id as body
 		ex.getOut().setBody(ex.getIn().getHeader(MessageConstants.INSTANCE_ID, String.class));
 		
 	}
