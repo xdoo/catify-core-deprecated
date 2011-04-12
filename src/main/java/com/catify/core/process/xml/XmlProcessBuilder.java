@@ -137,24 +137,30 @@ public class XmlProcessBuilder {
 		this.addNodes(node.getNodes());
 		
 		//set line end node
-		String id = this.addNodeWithCurrent(new LineEndNode(this.definition.getProcessId(), UUID.randomUUID().toString()));
+//		String id = this.addNodeWithCurrent(new LineEndNode(this.definition.getProcessId(), UUID.randomUUID().toString()));
+		String id = this.addNodeWithoutCurrent(new LineEndNode(this.definition.getProcessId(), UUID.randomUUID().toString()));
 		
 		return id;
 	}
 
 	private void addDecisionNode(Decision node) {
 		String nodeId = this.addNodeWithCurrent(new DecisionNode(this.definition.getProcessId(), node.getName()));
-		this.addLines(node.getLine(), nodeId);
+		
+//		the awaited hits property says how many lines have to be finished
+//		to 'close' the merge node for more finishes. in a decision clause
+//		this number is per default one (only one line can be finished).
+		this.addLines(node.getLine(), nodeId, 1);
 		node.setId(nodeId);
 	}
 
 	private void addForkNode(Fork node) {
 		String nodeId = this.addNodeWithCurrent(new ForkNode(this.definition.getProcessId(), node.getName()));
-		this.addLines(node.getLine(), nodeId);
+		
+		this.addLines(node.getLine(), nodeId, node.getReceivingLines());
 		node.setId(nodeId);
 	}
 	
-	private void addLines(List<Line> lines, String nodeId){
+	private void addLines(List<Line> lines, String nodeId, int awaitedHits){
 		
 		List<String> ids = new ArrayList<String>();
 		
@@ -166,7 +172,7 @@ public class XmlProcessBuilder {
 		}
 		
 		//merge node
-		this.current = this.definition.addNodeFrom(new MergeNode(this.definition.getProcessId(), UUID.randomUUID().toString()), ids);
+		this.current = this.definition.addNodeFrom(new MergeNode(this.definition.getProcessId(), UUID.randomUUID().toString(), awaitedHits), ids);
 	}
 
 	private void addEndNode(End node) {
@@ -223,8 +229,9 @@ public class XmlProcessBuilder {
 		return node.getNodeId();
 	}
 	
-	private void addNodeWithoutCurrent(com.catify.core.process.nodes.Node node){
+	private String addNodeWithoutCurrent(com.catify.core.process.nodes.Node node){
 		this.definition.addNodeFrom(node, this.current);
+		return node.getNodeId();
 	}
 
 }
