@@ -131,13 +131,18 @@ public class XmlProcessBuilder {
 	private String addLineNode(Line node, String splitNodeId) {
 		
 		//set line start node
-		node.setId(this.addNodeWithCurrent(new LineNode(this.definition.getProcessId(), node.getName())));
+		LineNode lineNode = new LineNode(this.definition.getProcessId(), node.getName());
+		node.setId(lineNode.getNodeId());
+		
+		//because all line nodes come from the same fork
+		//the 'current mechanism' soesn't work here.
+		this.definition.addNodeFrom(lineNode, splitNodeId);
+		this.current = lineNode.getNodeId();
 		
 		//add nodes after
 		this.addNodes(node.getNodes());
 		
 		//set line end node
-//		String id = this.addNodeWithCurrent(new LineEndNode(this.definition.getProcessId(), UUID.randomUUID().toString()));
 		String id = this.addNodeWithoutCurrent(new LineEndNode(this.definition.getProcessId(), UUID.randomUUID().toString()));
 		
 		return id;
