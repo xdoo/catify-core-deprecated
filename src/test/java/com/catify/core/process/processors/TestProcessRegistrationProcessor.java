@@ -53,11 +53,11 @@ public class TestProcessRegistrationProcessor extends CamelSpringTestSupport {
 				
 				from("direct:xml")
 				.unmarshal(jaxb)
-				.process(new ProcessRegistrationProcessor());
+				.processRef("processRegistrationProcessor");
 				
 				from("direct:xml2")
 				.unmarshal(jaxb)
-				.process(new ProcessRegistrationProcessor())
+				.processRef("processRegistrationProcessor")
 				.marshal(jaxb);
 				
 				
