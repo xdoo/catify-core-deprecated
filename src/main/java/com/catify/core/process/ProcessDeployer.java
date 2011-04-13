@@ -688,9 +688,7 @@ public class ProcessDeployer {
 				// then take the message and 'go!'
 				// 2. no message has been arrived yet -->
 				// then set state to wait...
-				from(
-						String.format("seda:node-%s?concurrentConsumers=5",
-								nodeId))
+				fromF("seda:node-%s?concurrentConsumers=5",nodeId)
 						.routeId(String.format("node-%s", nodeId))
 						.log(LEVEL,
 								String.format("RECEIVE NODE '%s'", definition
@@ -714,7 +712,7 @@ public class ProcessDeployer {
 				// 2. there is no current state at all -->
 				// the set state to 'wait' and wait for
 				// the initialization from the process
-				from("activemq:queue:in_" + nodeId)
+				fromF("activemq:queue:in_%s", nodeId)
 						.routeId(String.format("aqnode-%s", nodeId))
 						.log(LEVEL,
 								String.format("RECEIVE NODE '%s'", definition
@@ -731,7 +729,7 @@ public class ProcessDeployer {
 
 				// go! case
 				// --------------
-				from(String.format("direct:go-%s", nodeId))
+				fromF("direct:go-%s", nodeId)
 						.routeId(String.format("go-%s", nodeId))
 						.log(LEVEL,
 								String.format("RECEIVE NODE '%s'", definition
@@ -744,13 +742,13 @@ public class ProcessDeployer {
 										definition.getProcessVersion(),
 										MessageConstants.INSTANCE_ID))
 						// goto next node...
-						.to(String.format("seda:node-%s", defaultTransition))
+						.toF("seda:node-%s", defaultTransition)
 						// ...remove own state.
 						.to("direct:destroy");
 
 				// wait! case
 				// --------------
-				from(String.format("direct:wait-%s", nodeId))
+				fromF("direct:wait-%s", nodeId)
 						.routeId(String.format("wait-%s", nodeId))
 						.log(LEVEL,
 								String.format("RECEIVE NODE '%s'", definition
@@ -783,7 +781,7 @@ public class ProcessDeployer {
 				// ----------------------------------------
 				// time out event node
 				// ----------------------------------------
-				from("activemq:queue:event_" + parentNodeId)
+				fromF("activemq:queue:event_%s", parentNodeId)
 						.routeId(String.format("event-%s", parentNodeId))
 						.log(LEVEL,
 								String.format("RECEIVE NODE '%s'", definition
@@ -807,7 +805,7 @@ public class ProcessDeployer {
 										definition.getProcessName(),
 										definition.getProcessVersion(),
 										MessageConstants.INSTANCE_ID))
-						.to(String.format("seda:node-%s", nodeId))
+						.toF("seda:node-%s", nodeId)
 						// ...remove own state.
 						.to("direct:destroy");
 
@@ -821,9 +819,7 @@ public class ProcessDeployer {
 
 			@Override
 			public void configure() throws Exception {
-				from(
-						String.format("seda:node-%s?concurrentConsumers=5",
-								nodeId))
+				fromF("seda:node-%s?concurrentConsumers=5", nodeId)
 						.routeId(String.format("node-%s", nodeId))
 						.log(LEVEL,
 								String.format("END NODE '%s'", definition
