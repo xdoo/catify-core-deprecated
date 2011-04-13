@@ -3,14 +3,21 @@ package com.catify.core.process;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.converter.jaxb.JaxbDataFormat;
 import org.apache.camel.spi.DataFormat;
+import org.apache.camel.test.CamelSpringTestSupport;
 import org.apache.camel.test.CamelTestSupport;
+import org.springframework.context.support.AbstractXmlApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import com.catify.core.process.model.ProcessDefinition;
 import com.catify.core.process.xml.XmlProcessBuilder;
 import com.catify.core.process.xml.model.Process;
 
-public class TestProcessHelper extends CamelTestSupport {
+public class TestProcessHelper extends CamelSpringTestSupport {
 
+	@Override
+	protected AbstractXmlApplicationContext createApplicationContext() {
+		return  new ClassPathXmlApplicationContext("/META-INF/spring/camel-context.xml");
+	}
 	
 	public void testGetNormalNode() {
 		String nodeId = ProcessHelper.getNormalNode(getProcessDefinition(), "7fdce0391f138ba3913c4c2cd6d8795b");
@@ -30,7 +37,8 @@ public class TestProcessHelper extends CamelTestSupport {
 	
 	private ProcessDefinition getProcessDefinition(){
 		Process process = template.requestBody("direct:xml", this.xml(), Process.class);
-		return new XmlProcessBuilder().build(process);
+		XmlProcessBuilder processBuilder = (XmlProcessBuilder) applicationContext.getBean("xmlProcessBuilder");
+		return processBuilder.build(process);
 	}
 	
 	@Override
