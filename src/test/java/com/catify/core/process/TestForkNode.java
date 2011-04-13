@@ -97,6 +97,8 @@ public class TestForkNode extends CamelSpringTestSupport {
 		Thread.sleep(2000);
 		template.sendBody("seda:in_line2", this.getXml());
 		
+		Thread.sleep(2000);
+		
 		assertMockEndpointsSatisfied(15, TimeUnit.SECONDS);
 		
 	}
