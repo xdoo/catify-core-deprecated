@@ -16,4 +16,5 @@ public class MessageConstants {
 	
 	//for merge nodes
 	public static final String AWAITED_HITS				= "catify_awaitedHits";
+	public static final String PRECEDING_NODES 			= "catify_precedingNodes";
 }

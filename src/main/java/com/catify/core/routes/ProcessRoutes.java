@@ -60,6 +60,14 @@ public class ProcessRoutes extends RouteBuilder {
 		.setHeader(HazelcastConstants.OBJECT_ID, simple(String.format("${header.%s}", MessageConstants.TASK_INSTANCE_ID)))
 		.setHeader(HazelcastConstants.OPERATION, constant(HazelcastConstants.DELETE_OPERATION))
 		.to(hazelcastNodeCache);
+		
+		//get state
+		from("direct:getState")
+		.routeId("getState")
+		.setHeader(HazelcastConstants.OBJECT_ID, simple(String.format("${header.%s}", MessageConstants.TASK_INSTANCE_ID)))
+		.setHeader(HazelcastConstants.OPERATION, constant(HazelcastConstants.GET_OPERATION))
+		.to(hazelcastNodeCache);
+		
 
 	}
 

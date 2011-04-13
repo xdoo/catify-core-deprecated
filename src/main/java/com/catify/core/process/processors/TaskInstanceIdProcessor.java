@@ -3,11 +3,11 @@ package com.catify.core.process.processors;
 import java.util.Map;
 
 import org.apache.camel.Exchange;
-import org.apache.commons.codec.digest.DigestUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.catify.core.constants.MessageConstants;
+import com.catify.core.process.ProcessHelper;
 
 public class TaskInstanceIdProcessor extends BaseProcessor {
 
@@ -25,7 +25,7 @@ public class TaskInstanceIdProcessor extends BaseProcessor {
 		super.copyBodyAndHeaders(ex);
 		
 		//create task instance id
-		ex.getOut().setHeader(MessageConstants.TASK_INSTANCE_ID, DigestUtils.md5Hex(String.format("%s%s", instanceId, taskId)));
+		ex.getOut().setHeader(MessageConstants.TASK_INSTANCE_ID, ProcessHelper.createTaskInstanceId(instanceId, taskId));
 		
 		
 		if(LOG.isDebugEnabled()){

@@ -249,9 +249,8 @@ public class ProcessDeployer {
 			@Override
 			public void configure() throws Exception {
 
-				from(
-						String.format("activemq:queue:in_%s",
-								definition.getProcessId()))
+				fromF("activemq:queue:in_%s",
+								definition.getProcessId())
 						.routeId(
 								String.format("process-%s",
 										definition.getProcessId()))
@@ -263,8 +262,8 @@ public class ProcessDeployer {
 										definition.getProcessName(),
 										definition.getProcessVersion(),
 										MessageConstants.INSTANCE_ID))
-						.to(String.format("seda:node-%s",
-								definition.getStartNodeId()));
+						.toF("seda:node-%s",
+								definition.getStartNodeId());
 
 			}
 		};
@@ -276,9 +275,8 @@ public class ProcessDeployer {
 
 			@Override
 			public void configure() throws Exception {
-				from(
-						String.format("seda:node-%s?concurrentConsumers=5",
-								definition.getStartNodeId()))
+				fromF("seda:node-%s?concurrentConsumers=5",
+								definition.getStartNodeId())
 						.routeId(
 								String.format("node-%s",
 										definition.getStartNodeId()))
@@ -296,10 +294,9 @@ public class ProcessDeployer {
 						// ...put it into the cache...
 						.wireTap("direct:working")
 						// ...goto next node...
-						.to(String.format(
-								"seda:node-%s",
+						.toF("seda:node-%s",
 								definition.getTransitionsFromNode(
-										definition.getStartNodeId()).get(0)))
+								definition.getStartNodeId()).get(0))
 						// ...remove own state.
 						.to("direct:destroy");
 			}
@@ -323,9 +320,7 @@ public class ProcessDeployer {
 				// one initializes the timer. the second one
 				// runs after the expected timer event has
 				// been fired.
-				from(
-						String.format("seda:node-%s?concurrentConsumers=5",
-								nodeId))
+				fromF("seda:node-%s?concurrentConsumers=5", nodeId)
 						.routeId(String.format("node-%s", nodeId))
 						.log(LEVEL,
 								String.format("SLEEP NODE '%s'", definition
@@ -371,8 +366,8 @@ public class ProcessDeployer {
 										definition.getProcessName(),
 										definition.getProcessVersion(),
 										MessageConstants.INSTANCE_ID))
-						.to(String.format("seda:node-%s", definition
-								.getTransitionsFromNode(nodeId).get(0)))
+						.toF("seda:node-%s", definition
+								.getTransitionsFromNode(nodeId).get(0))
 						// ...remove own state.
 						.to("direct:destroy");
 
@@ -386,7 +381,7 @@ public class ProcessDeployer {
 
 			@Override
 			public void configure() throws Exception {
-				from(String.format("seda:node-%s", nodeId))
+				fromF("seda:node-%s", nodeId)
 						.routeId(String.format("node-%s", nodeId))
 						.setHeader(MessageConstants.TASK_ID, constant(nodeId))
 						// create a task instance id...
@@ -418,9 +413,7 @@ public class ProcessDeployer {
 				// never higher than '1' because the implementation
 				// is NOT thread safe. you will get unexpected results.
 				//
-				from(
-						String.format("seda:node-%s?concurrentConsumers=1",
-								nodeId))
+				fromF("seda:node-%s?concurrentConsumers=1", nodeId)
 						.routeId(String.format("node-%s", nodeId))
 						.setHeader(MessageConstants.TASK_ID, constant(nodeId))
 						// create a task instance id...
@@ -428,13 +421,13 @@ public class ProcessDeployer {
 						// ...set state...
 						.wireTap("direct:working")
 						// ...dynamic router...
-						.to(String.format("direct:decide-%s", nodeId))
+						.toF("direct:decide-%s", nodeId)
 						.setBody(constant(null))
 						// ...remove own state.
 						.to("direct:destroy");
 
 				// make decision
-				from(String.format("direct:decide-%s", nodeId))
+				fromF("direct:decide-%s", nodeId)
 						.routeId(String.format("decide-%s", nodeId))
 						// get payload
 						.setHeader(
@@ -444,9 +437,9 @@ public class ProcessDeployer {
 						// create fact
 						.setHeader(HazelcastConstants.OPERATION,
 								constant(HazelcastConstants.GET_OPERATION))
-						.to(String.format("hazelcast:%s%s",
+						.toF("hazelcast:%s%s",
 								HazelcastConstants.MAP_PREFIX,
-								CacheConstants.PAYLOAD_CACHE))
+								CacheConstants.PAYLOAD_CACHE)
 						.process(new TransformDecisionPayloadProcessor())
 //						set signal header in line node to be here thread safe...
 						.dynamicRouter(bean(new DecisionRouter(kbase), "route"));
@@ -463,9 +456,7 @@ public class ProcessDeployer {
 
 			@Override
 			public void configure() throws Exception {
-				from(
-						String.format("seda:node-%s?concurrentConsumers=5",
-								nodeId))
+				fromF("seda:node-%s?concurrentConsumers=5", nodeId)
 						.routeId(String.format("node-%s", nodeId))
 						// cleanse body
 						.setBody(constant(null))
@@ -475,8 +466,7 @@ public class ProcessDeployer {
 						// ...put it into the cache...
 						.wireTap("direct:working")
 						// ...call next node...
-						.to(String.format("seda:node-%s", definition
-								.getTransitionsFromNode(nodeId).get(0)))
+						.toF("seda:node-%s", definition.getTransitionsFromNode(nodeId).get(0))
 						// ...remove own state.
 						.to("direct:destroy");
 			}
@@ -489,9 +479,7 @@ public class ProcessDeployer {
 
 			@Override
 			public void configure() throws Exception {
-				from(
-						String.format("seda:node-%s?concurrentConsumers=5",
-								nodeId))
+				fromF("seda:node-%s?concurrentConsumers=5", nodeId)
 						.routeId(String.format("node-%s", nodeId))
 						.setHeader(MessageConstants.TASK_ID, constant(nodeId))
 						// create a task instance id...
@@ -525,7 +513,7 @@ public class ProcessDeployer {
 
 			@Override
 			public void configure() throws Exception {
-				from(String.format("seda:node-%s", nodeId))
+				fromF("seda:node-%s", nodeId)
 						.routeId(String.format("node-%s", nodeId))
 						.setHeader(MessageConstants.TASK_ID, constant(nodeId))
 						// create a task instance id...
@@ -533,6 +521,9 @@ public class ProcessDeployer {
 						// ...set the awaited hits...
 						.setHeader(MessageConstants.AWAITED_HITS,
 								constant(getAwaitedHits()))
+						// ...get the relevant preceding nodes
+						.setHeader(MessageConstants.PRECEDING_NODES , 
+								constant(this.getPrecedingNodes()))
 						.log(LEVEL,
 								String.format("MERGE NODE '%s'", definition
 										.getNode(nodeId).getNodeName()),
@@ -546,16 +537,22 @@ public class ProcessDeployer {
 
 				// if all lines have been ended,
 				// clean up and go ahead...
-				from(String.format("direct:cleannode-%s", nodeId))
+				fromF("direct:cleannode-%s", nodeId)
 						.routeId(String.format("cleannode-%s", nodeId))
 						// goto next node...
-						.to(String.format("seda:node-%s", definition
-								.getTransitionsFromNode(nodeId).get(0)))
+						.toF("seda:node-%s", definition
+								.getTransitionsFromNode(nodeId).get(0))
 						// ...remove own state.
 						.to("direct:destroy");
 
 			}
 			
+			/**
+			 * calculates the number of hits that the merge node
+			 * gets before going to the next node
+			 * 
+			 * @return
+			 */
 			private int getAwaitedHits(){
 				
 				int awaitedHits = ((MergeNode) definition.getNode(nodeId)).getAwaitedHits();
@@ -566,6 +563,38 @@ public class ProcessDeployer {
 				}
 				
 				return awaitedHits;
+			}
+			
+			/**
+			 * 
+			 * 
+			 * @return
+			 */
+			private List<String> getPrecedingNodes(){
+				
+				List<String> precedingNodes = new ArrayList<String>();
+				
+				//get the line end nodes
+				Iterator<String> it1 = definition.getTransitionsToNode(nodeId).iterator();
+				
+				while (it1.hasNext()) {
+					
+					//get preceding nodes for each line end node
+					Iterator<String> it2 = definition.getPrecedingNodesToNode(it1.next()).iterator();
+					
+					while (it2.hasNext()) {
+						String id = (String) it2.next();
+						
+						//we only want to block non idempotent nodes
+						if(definition.getNode(id).getNodeType() == ProcessConstants.REQUEST){
+							precedingNodes.add(id);
+						}// end if
+						
+					}// end while
+					
+				}// end while
+				
+				return precedingNodes;
 			}
 		};
 	}
@@ -579,18 +608,36 @@ public class ProcessDeployer {
 				from(
 						String.format("seda:node-%s?concurrentConsumers=5",
 								nodeId))
+						.routeId(String.format("check-node-%s", nodeId))
+						.setHeader(MessageConstants.TASK_ID, constant(nodeId))
+						// create a task instance id...
+						.process(new TaskInstanceIdProcessor())
+						.to("direct:getState")
+						.choice()
+							.when(body().isNotEqualTo(ProcessConstants.STATE_DONE))
+								.toF("direct:node-%s", nodeId)
+							.otherwise()
+								.log(LEVEL,
+								String.format("REQUEST NODE '%s'", definition
+										.getNode(nodeId).getNodeName()),
+								String.format(
+										"received message, but state is 'DONE' - doing nothing.   process name --> '%s' | process version --> '%s' | instanceId --> ${header.%s}",
+										definition.getProcessName(),
+										definition.getProcessVersion(),
+										MessageConstants.INSTANCE_ID));
+							
+						
+						
+				fromF("direct:node-%s", nodeId)
 						.routeId(String.format("node-%s", nodeId))
 						.log(LEVEL,
 								String.format("REQUEST NODE '%s'", definition
 										.getNode(nodeId).getNodeName()),
 								String.format(
-										"received message.   process name --> '%s' | process version --> '%s' | instanceId --> ${header.%s}",
+										"received message and sending request.   process name --> '%s' | process version --> '%s' | instanceId --> ${header.%s}",
 										definition.getProcessName(),
 										definition.getProcessVersion(),
 										MessageConstants.INSTANCE_ID))
-						.setHeader(MessageConstants.TASK_ID, constant(nodeId))
-						// create a task instance id...
-						.process(new TaskInstanceIdProcessor())
 						// ...put it into the cache...
 						.wireTap("direct:working")
 						// ...send request...
@@ -614,8 +661,8 @@ public class ProcessDeployer {
 										definition.getProcessName(),
 										definition.getProcessVersion(),
 										MessageConstants.INSTANCE_ID))
-						.to(String.format("seda:node-%s", definition
-								.getTransitionsFromNode(nodeId).get(0)))
+						.toF("seda:node-%s", definition
+								.getTransitionsFromNode(nodeId).get(0))
 						// ...remove own state.
 						.to("direct:destroy");
 			}

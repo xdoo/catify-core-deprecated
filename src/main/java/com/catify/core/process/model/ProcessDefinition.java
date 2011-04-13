@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.codec.digest.DigestUtils;
 // MultiValueMap is not serializable - so we have to use MultiHashMap here
@@ -28,6 +29,7 @@ public class ProcessDefinition implements Serializable {
 	
 	private MultiMap leftTransitions;
 	private MultiMap rightTransitions;
+	private MultiMap precedingNodes;
 	private Map<String, Node> nodes;
 	
 	private MultiMap pipelines;
@@ -45,6 +47,9 @@ public class ProcessDefinition implements Serializable {
 		//create the transition maps
 		this.leftTransitions 	= new MultiHashMap();
 		this.rightTransitions 	= new MultiHashMap();
+		
+		//create preceding nodes map
+		this.precedingNodes 	= new MultiHashMap();
 		
 		//create the node map
 		this.nodes = new HashMap<String, Node>();
@@ -70,6 +75,29 @@ public class ProcessDefinition implements Serializable {
 		this.addNode(node);
 		this.addTransition(fromNodeId, node.getNodeId());
 		return node.getNodeId();
+	}
+	
+	/**
+	 * the precedingNodes are nodes that are standing in a special
+	 * context to the given node - e.g. the nodes inside a line. it's
+	 * useful to have a list of these nodes, if you have a fork with 
+	 * n parallel lines, but if one is finished all the other should 
+	 * be disabled as well. for this case you can easily find out 
+	 * what the node ids are.
+	 * 
+	 * @param node
+	 * @param fromNodeId
+	 * @param precedingNodes
+	 * @return
+	 */
+	public String addNodeFrom(Node node, String fromNodeId, List<String> precedingNodes){
+		
+		Iterator<String> it = precedingNodes.iterator();
+		while (it.hasNext()) {
+			this.precedingNodes.put(node.getNodeId(), it.next());
+		}
+		
+		return this.addNodeFrom(node, fromNodeId);
 	}
 	
 	public String addNodeFrom(Node node, List<String> fromNodeIds){
@@ -160,8 +188,16 @@ public class ProcessDefinition implements Serializable {
 		return this.getTransitionsToNode(node.getNodeId());
 	}
 	
+	public List<String> getPrecedingNodesToNode(Node node){
+		return (List<String>) this.precedingNodes.get(node.getNodeId());
+	}
+	
 	public List<String> getTransitionsToNode(String nodeId){
 		return (List<String>) this.leftTransitions.get(nodeId);
+	}
+	
+	public List<String> getPrecedingNodesToNode(String nodeId){
+		return (List<String>) this.precedingNodes.get(nodeId);
 	}
 	
 	public Node getNode(String nodeId){
@@ -170,6 +206,17 @@ public class ProcessDefinition implements Serializable {
 	
 	public Map<String,Node> getNodes(){
 		return this.nodes;
+	}
+	
+	/**
+	 * returns the ids of all nodes inside a process.
+	 * this can be a useful feature if you want to collect
+	 * information (e.g. the states) over all nodes.
+	 * 
+	 * @return
+	 */
+	public Set<String> getAllNodeIds(){
+		return this.nodes.keySet();
 	}
 	
 	/**

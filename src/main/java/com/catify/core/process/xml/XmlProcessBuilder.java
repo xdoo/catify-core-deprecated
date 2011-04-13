@@ -89,42 +89,48 @@ public class XmlProcessBuilder {
 		this.current = startNode.getNodeId();
 	}
 	
-	private void addNodes(List<Node> nodes){
+	private List<String> addNodes(List<Node> nodes){
 		
 		Iterator<Node> it = nodes.iterator();
+		
+		// we need this list of ids to identify nodes
+		// e.g. inside a line.
+		List<String> ids = new ArrayList<String>();
 		
 		while (it.hasNext()) {
 			Node node = (Node) it.next();
 			
 			if(node instanceof Request){
-				this.addRequestNode((Request) node);
+				ids.add(this.addRequestNode((Request) node));
 			}
 			
 			if(node instanceof Receive){
-				this.addReceiveNode((Receive) node);
+				ids.add(this.addReceiveNode((Receive) node));
 			}
 			
 			if(node instanceof Reply){
-				this.addReplyNode((Reply) node);
+				ids.add(this.addReplyNode((Reply) node));
 			}
 			
 			if(node instanceof Sleep){
-				this.addSleepNode((Sleep) node);
+				ids.add(this.addSleepNode((Sleep) node));
 			}
 			
 			if(node instanceof End){
-				this.addEndNode((End) node);
+				ids.add(this.addEndNode((End) node));
 			}
 			
 			if(node instanceof Fork){
-				this.addForkNode((Fork) node);
+				ids.add(this.addForkNode((Fork) node));
 			}
 			
 			if(node instanceof Decision){
-				this.addDecisionNode((Decision) node);
-			}			
+				ids.add(this.addDecisionNode((Decision) node));
+			}
 			
 		}
+		
+		return ids;
 		
 	}
 
@@ -140,15 +146,15 @@ public class XmlProcessBuilder {
 		this.current = lineNode.getNodeId();
 		
 		//add nodes after
-		this.addNodes(node.getNodes());
+		List<String> ids = this.addNodes(node.getNodes());
 		
 		//set line end node
-		String id = this.addNodeWithoutCurrent(new LineEndNode(this.definition.getProcessId(), UUID.randomUUID().toString()));
+		String id = this.addNodeWithoutCurrent(new LineEndNode(this.definition.getProcessId(), UUID.randomUUID().toString()), ids);
 		
 		return id;
 	}
 
-	private void addDecisionNode(Decision node) {
+	private String addDecisionNode(Decision node) {
 		String nodeId = this.addNodeWithCurrent(new DecisionNode(this.definition.getProcessId(), node.getName()));
 		
 //		the awaited hits property says how many lines have to be finished
@@ -156,13 +162,17 @@ public class XmlProcessBuilder {
 //		this number is per default one (only one line can be finished).
 		this.addLines(node.getLine(), nodeId, 1);
 		node.setId(nodeId);
+		
+		return nodeId;
 	}
 
-	private void addForkNode(Fork node) {
+	private String addForkNode(Fork node) {
 		String nodeId = this.addNodeWithCurrent(new ForkNode(this.definition.getProcessId(), node.getName()));
 		
 		this.addLines(node.getLine(), nodeId, node.getReceivingLines());
 		node.setId(nodeId);
+		
+		return nodeId;
 	}
 	
 	private void addLines(List<Line> lines, String nodeId, int awaitedHits){
@@ -180,21 +190,27 @@ public class XmlProcessBuilder {
 		this.current = this.definition.addNodeFrom(new MergeNode(this.definition.getProcessId(), UUID.randomUUID().toString(), awaitedHits), ids);
 	}
 
-	private void addEndNode(End node) {
+	private String addEndNode(End node) {
 		EndNode endNode = new EndNode(this.definition.getProcessId(), node.getName());
 		this.addNodeWithoutCurrent(endNode);
 		node.setId(endNode.getNodeId());
+		
+		return endNode.getNodeId();
 	}
 
-	private void addSleepNode(Sleep node) {
+	private String addSleepNode(Sleep node) {
 		node.setId(this.addNodeWithCurrent(new SleepNode(this.definition.getProcessId(), node.getName(), node.getTimeEvent().getTime())));
+		
+		return node.getId();
 	}
 
-	private void addReplyNode(Reply node) {
+	private String addReplyNode(Reply node) {
 		node.setId(this.addNodeWithCurrent(new ReplyNode(this.definition.getProcessId(), node.getName(), "1")));
+		
+		return node.getId();
 	}
 
-	private void addReceiveNode(Receive node) {
+	private String addReceiveNode(Receive node) {
 		node.setId(this.addNodeWithCurrent(new ReceiveNode(this.definition.getProcessId(), node.getName(), node.getTimeEvent().getTime())));
 		
 		//add timer event
@@ -208,17 +224,20 @@ public class XmlProcessBuilder {
 		
 		//set receive node back to current
 		this.current = node.getId();
-			
+		
+		return node.getId();
 	}
 	
-	private void addTimerEventNode(TimeEvent node, String parentName){
+	private String addTimerEventNode(TimeEvent node, String parentName){
 		node.setId(this.addNodeWithCurrent(new TimerEventNode(this.definition.getProcessId(), String.format("timerevent-%s", parentName))));
 		
 		//build the tasks after the time event
 		this.addNodes(node.getNodes());
+		
+		return node.getId();
 	}
 
-	private void addRequestNode(Request node) {
+	private String addRequestNode(Request node) {
 		node.setId(this.addNodeWithCurrent(new RequestNode(this.definition.getProcessId(), node.getName(), "1")));
 		
 		//build pipeline if available
@@ -226,11 +245,18 @@ public class XmlProcessBuilder {
 		if(pipeline != null){
 			definition.addOutPipeline(this.pipelineBuilder.buildOutPipeline(pipeline, node.getId()));
 		}
+		
+		return node.getId();
 	}
 	
 	private String addNodeWithCurrent(com.catify.core.process.nodes.Node node){
 		this.definition.addNodeFrom(node, this.current);
 		this.current = node.getNodeId();
+		return node.getNodeId();
+	}
+	
+	private String addNodeWithoutCurrent(com.catify.core.process.nodes.Node node, List<String> ids){
+		this.definition.addNodeFrom(node, this.current, ids);
 		return node.getNodeId();
 	}
 	

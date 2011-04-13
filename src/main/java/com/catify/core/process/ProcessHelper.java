@@ -3,6 +3,8 @@ package com.catify.core.process;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.commons.codec.digest.DigestUtils;
+
 import com.catify.core.constants.ProcessConstants;
 import com.catify.core.process.model.ProcessDefinition;
 
@@ -45,6 +47,10 @@ public class ProcessHelper {
 		//TODO implement this
 		
 		return null;
+	}
+	
+	public static String createTaskInstanceId(String instanceId, String taskId){
+		return DigestUtils.md5Hex(String.format("%s%s", instanceId, taskId));
 	}
 	
 }
