@@ -1,18 +1,22 @@
 package com.catify.core.routes;
 
+import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.hazelcast.HazelcastConstants;
 import org.apache.camel.converter.jaxb.JaxbDataFormat;
 import org.apache.camel.spi.DataFormat;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.catify.core.constants.CacheConstants;
 import com.catify.core.constants.GlobalConstants;
-import com.catify.core.process.processors.PipelineDeploymentProcessor;
 import com.catify.core.process.processors.ProcessDeploymentProcessor;
-import com.catify.core.process.processors.ProcessRegistrationProcessor;
 
 public class ConfigurationRoutes extends RouteBuilder {
 
+	static final Logger LOG = LoggerFactory.getLogger(ConfigurationRoutes.class);
+	static final LoggingLevel LEVEL = LoggingLevel.INFO;
+	
 	@Override
 	public void configure() throws Exception {
 		
@@ -33,7 +37,7 @@ public class ConfigurationRoutes extends RouteBuilder {
 		.marshal(jaxb);
 		
 		//listen to new process definitions
-		from(String.format("hazelcast:%s%s", HazelcastConstants.MAP_PREFIX, CacheConstants.PROCESS_CACHE))
+		fromF("hazelcast:%s%s", HazelcastConstants.MAP_PREFIX, CacheConstants.PROCESS_CACHE)
 		.routeId("deploy_process")
 		.log("process...")
 		.choice()
@@ -54,14 +58,17 @@ public class ConfigurationRoutes extends RouteBuilder {
 		//put it into cache
 		.setHeader(HazelcastConstants.OBJECT_ID, header("nodeid"))
         .setHeader(HazelcastConstants.OPERATION, constant(HazelcastConstants.PUT_OPERATION))
-        .to(String.format("hazelcast:%s%s", HazelcastConstants.MAP_PREFIX, CacheConstants.PIPELINE_CACHE));
+        .toF("hazelcast:%s%s", HazelcastConstants.MAP_PREFIX, CacheConstants.PIPELINE_CACHE);
 		
 		//listen to new pipeline definitions and deploy them
-		from(String.format("hazelcast:%s%s", HazelcastConstants.MAP_PREFIX, CacheConstants.PIPELINE_CACHE))
+		fromF("hazelcast:%s%s", HazelcastConstants.MAP_PREFIX, CacheConstants.PIPELINE_CACHE)
 		.routeId("deploy_pipeline")
+		.log(	LEVEL,
+				"DEPLOY PIPELINE",
+				"Received message to deploy pipeline.")
 		.choice()
 			.when(header(HazelcastConstants.LISTENER_ACTION).isEqualTo(HazelcastConstants.ADDED))
-			.process(new PipelineDeploymentProcessor());
+			.processRef("pipelineDeploymentProcessor");
 		
 		//---------------------------------------------
 		// transformation
@@ -74,7 +81,7 @@ public class ConfigurationRoutes extends RouteBuilder {
 		//put it into the cache
 		.setHeader(HazelcastConstants.OBJECT_ID, header("nodeid"))
         .setHeader(HazelcastConstants.OPERATION, constant(HazelcastConstants.PUT_OPERATION))
-        .to(String.format("hazelcast:%s%s", HazelcastConstants.MAP_PREFIX, CacheConstants.TRANSFORMATION_CACHE));
+        .toF("hazelcast:%s%s", HazelcastConstants.MAP_PREFIX, CacheConstants.TRANSFORMATION_CACHE);
 		
 		//get transformation (xslt) out of the cache
 		from("restlet:http://localhost:9080/catify/get_transformation/{nodeid}?restletMethod=get")
@@ -82,7 +89,7 @@ public class ConfigurationRoutes extends RouteBuilder {
 		//read it from cache
 		.setHeader(HazelcastConstants.OBJECT_ID, header("nodeid"))
         .setHeader(HazelcastConstants.OPERATION, constant(HazelcastConstants.GET_OPERATION))
-        .to(String.format("hazelcast:%s%s", HazelcastConstants.MAP_PREFIX, CacheConstants.TRANSFORMATION_CACHE));
+        .toF("hazelcast:%s%s", HazelcastConstants.MAP_PREFIX, CacheConstants.TRANSFORMATION_CACHE);
 		
 		//---------------------------------------------
 		// validation
@@ -95,7 +102,7 @@ public class ConfigurationRoutes extends RouteBuilder {
 		//put it into the cache
 		.setHeader(HazelcastConstants.OBJECT_ID, header("nodeid"))
         .setHeader(HazelcastConstants.OPERATION, constant(HazelcastConstants.PUT_OPERATION))
-        .to(String.format("hazelcast:%s%s", HazelcastConstants.MAP_PREFIX, CacheConstants.VALIDATION_CACHE));
+        .toF("hazelcast:%s%s", HazelcastConstants.MAP_PREFIX, CacheConstants.VALIDATION_CACHE);
 		
 		//get schema (xsd) out of the cache
 		from("restlet:http://localhost:9080/catify/get_schema/{nodeid}?restletMethod=get")
@@ -103,7 +110,7 @@ public class ConfigurationRoutes extends RouteBuilder {
 		//read it from cache
 		.setHeader(HazelcastConstants.OBJECT_ID, header("nodeid"))
         .setHeader(HazelcastConstants.OPERATION, constant(HazelcastConstants.GET_OPERATION))
-        .to(String.format("hazelcast:%s%s", HazelcastConstants.MAP_PREFIX, CacheConstants.VALIDATION_CACHE));
+        .toF("hazelcast:%s%s", HazelcastConstants.MAP_PREFIX, CacheConstants.VALIDATION_CACHE);
 		
 		//---------------------------------------------
 		// correlation
