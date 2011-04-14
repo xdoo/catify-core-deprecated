@@ -2,7 +2,7 @@ package com.catify.core.process.nodes;
 
 import java.io.Serializable;
 
-import org.apache.commons.codec.digest.DigestUtils;
+import com.catify.core.process.ProcessHelper;
 
 public abstract class Node implements Serializable {
 
@@ -13,7 +13,7 @@ public abstract class Node implements Serializable {
 	public Node(String processId, String nodeName){
 		
 		//generate a unique identifier for the task
-		this.nodeId = DigestUtils.md5Hex(String.format("%s%s", processId, nodeName));
+		this.nodeId = ProcessHelper.createTaskId(processId, nodeName);
 		
 		this.nodeName = nodeName;
 	}

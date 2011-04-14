@@ -8,13 +8,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.codec.digest.DigestUtils;
 // MultiValueMap is not serializable - so we have to use MultiHashMap here
-import org.apache.commons.collections.ListUtils;
 import org.apache.commons.collections.MultiHashMap;
 import org.apache.commons.collections.MultiMap;
 
 import com.catify.core.constants.PipelineConstants;
+import com.catify.core.process.ProcessHelper;
 import com.catify.core.process.nodes.Node;
 
 public class ProcessDefinition implements Serializable {
@@ -38,7 +37,7 @@ public class ProcessDefinition implements Serializable {
 	public ProcessDefinition(String accountName, String processName, String processVersion){
 		
 		//generate a unique identifier for the process
-		this.processId = DigestUtils.md5Hex(String.format("%s%s%s", accountName, processName, processVersion));
+		this.processId = ProcessHelper.createProcessId(accountName, processName, processVersion);
 		
 		this.accountName 	= accountName;
 		this.processName 	= processName;

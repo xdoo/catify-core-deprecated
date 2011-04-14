@@ -49,8 +49,16 @@ public class ProcessHelper {
 		return null;
 	}
 	
+	public static String createProcessId(String accountName, String processName, String processVersion){
+		return DigestUtils.md5Hex(String.format("%s%s%s", accountName, processName, processVersion));
+	}
+	
 	public static String createTaskInstanceId(String instanceId, String taskId){
 		return DigestUtils.md5Hex(String.format("%s%s", instanceId, taskId));
+	}
+	
+	public static String createTaskId(String processId, String nodeName){
+		return DigestUtils.md5Hex(String.format("%s%s", processId, nodeName));
 	}
 	
 }
