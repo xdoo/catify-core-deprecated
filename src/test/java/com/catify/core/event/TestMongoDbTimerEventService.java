@@ -7,6 +7,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.test.CamelTestSupport;
 
@@ -98,7 +99,7 @@ public class TestMongoDbTimerEventService extends CamelTestSupport{
 		
 		Thread.sleep(60);
 		
-		template.sendBodyAndHeader("direct:fire", "", "firedTime", new Date() );
+		template.sendBodyAndHeader("direct:fire", "", Exchange.TIMER_FIRED_TIME, new Date() );
 		List<List<String>> events = consumer.receiveBody("seda:out", 5000, List.class);
 		
 		assertEquals(4, this.collection.count());		

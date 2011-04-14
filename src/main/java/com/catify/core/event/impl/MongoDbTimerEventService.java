@@ -6,7 +6,8 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
-import org.apache.camel.Message;
+import org.apache.camel.Exchange;
+import org.apache.camel.Header;
 
 import com.catify.core.constants.DataBaseConstants;
 import com.catify.core.constants.EventConstants;
@@ -47,9 +48,10 @@ public class MongoDbTimerEventService implements TimerEventService {
 		}
 	}
 	
-	public List<List<String>> fire(Message m) {
+	@Override
+	public List<List<String>> fire(@Header(Exchange.TIMER_FIRED_TIME) Date dateTime) {
 		
-		long time = m.getHeader("firedTime", Date.class).getTime();
+		long time = dateTime.getTime();
 		
 		List<List<String>> result = new ArrayList<List<String>>();
 		
@@ -73,23 +75,24 @@ public class MongoDbTimerEventService implements TimerEventService {
 		
 		return result;
 	}
-
-	public void register(Message m) {
+	
+	@Override
+	public void register(	@Header(EventConstants.EVENT_TIME) long eventTime,
+							@Header(MessageConstants.INSTANCE_ID) String instanceId,
+							@Header(MessageConstants.TASK_ID) String taskId) {
 		
-		long time  = new Date().getTime() + m.getHeader(EventConstants.EVENT_TIME, Long.class);
-		String instanceId = m.getHeader(MessageConstants.INSTANCE_ID, String.class);
-		String nodeId = m.getHeader(MessageConstants.TASK_ID, String.class);
+		long time  = new Date().getTime() + eventTime;
 		
-		DBObject event = new BasicDBObject().append(TIME, time).append(INSTANCEID, instanceId).append(NODEID, nodeId);
+		DBObject event = new BasicDBObject().append(TIME, time).append(INSTANCEID, instanceId).append(NODEID, taskId);
 		this.collection.insert(event);
+		
 	}
 
-	public void unregister(Message m) {
+	@Override
+	public void unregister(	@Header(MessageConstants.INSTANCE_ID) String instanceId,
+							@Header(MessageConstants.TASK_ID) String taskId) {
 		
-		String instanceId = m.getHeader(MessageConstants.INSTANCE_ID, String.class);
-		String nodeId = m.getHeader(MessageConstants.TASK_ID, String.class);
-		
-		DBObject event = new BasicDBObject().append(INSTANCEID, instanceId).append(NODEID, nodeId);
+		DBObject event = new BasicDBObject().append(INSTANCEID, instanceId).append(NODEID, taskId);
 		this.collection.remove(event);
 	}
 

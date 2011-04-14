@@ -1,13 +1,12 @@
 package com.catify.core.event;
 
+import java.util.Date;
 import java.util.List;
-
-import org.apache.camel.Message;
 
 public interface TimerEventService {
 
-	public void register(Message message);
-	public void unregister(Message message);
-	public List<List<String>> fire(Message message);
+	public void register(	long eventTime, String instanceId, String taskId);
+	public void unregister(String instanceId, String taskId);
+	public List<List<String>> fire(Date dateTime);
 	
 }
