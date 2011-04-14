@@ -41,7 +41,7 @@ public class ProcessDeployer {
 	private KnowledgeBase kbase;
 
 	static final Logger LOG = LoggerFactory.getLogger(ProcessDeployer.class);
-	static final LoggingLevel LEVEL = LoggingLevel.INFO;
+	static final LoggingLevel LEVEL = LoggingLevel.DEBUG;
 
 	public ProcessDeployer(CamelContext context, KnowledgeBase kbase) {
 		this.context = context;
@@ -254,7 +254,7 @@ public class ProcessDeployer {
 						.routeId(
 								String.format("process-%s",
 										definition.getProcessId()))
-						.process(new InitProcessProcessor())
+						.processRef("initProcessProcessor")
 						.log(LEVEL,
 								"PROCESS",
 								String.format(
@@ -290,7 +290,7 @@ public class ProcessDeployer {
 										definition.getProcessVersion(),
 										MessageConstants.INSTANCE_ID))
 						// create a task instance id...
-						.process(new TaskInstanceIdProcessor())
+						.processRef("taskInstanceIdProcessor")
 						// ...put it into the cache...
 						.wireTap("direct:working")
 						// ...goto next node...
@@ -332,7 +332,7 @@ public class ProcessDeployer {
 										MessageConstants.INSTANCE_ID))
 						.setHeader(MessageConstants.TASK_ID, constant(nodeId))
 						// create a task instance id...
-						.process(new TaskInstanceIdProcessor())
+						.processRef("taskInstanceIdProcessor")
 						// ...set state...
 						.wireTap("direct:working")
 						// set timer
@@ -354,7 +354,7 @@ public class ProcessDeployer {
 										MessageConstants.INSTANCE_ID))
 						.setHeader(MessageConstants.TASK_ID, constant(nodeId))
 						// create a task instance id...
-						.process(new TaskInstanceIdProcessor())
+						.processRef("taskInstanceIdProcessor")
 						// ...goto next node...
 						.log(LEVEL,
 								String.format("SLEEP NODE '%s'", definition
@@ -385,7 +385,7 @@ public class ProcessDeployer {
 						.routeId(String.format("node-%s", nodeId))
 						.setHeader(MessageConstants.TASK_ID, constant(nodeId))
 						// create a task instance id...
-						.process(new TaskInstanceIdProcessor())
+						.processRef("taskInstanceIdProcessor")
 						// ...set state...
 						.wireTap("direct:working")
 						// ...call all nodes...
@@ -417,7 +417,7 @@ public class ProcessDeployer {
 						.routeId(String.format("node-%s", nodeId))
 						.setHeader(MessageConstants.TASK_ID, constant(nodeId))
 						// create a task instance id...
-						.process(new TaskInstanceIdProcessor())
+						.processRef("taskInstanceIdProcessor")
 						// ...set state...
 						.wireTap("direct:working")
 						// ...dynamic router...
@@ -462,7 +462,7 @@ public class ProcessDeployer {
 						.setBody(constant(null))
 						.setHeader(MessageConstants.TASK_ID, constant(nodeId))
 						// create a task instance id...
-						.process(new TaskInstanceIdProcessor())
+						.processRef("taskInstanceIdProcessor")
 						// ...put it into the cache...
 						.wireTap("direct:working")
 						// ...call next node...
@@ -483,7 +483,7 @@ public class ProcessDeployer {
 						.routeId(String.format("node-%s", nodeId))
 						.setHeader(MessageConstants.TASK_ID, constant(nodeId))
 						// create a task instance id...
-						.process(new TaskInstanceIdProcessor())
+						.processRef("taskInstanceIdProcessor")
 						// ...put it into the cache...
 						.wireTap("direct:working")
 						// ...call next node...
@@ -517,7 +517,7 @@ public class ProcessDeployer {
 						.routeId(String.format("node-%s", nodeId))
 						.setHeader(MessageConstants.TASK_ID, constant(nodeId))
 						// create a task instance id...
-						.process(new TaskInstanceIdProcessor())
+						.processRef("taskInstanceIdProcessor")
 						// ...set the awaited hits...
 						.setHeader(MessageConstants.AWAITED_HITS,
 								constant(getAwaitedHits()))
@@ -611,7 +611,7 @@ public class ProcessDeployer {
 						.routeId(String.format("check-node-%s", nodeId))
 						.setHeader(MessageConstants.TASK_ID, constant(nodeId))
 						// create a task instance id...
-						.process(new TaskInstanceIdProcessor())
+						.processRef("taskInstanceIdProcessor")
 						.to("direct:getState")
 						.choice()
 							.when(body().isNotEqualTo(ProcessConstants.STATE_DONE))
@@ -700,7 +700,7 @@ public class ProcessDeployer {
 										MessageConstants.INSTANCE_ID))
 						.setHeader(MessageConstants.TASK_ID, constant(nodeId))
 						// create a task instance id...
-						.process(new TaskInstanceIdProcessor())
+						.processRef("taskInstanceIdProcessor")
 						.dynamicRouter(bean(new ReceiveRouter(nodeId), "route"));
 
 				// initialized from outside
@@ -722,7 +722,7 @@ public class ProcessDeployer {
 										definition.getProcessName(),
 										definition.getProcessVersion(),
 										MessageConstants.INSTANCE_ID))
-						.process(new TaskInstanceIdProcessor())
+						.processRef("taskInstanceIdProcessor")
 						.dynamicRouter(bean(new ReceiveRouter(nodeId), "route"))
 						.log("remove header...")
 						.removeHeader(ReceiveRouter.WAIT);
@@ -794,7 +794,7 @@ public class ProcessDeployer {
 						.setHeader(MessageConstants.TASK_ID,
 								constant(parentNodeId))
 						// create a task instance id...
-						.process(new TaskInstanceIdProcessor())
+						.processRef("taskInstanceIdProcessor")
 						// ...goto first node after the event node...
 						.log(LEVEL,
 								String.format("RECEIVE NODE '%s'", definition
@@ -833,7 +833,7 @@ public class ProcessDeployer {
 						// .log(String.format("process ${header.%s} ---------------> ended",
 						// MessageConstants.INSTANCE_ID))
 						// create a task instance id...
-						.process(new TaskInstanceIdProcessor())
+						.processRef("taskInstanceIdProcessor")
 						// ...put it into the cache...
 						.to("direct:working")
 						// ...remove own state.
