@@ -15,10 +15,11 @@ import com.catify.core.process.builders.CatifyProcessBuilder;
 import com.catify.core.process.model.ProcessDefinition;
 import com.catify.core.process.nodes.ReceiveNode;
 import com.catify.core.process.processors.TaskInstanceIdProcessor;
+import com.catify.core.testsupport.ProcessBase;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.IMap;
 
-public class TestReceiveNode extends BaseNode {
+public class TestReceiveNode extends ProcessBase {
 	
 	/**
 	 * the process waits for an incoming message

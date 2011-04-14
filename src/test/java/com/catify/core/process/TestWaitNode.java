@@ -6,8 +6,9 @@ import org.apache.camel.Exchange;
 
 import com.catify.core.process.builders.CatifyProcessBuilder;
 import com.catify.core.process.model.ProcessDefinition;
+import com.catify.core.testsupport.ProcessBase;
 
-public class TestWaitNode extends BaseNode {
+public class TestWaitNode extends ProcessBase {
 
 	public void testSleepNode(){
 		//create process deployer

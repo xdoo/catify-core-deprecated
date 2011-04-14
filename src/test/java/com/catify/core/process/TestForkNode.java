@@ -1,37 +1,15 @@
 package com.catify.core.process;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.camel.EndpointInject;
-import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
-import org.apache.camel.converter.jaxb.JaxbDataFormat;
-import org.apache.camel.spi.DataFormat;
-import org.apache.camel.test.CamelSpringTestSupport;
-import org.apache.camel.test.CamelTestSupport;
-import org.drools.KnowledgeBase;
-import org.drools.KnowledgeBaseFactory;
-import org.drools.builder.KnowledgeBuilder;
-import org.drools.builder.KnowledgeBuilderError;
-import org.drools.builder.KnowledgeBuilderErrors;
-import org.drools.builder.KnowledgeBuilderFactory;
-import org.drools.builder.ResourceType;
-import org.drools.io.ResourceFactory;
-import org.springframework.context.support.AbstractXmlApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-import com.catify.core.constants.CacheConstants;
-import com.catify.core.process.ProcessDeployer;
-import com.catify.core.process.model.ProcessDefinition;
-import com.catify.core.process.xml.XmlProcessBuilder;
-import com.catify.core.process.xml.model.Process;
-import com.hazelcast.core.AtomicNumber;
-import com.hazelcast.core.Hazelcast;
+import com.catify.core.testsupport.ProcessBase;
 
-public class TestForkNode extends CamelSpringTestSupport {
+public class TestForkNode extends ProcessBase {
 	
 	@EndpointInject(uri = "mock:out")
 	private MockEndpoint out;
@@ -44,11 +22,6 @@ public class TestForkNode extends CamelSpringTestSupport {
 	
 	@EndpointInject(uri = "mock:out_line3")
 	private MockEndpoint outLine3;
-
-	@Override
-	protected AbstractXmlApplicationContext createApplicationContext() {
-		return  new ClassPathXmlApplicationContext("/META-INF/spring/camel-context.xml");
-	}
 	
 	public void testReceiveAllLines() throws InterruptedException{
 
@@ -103,28 +76,7 @@ public class TestForkNode extends CamelSpringTestSupport {
 		
 	}
 	
-	@Override
-	protected RouteBuilder createRouteBuilder(){
-		
-		return new RouteBuilder() {
-			
-			@Override
-			public void configure() throws Exception {
-				
-				DataFormat jaxb = new JaxbDataFormat("com.catify.core.process.xml.model");
-				
-				errorHandler(loggingErrorHandler());
-				
-				from("direct:xml")
-				.routeId("marshal")
-				.unmarshal(jaxb)
-				.log("${body}");
-				
-			}
-		};
-	}
-	
-	private String getProcess(int awaitedtHits){
+	private String getProcess(int awaitedHits){
 		return " <process processVersion=\"1.0\" processName=\"process01\" accountName=\"CATIFY\" xmlns=\"http://www.catify.com/api/1.0\" xmlns:ns=\"http://www.catify.com/api/1.0\" >" +
 				"<start ns:name=\"start\">\n" +
 				"	<inPipeline>\n" +
@@ -135,7 +87,7 @@ public class TestForkNode extends CamelSpringTestSupport {
 				"		</correlation>\n" +
 				"	</inPipeline>\n" +
 				"</start>\n" +
-				"<fork ns:receivingLines=\""+awaitedtHits+"\">\n" +
+				"<fork ns:receivingLines=\""+awaitedHits+"\">\n" +
 				"	<line ns:name=\"1\">\n" +
 				"		<receive ns:name=\"wait_line1\">\n" +
 				"			<timeEvent ns:time=\"30000\">\n" +
@@ -204,10 +156,6 @@ public class TestForkNode extends CamelSpringTestSupport {
 	}
 	
 	private void deployProcess(int awaitedHits){
-		Process process = template.requestBody("direct:xml", this.getProcess(awaitedHits), com.catify.core.process.xml.model.Process.class);
-		XmlProcessBuilder processBuilder = (XmlProcessBuilder) applicationContext.getBean("xmlProcessBuilder");
-		
-		ProcessDefinition definition = processBuilder.build(process);
 		
 		List<String> ids = new ArrayList<String>();
 		ids.add("52c6c5cdc2e49838b6cb237e30f20fd7");
@@ -219,62 +167,7 @@ public class TestForkNode extends CamelSpringTestSupport {
 		ids.add("770758a8763397da3d6c6435c603d2fa");
 		ids.add("d43eb28f540d9783c931242b0d7058ab");
 		
-		this.insertXslts(ids);
-		
-		ProcessDeployer deployer = new ProcessDeployer(context, this.createKnowledgeBase());
-		deployer.deployProcess(definition);
-	}
-	
-	private String getTransformation(){
-		return "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-				"<xsl:stylesheet version=\"1.0\" xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" xmlns:fo=\"http://www.w3.org/1999/XSL/Format\">\n" +
-				"	<xsl:template match=\"*\">" +
-				"		<xsl:copy>" +
-				"			<xsl:apply-templates/>" +
-				"		</xsl:copy>" +
-				"	</xsl:template>"+
-				"</xsl:stylesheet>";
-	}
-	
-	private String getXml(){
-		return "<foo>" +
-				"	<a>a</a>" +
-				"	<b>b</b>" +
-				"</foo>";
-	}
-	
-	private void insertXslts(List<String> ids){
-		
-		Iterator<String> it = ids.iterator();
-		while (it.hasNext()) {
-			Hazelcast.getMap(CacheConstants.TRANSFORMATION_CACHE).put(it.next(), this.getTransformation());
-			
-		}
-		
-	}
-	
-	protected KnowledgeBase createKnowledgeBase(){
-		final KnowledgeBuilder kbuilder = KnowledgeBuilderFactory
-		.newKnowledgeBuilder();
-		
-		// this will parse and compile in one step
-		kbuilder.add(ResourceFactory.newClassPathResource("META-INF/rules/types.drl"), ResourceType.DRL);
-		kbuilder.add(ResourceFactory.newClassPathResource("rules/DecisionTypes.drl"), ResourceType.DRL);
-		kbuilder.add(ResourceFactory.newClassPathResource("rules/DecisionRules.drl"), ResourceType.DRL);
-		
-		//check for errors
-		KnowledgeBuilderErrors errors = kbuilder.getErrors();
-		if (errors.size() > 0) {
-			for (KnowledgeBuilderError error : errors) {
-				System.err.println(error);
-			}
-			throw new IllegalArgumentException("Could not parse knowledge.");
-		}
-		
-		KnowledgeBase kbase = KnowledgeBaseFactory.newKnowledgeBase();
-	    kbase.addKnowledgePackages( kbuilder.getKnowledgePackages() );
-			    
-	    return kbase;
+		super.deployProcess(this.getProcess(awaitedHits), ids);
 	}
 	
 }

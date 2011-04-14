@@ -1,12 +1,14 @@
-package com.catify.core.process;
+package com.catify.core.testsupport;
 
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
+import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.converter.jaxb.JaxbDataFormat;
+import org.apache.camel.spi.DataFormat;
 import org.apache.camel.test.CamelSpringTestSupport;
-//import org.drools.KnowledgeBase;
-//import org.drools.KnowledgeBaseFactory;
 import org.drools.KnowledgeBase;
 import org.drools.KnowledgeBaseFactory;
 import org.drools.builder.KnowledgeBuilder;
@@ -18,14 +20,19 @@ import org.drools.io.ResourceFactory;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
+import com.catify.core.constants.CacheConstants;
 import com.catify.core.constants.DataBaseConstants;
 import com.catify.core.constants.MessageConstants;
+import com.catify.core.process.ProcessDeployer;
 import com.catify.core.process.model.ProcessDefinition;
+import com.catify.core.process.xml.XmlProcessBuilder;
+import com.catify.core.process.xml.model.Process;
+import com.hazelcast.core.Hazelcast;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.Mongo;
 
-public class BaseNode extends CamelSpringTestSupport {
+public class ProcessBase extends CamelSpringTestSupport {
 
 	protected DBCollection timerCollection;
 	private DB db;
@@ -96,6 +103,67 @@ public class BaseNode extends CamelSpringTestSupport {
 	    kbase.addKnowledgePackages( kbuilder.getKnowledgePackages() );
 			    
 	    return kbase;
+	}
+	
+	protected String getTransformation(){
+		return "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+				"<xsl:stylesheet version=\"1.0\" xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" xmlns:fo=\"http://www.w3.org/1999/XSL/Format\">\n" +
+				"	<xsl:template match=\"*\">" +
+				"		<xsl:copy>" +
+				"			<xsl:apply-templates/>" +
+				"		</xsl:copy>" +
+				"	</xsl:template>"+
+				"</xsl:stylesheet>";
+	}
+	
+	protected String getXml(){
+		return "<foo>" +
+				"	<a>a</a>" +
+				"	<b>b</b>" +
+				"</foo>";
+	}
+	
+	protected void insertXslts(List<String> ids){
+		
+		Iterator<String> it = ids.iterator();
+		while (it.hasNext()) {
+			Hazelcast.getMap(CacheConstants.TRANSFORMATION_CACHE).put(it.next(), this.getTransformation());
+			
+		}
+		
+	}
+	
+	protected void deployProcess(String process, List<String> ids){
+		Process p = template.requestBody("direct:xml2process", process, com.catify.core.process.xml.model.Process.class);
+		XmlProcessBuilder processBuilder = (XmlProcessBuilder) applicationContext.getBean("xmlProcessBuilder");
+		
+		ProcessDefinition definition = processBuilder.build(p);
+		
+		this.insertXslts(ids);
+		
+		ProcessDeployer deployer = new ProcessDeployer(context, this.createKnowledgeBase());
+		deployer.deployProcess(definition);
+	}
+	
+	@Override
+	protected RouteBuilder createRouteBuilder(){
+		
+		return new RouteBuilder() {
+			
+			@Override
+			public void configure() throws Exception {
+				
+				DataFormat jaxb = new JaxbDataFormat("com.catify.core.process.xml.model");
+				
+				errorHandler(loggingErrorHandler());
+				
+				from("direct:xml2process")
+				.routeId("marshal")
+				.unmarshal(jaxb)
+				.log("${body}");
+				
+			}
+		};
 	}
 
 }
