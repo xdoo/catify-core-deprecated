@@ -120,10 +120,6 @@ public class TestForkNode extends CamelSpringTestSupport {
 				.unmarshal(jaxb)
 				.log("${body}");
 				
-				from("restlet:http://localhost:9080/answer?restletMethod=post")
-				.log("${body}")
-				.to("mock:end");
-				
 			}
 		};
 	}
