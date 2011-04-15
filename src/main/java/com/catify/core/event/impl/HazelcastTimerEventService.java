@@ -41,10 +41,11 @@ public class HazelcastTimerEventService implements TimerEventService {
 	public List<List<String>> fire(@Header(Exchange.TIMER_FIRED_TIME) Date dateTime) {
 		List<List<String>> result = new ArrayList<List<String>>();
 		
-		Iterator<Object> it = this.cache.values(new SqlPredicate(String.format("time = %s", dateTime.getTime()))).iterator();
+		Iterator<Object> it = this.cache.values(new SqlPredicate(String.format("time <= %s", dateTime.getTime()))).iterator();
 		while (it.hasNext()) {
 			TimerEvent event = (TimerEvent) it.next();
 			result.add(this.marshal(event));
+			this.cache.remove(ProcessHelper.createTaskInstanceId(event.getInstanceId(), event.getTaskId()));
 		}
 		return result;
 	}
