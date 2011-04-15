@@ -6,7 +6,6 @@ import java.util.Map;
 
 import org.apache.camel.Exchange;
 
-import com.catify.core.process.builders.CatifyProcessBuilder;
 import com.catify.core.process.model.ProcessDefinition;
 import com.catify.core.testsupport.ProcessBase;
 
