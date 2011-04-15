@@ -89,6 +89,10 @@
 	
 	<!-- data marshalling -->
 	<bean id="csvMarshallProcessor" class="com.catify.core.data.marshall.CsvMarshallProcessor"/>
+	
+	<!-- events -->
+	<!-- TODO replace the implementation by property replacement -->
+	<bean id="timerEventService" class="com.catify.core.event.impl.HazelcastTimerEventService" />
 
 	
 	<!-- This creates an embedded ActiveMQ Broker -->

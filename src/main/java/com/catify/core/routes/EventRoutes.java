@@ -20,19 +20,19 @@ public class EventRoutes extends RouteBuilder {
 		//-----
 		from("direct:set-timer-event")
 		.routeId("set-timer-event")
-		.bean(MongoDbTimerEventService.class, "register");
+		.beanRef("timerEventService", "register");
 		
 		//delete timer event
 		//-----
 		from("direct:delete-timer-event")
 		.routeId("delete-timer-event")
-		.bean(MongoDbTimerEventService.class, "unregister");
+		.beanRef("timerEventService", "unregister");
 
 		//fire timer event for a given time
 		//-----
 		from("timer://event?fixedRate=true&period=1000")
 		.routeId("fire-timer-event")
-		.bean(MongoDbTimerEventService.class, "fire")
+		.beanRef("timerEventService", "fire")
 		.split(body())
 		.to("seda:create-timer-event-message");
 		
