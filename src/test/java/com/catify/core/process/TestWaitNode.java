@@ -1,5 +1,7 @@
 package com.catify.core.process;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.camel.Exchange;
@@ -11,41 +13,52 @@ import com.catify.core.testsupport.ProcessBase;
 public class TestWaitNode extends ProcessBase {
 
 	public void testSleepNode(){
-		//create process deployer
-		ProcessDeployer deployer = new ProcessDeployer(context, this.createKnowledgeBase());
-		assertNotNull(deployer);
-		
-		//deploy process
-		ProcessDefinition definition = this.getDecisionProcess("process01");
-		deployer.deployProcess(definition);
-		this.checkRoutes(definition);
+
+		ProcessDefinition definition = this.deploy();
 		
 		//send message 
 		Map<String, Object> headers = this.setHeaders(definition);
-		template.sendBodyAndHeaders("activemq:queue:in_e8c2eb9abd37d710f4447af1f4da99ef", "foo", headers);
+		template.sendBodyAndHeaders("seda:init_process", super.getXml(), headers);
 		
 		//process sleeps 1 second...
-		Exchange ex1 = consumer.receive("activemq:queue:out_fb4b2d94895dc05e79d383c80b6af23a", 900);
+		Exchange ex1 = consumer.receive("seda:out", 500);
 		assertNull(ex1);
 		
-		Exchange ex2 = consumer.receive("activemq:queue:out_fb4b2d94895dc05e79d383c80b6af23a", 5000);
+		Exchange ex2 = consumer.receive("seda:out", 5000);
 		assertNotNull(ex2);
 	}
 	
-	private ProcessDefinition getDecisionProcess(String name){
-		//create the process
-		CatifyProcessBuilder process = new CatifyProcessBuilder();
+	private ProcessDefinition deploy(){
 		
-		process.start("tester", name, "1.0", "start")
-		.sleep("sp-01", 1000)
-		.request("rq-01", "1")
-		.end("en-01");
+		List<String> ids = new ArrayList<String>();
+		String pid = ProcessHelper.createProcessId("CATIFY", "process01", "1.0");
 		
-		ProcessDefinition definition = process.getProcessDefinition();
+		ids.add(pid);
+		ids.add(ProcessHelper.createTaskId(pid, "start"));
+		ids.add(ProcessHelper.createTaskId(pid, "mock"));
 		
-		assertNotNull(definition);
-		
-		return definition;
+		return super.deployProcess(this.getProcess(), ids);
+	}
+	
+	private String getProcess(){
+		return " <process processVersion=\"1.0\" processName=\"process01\" accountName=\"CATIFY\" xmlns=\"http://www.catify.com/api/1.0\" xmlns:ns=\"http://www.catify.com/api/1.0\" >\n" +
+				"	<start ns:name=\"start\">\n" +
+				"		<inPipeline>\n" +
+				"			<fromEndpoint><generic ns:uri=\"seda:init_process\"/></fromEndpoint>\n" +
+				"		</inPipeline>\n" +
+				"	</start>\n" +
+				"	<sleep>\n" +
+				"		<timeEvent ns:time=\"1000\">\n" +
+				"			<end/>\n" +
+				"		</timeEvent>\n" +
+				"	</sleep>\n" +
+				"	<request ns:name=\"mock\">\n" +
+				"		<outPipeline>\n" +
+				"			<toEndpoint><generic ns:uri=\"seda:out\"/></toEndpoint>\n" +
+				"		</outPipeline>\n" +
+				"	</request>\n" +
+				"	<end ns:name=\"end\"/>\n" +
+				"</process>";
 	}
 	
 }

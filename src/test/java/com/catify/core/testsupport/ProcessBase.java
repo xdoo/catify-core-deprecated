@@ -133,7 +133,7 @@ public class ProcessBase extends CamelSpringTestSupport {
 		
 	}
 	
-	protected void deployProcess(String process, List<String> ids){
+	protected ProcessDefinition deployProcess(String process, List<String> ids){
 		Process p = template.requestBody("direct:xml2process", process, com.catify.core.process.xml.model.Process.class);
 		XmlProcessBuilder processBuilder = (XmlProcessBuilder) applicationContext.getBean("xmlProcessBuilder");
 		
@@ -143,6 +143,8 @@ public class ProcessBase extends CamelSpringTestSupport {
 		
 		ProcessDeployer deployer = new ProcessDeployer(context, this.createKnowledgeBase());
 		deployer.deployProcess(definition);
+		
+		return definition;
 	}
 	
 	@Override
