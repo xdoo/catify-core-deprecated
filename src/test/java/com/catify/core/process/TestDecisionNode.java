@@ -21,11 +21,6 @@ import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.IMap;
 
 public class TestDecisionNode extends ProcessBase {
-
-	@Override
-	protected AbstractXmlApplicationContext createApplicationContext() {
-		return  new ClassPathXmlApplicationContext("/META-INF/spring/camel-context.xml");
-	}
 	
 	public void testDecisionNode(){
 		
