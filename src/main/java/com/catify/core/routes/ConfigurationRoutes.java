@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 
 import com.catify.core.constants.CacheConstants;
 import com.catify.core.constants.GlobalConstants;
+import com.catify.core.constants.MessageConstants;
 import com.catify.core.process.processors.ProcessDeploymentProcessor;
 
 public class ConfigurationRoutes extends RouteBuilder {
@@ -80,6 +81,38 @@ public class ConfigurationRoutes extends RouteBuilder {
 		//TODO --> validate
 		//put it into the cache
 		.setHeader(HazelcastConstants.OBJECT_ID, header("nodeid"))
+        .setHeader(HazelcastConstants.OPERATION, constant(HazelcastConstants.PUT_OPERATION))
+        .toF("hazelcast:%s%s", HazelcastConstants.MAP_PREFIX, CacheConstants.TRANSFORMATION_CACHE);
+		
+		//convenient method to deploy task transformation
+		from("restlet:http://localhost:9080/catify/deploy_transformation/{account}/{process}/{version}/{task}?restletMethod=post")
+		.routeId("put_transformation_into_cache_for_task")
+		//TODO --> validate
+		//set variables
+		.setHeader(MessageConstants.ACCOUNT_NAME, header("account"))
+		.setHeader(MessageConstants.PROCESS_NAME, header("process"))
+		.setHeader(MessageConstants.PROCESS_VERSION, header("version"))
+		.setHeader(MessageConstants.TASK_NAME, header("task"))
+		//generate ids
+		.processRef("processIdProcessor")
+		.processRef("taskIdProcessor")
+		//put it into the cache
+		.setHeader(HazelcastConstants.OBJECT_ID, header(MessageConstants.TASK_ID))
+        .setHeader(HazelcastConstants.OPERATION, constant(HazelcastConstants.PUT_OPERATION))
+        .toF("hazelcast:%s%s", HazelcastConstants.MAP_PREFIX, CacheConstants.TRANSFORMATION_CACHE);
+		
+		//convenient method to deploy process transformation
+		from("restlet:http://localhost:9080/catify/deploy_transformation/{account}/{process}/{version}?restletMethod=post")
+		.routeId("put_transformation_into_cache_for_process")
+		//TODO --> validate
+		//set variables
+		.setHeader(MessageConstants.ACCOUNT_NAME, header("account"))
+		.setHeader(MessageConstants.PROCESS_NAME, header("process"))
+		.setHeader(MessageConstants.PROCESS_VERSION, header("version"))
+		//generate ids
+		.processRef("processIdProcessor")
+		//put it into the cache
+		.setHeader(HazelcastConstants.OBJECT_ID, header(MessageConstants.PROCESS_ID))
         .setHeader(HazelcastConstants.OPERATION, constant(HazelcastConstants.PUT_OPERATION))
         .toF("hazelcast:%s%s", HazelcastConstants.MAP_PREFIX, CacheConstants.TRANSFORMATION_CACHE);
 		
