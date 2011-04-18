@@ -1,5 +1,6 @@
 package com.catify.core.testsupport;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -24,6 +25,7 @@ import com.catify.core.constants.CacheConstants;
 import com.catify.core.constants.DataBaseConstants;
 import com.catify.core.constants.MessageConstants;
 import com.catify.core.process.ProcessDeployer;
+import com.catify.core.process.ProcessHelper;
 import com.catify.core.process.model.ProcessDefinition;
 import com.catify.core.process.xml.XmlProcessBuilder;
 import com.catify.core.process.xml.model.Process;
@@ -133,16 +135,42 @@ public class SpringTestBase extends CamelSpringTestSupport {
 		
 	}
 	
-	protected ProcessDefinition deployProcess(String process, List<String> ids){
-		Process p = template.requestBody("direct:xml2process", process, com.catify.core.process.xml.model.Process.class);
-		XmlProcessBuilder processBuilder = (XmlProcessBuilder) applicationContext.getBean("xmlProcessBuilder");
+	protected void insertXslts(List<String> names, String process, String version, String account){
 		
-		ProcessDefinition definition = processBuilder.build(p);
+		List<String> ids = new ArrayList<String>();
+		String pid = ProcessHelper.createProcessId(account, process, version);
+		
+		//always inster process xslt
+		ids.add(pid);
+		
+		Iterator<String> it = names.iterator();
+		while (it.hasNext()) {
+			String name = (String) it.next();
+			ids.add(ProcessHelper.createTaskId(pid, name));
+		}
+		
+		//put them into cache
+		this.insertXslts(ids);
+		
+	}
+	
+	protected ProcessDefinition deployProcess(String process, List<String> ids){
+		
+		ProcessDefinition definition = this.getProcessDefinition(process);
 		
 		this.insertXslts(ids);
 		
 		ProcessDeployer deployer = new ProcessDeployer(context, this.createKnowledgeBase());
 		deployer.deployProcess(definition);
+		
+		return definition;
+	}
+	
+	protected ProcessDefinition getProcessDefinition(String process){
+		Process p = template.requestBody("direct:xml2process", process, com.catify.core.process.xml.model.Process.class);
+		XmlProcessBuilder processBuilder = (XmlProcessBuilder) applicationContext.getBean("xmlProcessBuilder");
+		
+		ProcessDefinition definition = processBuilder.build(p);
 		
 		return definition;
 	}
