@@ -76,6 +76,7 @@
 	<bean id="pipelineDeploymentProcessor" class="com.catify.core.process.processors.PipelineDeploymentProcessor"/>
 	<bean id="processDeploymentProcessor" class="com.catify.core.process.processors.ProcessDeploymentProcessor"/>
 	<bean id="processIdProcessor" class="com.catify.core.process.processors.ProcessIdProcessor"/>
+	<bean id="taskIdProcessor" class="com.catify.core.process.processors.TaskIdProcessor"/>
 	<bean id="processRegistrationProcessor" class="com.catify.core.process.processors.ProcessRegistrationProcessor">
 		<constructor-arg name="processBuilder" ref="xmlProcessBuilder"/>
 	</bean>
