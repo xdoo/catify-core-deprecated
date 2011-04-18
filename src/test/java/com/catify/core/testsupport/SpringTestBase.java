@@ -32,7 +32,7 @@ import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.Mongo;
 
-public class ProcessBase extends CamelSpringTestSupport {
+public class SpringTestBase extends CamelSpringTestSupport {
 
 	protected DBCollection timerCollection;
 	private DB db;

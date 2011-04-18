@@ -8,7 +8,6 @@ import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import com.catify.core.constants.CacheConstants;
-import com.catify.core.process.model.ProcessDefinition;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.IMap;
 

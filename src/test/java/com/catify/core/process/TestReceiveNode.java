@@ -10,10 +10,10 @@ import org.apache.camel.component.mock.MockEndpoint;
 
 import com.catify.core.constants.CacheConstants;
 import com.catify.core.process.model.ProcessDefinition;
-import com.catify.core.testsupport.ProcessBase;
+import com.catify.core.testsupport.SpringTestBase;
 import com.hazelcast.core.Hazelcast;
 
-public class TestReceiveNode extends ProcessBase {
+public class TestReceiveNode extends SpringTestBase {
 
 	
 	@EndpointInject(uri = "mock:out")

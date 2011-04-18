@@ -8,9 +8,9 @@ import org.apache.camel.EndpointInject;
 import org.apache.camel.component.mock.MockEndpoint;
 
 import com.catify.core.constants.MessageConstants;
-import com.catify.core.testsupport.ProcessBase;
+import com.catify.core.testsupport.SpringTestBase;
 
-public class TestSubprocessCall extends ProcessBase {
+public class TestSubprocessCall extends SpringTestBase {
 
 	@EndpointInject(uri = "mock:p1")
 	private MockEndpoint p1;

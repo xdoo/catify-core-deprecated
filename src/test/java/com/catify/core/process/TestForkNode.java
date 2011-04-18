@@ -7,9 +7,9 @@ import java.util.concurrent.TimeUnit;
 import org.apache.camel.EndpointInject;
 import org.apache.camel.component.mock.MockEndpoint;
 
-import com.catify.core.testsupport.ProcessBase;
+import com.catify.core.testsupport.SpringTestBase;
 
-public class TestForkNode extends ProcessBase {
+public class TestForkNode extends SpringTestBase {
 	
 	@EndpointInject(uri = "mock:out")
 	private MockEndpoint out;

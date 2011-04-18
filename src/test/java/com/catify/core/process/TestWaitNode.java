@@ -7,9 +7,9 @@ import java.util.Map;
 import org.apache.camel.Exchange;
 
 import com.catify.core.process.model.ProcessDefinition;
-import com.catify.core.testsupport.ProcessBase;
+import com.catify.core.testsupport.SpringTestBase;
 
-public class TestWaitNode extends ProcessBase {
+public class TestWaitNode extends SpringTestBase {
 
 	public void testSleepNode(){
 

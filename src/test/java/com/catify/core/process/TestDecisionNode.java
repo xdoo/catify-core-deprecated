@@ -16,11 +16,11 @@ import com.catify.core.constants.MessageConstants;
 import com.catify.core.constants.QueueConstants;
 import com.catify.core.process.builders.CatifyProcessBuilder;
 import com.catify.core.process.model.ProcessDefinition;
-import com.catify.core.testsupport.ProcessBase;
+import com.catify.core.testsupport.SpringTestBase;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.IMap;
 
-public class TestDecisionNode extends ProcessBase {
+public class TestDecisionNode extends SpringTestBase {
 	
 	public void testDecisionNode(){
 		
