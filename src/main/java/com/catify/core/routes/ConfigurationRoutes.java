@@ -11,7 +11,6 @@ import org.slf4j.LoggerFactory;
 import com.catify.core.constants.CacheConstants;
 import com.catify.core.constants.GlobalConstants;
 import com.catify.core.constants.MessageConstants;
-import com.catify.core.process.processors.ProcessDeploymentProcessor;
 
 public class ConfigurationRoutes extends RouteBuilder {
 
@@ -44,7 +43,7 @@ public class ConfigurationRoutes extends RouteBuilder {
 		.choice()
 			.when(header(HazelcastConstants.LISTENER_ACTION).isEqualTo(HazelcastConstants.ADDED))
 				.log("...added to cache")
-				.process(new ProcessDeploymentProcessor());
+				.processRef("processDeploymentProcessor");
 		
 		//---------------------------------------------
 		// pipelines
