@@ -50,6 +50,7 @@
 		<camel:routeBuilder ref="pipelineRoutes" />
 		<camel:routeBuilder ref="eventRoutes" />
 		<camel:routeBuilder ref="configurationRoutes" />
+		<camel:routeBuilder ref="startupRoutes" />
 		<!-- <camel:routeBuilder ref="playRoutes" /> -->
 	</camel:camelContext>
 
@@ -70,6 +71,7 @@
 	<bean id="playRoutes" class="com.catify.core.routes.PlayRoutes" />
 	<bean id="eventRoutes" class="com.catify.core.routes.EventRoutes" />
 	<bean id="configurationRoutes" class="com.catify.core.routes.ConfigurationRoutes" />
+	<bean id="startupRoutes" class="com.catify.core.routes.StartupRoutes" />
 
 	<!-- processors -->
 	<bean id="initProcessProcessor" class="com.catify.core.process.processors.InitProcessProcessor"/>
