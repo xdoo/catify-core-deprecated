@@ -10,10 +10,6 @@ import org.apache.camel.spring.Main;
 import org.drools.KnowledgeBase;
 import org.springframework.context.support.AbstractApplicationContext;
 
-import com.catify.core.process.ProcessDeployer;
-import com.catify.core.process.builders.CatifyProcessBuilder;
-import com.catify.core.process.model.ProcessDefinition;
-
 public class Catify {
 
 	/**
@@ -38,33 +34,7 @@ public class Catify {
 		camel.setApplicationContextUri("/META-INF/spring/camel-context.xml");
 		camel.enableHangupSupport();
 		camel.run();
-		
-		AbstractApplicationContext context = camel.getApplicationContext();
-		
-		//get camel context and knowledge base
-		CamelContext camelContext = context.getBean("camelContext", CamelContext.class);
-		KnowledgeBase kbase = context.getBean("kbase", KnowledgeBase.class);
-		
-		//deploy process
-		ProcessDeployer deployer = new ProcessDeployer(camelContext, kbase);
-		deployer.deployProcess(this.createProcess());
 
-	}
-	
-	/**
-	 * TODO --> delete this in final version
-	 * 
-	 * @return
-	 */
-	private ProcessDefinition createProcess(){
-		//create the process
-		CatifyProcessBuilder process = new CatifyProcessBuilder();
-		
-		process.start("sbk", "process-01", "1.0", "start")
-		.request("rq-01", "1")
-		.end("end");
-		
-		return process.getProcessDefinition();
 	}
 	
 	/**
