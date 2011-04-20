@@ -78,6 +78,8 @@ public class ConfigurationRoutes extends RouteBuilder {
 		from("restlet:http://localhost:9080/catify/deploy_transformation/{nodeid}?restletMethod=post")
 		.routeId("put_transformation_into_cache")
 		//TODO --> validate
+		//unmarshal
+		.marshal().string("UTF-8")
 		//put it into the cache
 		.setHeader(HazelcastConstants.OBJECT_ID, header("nodeid"))
         .setHeader(HazelcastConstants.OPERATION, constant(HazelcastConstants.PUT_OPERATION))
@@ -87,6 +89,8 @@ public class ConfigurationRoutes extends RouteBuilder {
 		from("restlet:http://localhost:9080/catify/deploy_transformation/{account}/{process}/{version}/{task}?restletMethod=post")
 		.routeId("put_transformation_into_cache_for_task")
 		//TODO --> validate
+		//unmarshal
+		.marshal().string("UTF-8")
 		//set variables
 		.setHeader(MessageConstants.ACCOUNT_NAME, header("account"))
 		.setHeader(MessageConstants.PROCESS_NAME, header("process"))
@@ -104,6 +108,8 @@ public class ConfigurationRoutes extends RouteBuilder {
 		from("restlet:http://localhost:9080/catify/deploy_transformation/{account}/{process}/{version}?restletMethod=post")
 		.routeId("put_transformation_into_cache_for_process")
 		//TODO --> validate
+		//unmarshal
+		.marshal().string("UTF-8")
 		//set variables
 		.setHeader(MessageConstants.ACCOUNT_NAME, header("account"))
 		.setHeader(MessageConstants.PROCESS_NAME, header("process"))
@@ -131,6 +137,8 @@ public class ConfigurationRoutes extends RouteBuilder {
 		from("restlet:http://localhost:9080/catify/deploy_schema/{nodeid}?restletMethod=post")
 		.routeId("put_schema_into_cache")
 		//TODO --> validate
+		//unmarshal
+		.marshal().string("UTF-8")
 		//put it into the cache
 		.setHeader(HazelcastConstants.OBJECT_ID, header("nodeid"))
         .setHeader(HazelcastConstants.OPERATION, constant(HazelcastConstants.PUT_OPERATION))
@@ -152,6 +160,8 @@ public class ConfigurationRoutes extends RouteBuilder {
 		fromF("restlet:http://localhost:%s/catify/deploy_correlation_rule/{nodeid}?restletMethod=post", GlobalConstants.HTTP_PORT)
 		.routeId("put_correlation_rule_into_cache")
 		//TODO --> validate
+		//unmarshal
+		.marshal().string("UTF-8")
 		//put it into the cache
 		.setHeader(HazelcastConstants.OBJECT_ID, header("nodeid"))
         .setHeader(HazelcastConstants.OPERATION, constant(HazelcastConstants.PUT_OPERATION))
