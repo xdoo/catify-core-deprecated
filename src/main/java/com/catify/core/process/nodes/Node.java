@@ -1,6 +1,7 @@
 package com.catify.core.process.nodes;
 
 import java.io.Serializable;
+import java.util.UUID;
 
 import com.catify.core.process.ProcessHelper;
 
@@ -15,7 +16,16 @@ public abstract class Node implements Serializable {
 		//generate a unique identifier for the task
 		this.nodeId = ProcessHelper.createTaskId(processId, nodeName);
 		
-		this.nodeName = nodeName;
+		//convenient method for setting a node name 
+		if(nodeName == null) {
+			
+			//if no node name has been set, simply generate one...
+			this.nodeName = UUID.randomUUID().toString();
+		} else {
+			
+			//...otherwise use the one that has been set.
+			this.nodeName = nodeName;
+		}
 	}
 
 	public String getNodeId() {

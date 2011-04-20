@@ -39,7 +39,7 @@ public class ProcessDeployer {
 	private KnowledgeBase kbase;
 
 	static final Logger LOG = LoggerFactory.getLogger(ProcessDeployer.class);
-	static final LoggingLevel LEVEL = LoggingLevel.DEBUG;
+	static final LoggingLevel LEVEL = LoggingLevel.INFO;
 
 	public ProcessDeployer(CamelContext context, KnowledgeBase kbase) {
 		this.context = context;
@@ -603,8 +603,7 @@ public class ProcessDeployer {
 
 			@Override
 			public void configure() throws Exception {
-				from(
-						String.format("seda:node-%s?concurrentConsumers=5",
+				from(String.format("seda:node-%s?concurrentConsumers=5",
 								nodeId))
 						.routeId(String.format("check-node-%s", nodeId))
 						.setHeader(MessageConstants.TASK_ID, constant(nodeId))
