@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import com.catify.core.constants.CacheConstants;
 import com.catify.core.constants.MessageConstants;
 import com.catify.core.constants.ProcessConstants;
+import com.catify.core.event.impl.beans.StateEvent;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.IMap;
 
@@ -18,7 +19,7 @@ public class ReceiveRouter {
 	private String waitRoute;
 	public static final String WAIT = "catify.state.wait";
 	
-	private IMap<String, Integer> map;
+	private IMap<String, StateEvent> map;
 
 	public ReceiveRouter(String taskId){
 		String.format("direct:wait-%s", taskId);
@@ -46,14 +47,14 @@ public class ReceiveRouter {
 		}
 		
 		if(map.containsKey(iid)){
-			int state = map.get(iid);
+			int state = map.get(iid).getState();
 			
 			if(LOG.isDebugEnabled()){
 				LOG.info(String.format("actual state --> %s", state));
 			}
 			
 			if(state == ProcessConstants.STATE_WAITING){
-				map.put(iid, ProcessConstants.STATE_DONE);
+				map.put(iid, new StateEvent(message.getHeader(MessageConstants.INSTANCE_ID, String.class), ProcessConstants.STATE_DONE));
 				
 				if(LOG.isDebugEnabled()){
 					LOG.info(String.format("returning go route for '%s' --> %s", iid, goRoute));
@@ -62,7 +63,7 @@ public class ReceiveRouter {
 				return goRoute;
 			}
 		} else {
-			map.put(iid, ProcessConstants.STATE_WAITING);
+			map.put(iid, new StateEvent(message.getHeader(MessageConstants.INSTANCE_ID, String.class), ProcessConstants.STATE_WAITING));
 			
 			if(LOG.isDebugEnabled()){
 				LOG.info(String.format("returning wait route for '%s' --> %s", iid, waitRoute));

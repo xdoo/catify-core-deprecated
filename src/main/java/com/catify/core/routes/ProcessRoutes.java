@@ -6,6 +6,7 @@ import org.apache.camel.component.hazelcast.HazelcastConstants;
 import com.catify.core.constants.CacheConstants;
 import com.catify.core.constants.MessageConstants;
 import com.catify.core.constants.ProcessConstants;
+import com.catify.core.event.impl.beans.StateEvent;
 
 public class ProcessRoutes extends RouteBuilder {
 	
@@ -27,7 +28,8 @@ public class ProcessRoutes extends RouteBuilder {
 		.routeId("readyState")
 		.setHeader(HazelcastConstants.OBJECT_ID, simple(String.format("${header.%s}", MessageConstants.TASK_INSTANCE_ID)))
 		.setHeader(HazelcastConstants.OPERATION, constant(HazelcastConstants.PUT_OPERATION))
-		.setBody(constant(ProcessConstants.STATE_READY))
+		.setHeader(ProcessConstants.STATE, constant(ProcessConstants.STATE_READY))
+		.bean(StateEvent.class)
 		.to(hazelcastNodeCache);
 		
 		//working (2)
@@ -35,7 +37,8 @@ public class ProcessRoutes extends RouteBuilder {
 		.routeId("workingState")
 		.setHeader(HazelcastConstants.OBJECT_ID, simple(String.format("${header.%s}", MessageConstants.TASK_INSTANCE_ID)))
 		.setHeader(HazelcastConstants.OPERATION, constant(HazelcastConstants.PUT_OPERATION))
-		.setBody(constant(ProcessConstants.STATE_WORKING))
+		.setHeader(ProcessConstants.STATE, constant(ProcessConstants.STATE_WORKING))
+		.bean(StateEvent.class)
 		.to(hazelcastNodeCache);
 		
 		//waiting (3)
@@ -43,7 +46,8 @@ public class ProcessRoutes extends RouteBuilder {
 		.routeId("waitingState")
 		.setHeader(HazelcastConstants.OBJECT_ID, simple(String.format("${header.%s}", MessageConstants.TASK_INSTANCE_ID)))
 		.setHeader(HazelcastConstants.OPERATION, constant(HazelcastConstants.PUT_OPERATION))
-		.setBody(constant(ProcessConstants.STATE_WAITING))
+		.setHeader(ProcessConstants.STATE, constant(ProcessConstants.STATE_WAITING))
+		.bean(StateEvent.class)
 		.to(hazelcastNodeCache);
 		
 		//done (4)
@@ -51,7 +55,8 @@ public class ProcessRoutes extends RouteBuilder {
 		.routeId("doneState")
 		.setHeader(HazelcastConstants.OBJECT_ID, simple(String.format("${header.%s}", MessageConstants.TASK_INSTANCE_ID)))
 		.setHeader(HazelcastConstants.OPERATION, constant(HazelcastConstants.PUT_OPERATION))
-		.setBody(constant(ProcessConstants.STATE_DONE))
+		.setHeader(ProcessConstants.STATE, constant(ProcessConstants.STATE_DONE))
+		.bean(StateEvent.class)
 		.to(hazelcastNodeCache);
 		
 		//destroy state
@@ -68,6 +73,24 @@ public class ProcessRoutes extends RouteBuilder {
 		.setHeader(HazelcastConstants.OPERATION, constant(HazelcastConstants.GET_OPERATION))
 		.to(hazelcastNodeCache);
 		
+		//get state for instance
+		from("direct:getStateForInstance")
+		.routeId("getStateForInstance")
+		.setHeader(HazelcastConstants.QUERY, simple(String.format("instanceId = '${header.%s}'", MessageConstants.INSTANCE_ID)))
+		.setHeader(HazelcastConstants.OPERATION, constant(HazelcastConstants.QUERY_OPERATION))
+		.to(hazelcastNodeCache);
+		
+		//check for no state
+		from("direct:checkForNoState")
+		.routeId("checkForNoState")
+		.to("direct:getStateForInstance")
+		.setBody(simple("${body.size}"))
+		.to("log://STATE?showAll=true")
+		.choice()
+			.when(body().isGreaterThan(0))
+				.setBody(constant(false))
+			.otherwise()
+				.setBody(constant(true));
 
 	}
 

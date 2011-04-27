@@ -26,5 +26,8 @@ public class ProcessConstants {
 	//routing slip key
 	public static final String ROUTINGSLIP		= "process_routing";
 	public static final String RECIPIENTLIST	= "process_recipients";
+	
+	//message header key
+	public static final String STATE 			= "catify_state";
 
 }
