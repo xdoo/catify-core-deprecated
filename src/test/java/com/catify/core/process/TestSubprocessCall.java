@@ -12,10 +12,10 @@ import com.catify.core.testsupport.SpringTestBase;
 
 public class TestSubprocessCall extends SpringTestBase {
 
-	@EndpointInject(uri = "mock:p1")
+	@EndpointInject(uri = "mock://p1")
 	private MockEndpoint p1;
 	
-	@EndpointInject(uri = "mock:p2")
+	@EndpointInject(uri = "mock://p2")
 	private MockEndpoint p2;
 	
 	

@@ -98,12 +98,6 @@
 			<artifactId>commons-pool</artifactId>
 			<version>1.5.5</version>
 		</dependency>
-		<!-- <dependency> <groupId>se.scalablesolutions.akka</groupId> <artifactId>akka-camel</artifactId> 
-			<version>${akka-version}</version> <scope>compile</scope> </dependency> <dependency> 
-			<groupId>se.scalablesolutions.akka</groupId> <artifactId>akka-spring</artifactId> 
-			<version>${akka-version}</version> <scope>compile</scope> </dependency> -->
-		<!-- <dependency> <groupId>log4j</groupId> <artifactId>log4j</artifactId> 
-			<version>${log4j-version}</version> </dependency> -->
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>log4j-over-slf4j</artifactId>
@@ -159,7 +153,7 @@
 		</dependency>
 
 	</dependencies>
-
+	<!-- foo -->
 	<!-- repositories -->
 	<repositories>
 		<repository>

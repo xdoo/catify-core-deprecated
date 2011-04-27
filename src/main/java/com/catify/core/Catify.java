@@ -7,8 +7,6 @@ import org.apache.camel.ProducerTemplate;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.impl.DefaultCamelContext;
 import org.apache.camel.spring.Main;
-import org.drools.KnowledgeBase;
-import org.springframework.context.support.AbstractApplicationContext;
 
 public class Catify {
 

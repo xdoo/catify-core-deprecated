@@ -610,6 +610,7 @@ public class ProcessDeployer {
 						// create a task instance id...
 						.processRef("taskInstanceIdProcessor")
 						.to("direct:getState")
+						.setBody(simple("${body.state}"))
 						.choice()
 							.when(body().isNotEqualTo(ProcessConstants.STATE_DONE))
 								.toF("direct:node-%s", nodeId)
