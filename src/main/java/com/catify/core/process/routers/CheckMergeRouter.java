@@ -1,14 +1,15 @@
 package com.catify.core.process.routers;
 
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.camel.CamelContext;
 import org.apache.camel.Header;
 import org.apache.camel.Message;
 
 import com.catify.core.constants.MessageConstants;
-import com.catify.core.process.ProcessHelper;
 import com.hazelcast.core.AtomicNumber;
 import com.hazelcast.core.Hazelcast;
 
@@ -51,9 +52,18 @@ public class CheckMergeRouter {
 		while (it.hasNext()) {	
 			
 			//set all non idempotent nodes to 'done' state
-			context.createProducerTemplate().sendBodyAndHeader("direct:done", "", MessageConstants.TASK_INSTANCE_ID, ProcessHelper.createTaskInstanceId(instanceId, it.next()));			
+			context.createProducerTemplate().sendBodyAndHeaders("direct:done", "", this.getHeaders(instanceId, it.next()));			
 		}
 		
 	}
-
+	
+	private Map<String,Object> getHeaders(String instanceId, String taskId){
+		Map<String,Object> headers = new HashMap<String, Object>();
+		
+		headers.put(MessageConstants.INSTANCE_ID, instanceId);
+		headers.put(MessageConstants.TASK_ID, taskId);
+		
+		return headers;
+	}
+	
 }

@@ -29,6 +29,13 @@ public class TestReceiveNode extends SpringTestBase {
 		Hazelcast.getMap(CacheConstants.TIMER_CACHE).clear();
 	}
 	
+	@Override
+	public void tearDown() throws Exception{
+		super.tearDown();
+		
+		Hazelcast.getMap(CacheConstants.TIMER_CACHE).clear();
+	}
+	
 	/**
 	 * the process waits for an incoming message
 	 * 

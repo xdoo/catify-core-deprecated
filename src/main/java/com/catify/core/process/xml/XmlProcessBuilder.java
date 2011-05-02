@@ -187,7 +187,7 @@ public class XmlProcessBuilder {
 		}
 		
 		//merge node
-		this.current = this.definition.addNodeFrom(new MergeNode(this.definition.getProcessId(), UUID.randomUUID().toString(), awaitedHits), ids);
+		this.current = this.definition.addNodeFrom(new MergeNode(this.definition.getProcessId(), null, awaitedHits), ids);
 	}
 
 	private String addEndNode(End node) {

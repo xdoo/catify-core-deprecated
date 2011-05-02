@@ -1,14 +1,19 @@
 package com.catify.core.process;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.camel.EndpointInject;
 import org.apache.camel.component.mock.MockEndpoint;
 
+import com.catify.core.constants.CacheConstants;
 import com.catify.core.constants.MessageConstants;
+import com.catify.core.event.impl.beans.StateEvent;
 import com.catify.core.testsupport.SpringTestBase;
+import com.hazelcast.core.Hazelcast;
+import com.hazelcast.core.IMap;
 
 public class TestSubprocessCall extends SpringTestBase {
 
@@ -18,6 +23,18 @@ public class TestSubprocessCall extends SpringTestBase {
 	@EndpointInject(uri = "mock://p2")
 	private MockEndpoint p2;
 	
+	private IMap<String, StateEvent> cache = Hazelcast.getMap(CacheConstants.NODE_CACHE);
+	
+	@Override
+	public void setUp() throws Exception{
+		super.setUp();
+		cache.clear();
+	}
+	
+	public void tearDown() throws Exception {
+		super.tearDown();
+		cache.clear();
+	}
 	
 	public void testCallSubProcess() throws InterruptedException{
 		this.deployProcess();

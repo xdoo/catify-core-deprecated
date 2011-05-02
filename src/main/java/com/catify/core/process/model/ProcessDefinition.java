@@ -11,6 +11,8 @@ import java.util.Set;
 // MultiValueMap is not serializable - so we have to use MultiHashMap here
 import org.apache.commons.collections.MultiHashMap;
 import org.apache.commons.collections.MultiMap;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.catify.core.constants.PipelineConstants;
 import com.catify.core.process.ProcessHelper;
@@ -33,6 +35,8 @@ public class ProcessDefinition implements Serializable {
 	
 	private MultiMap pipelines;
 	private Map<String, String> correlationRules;
+	
+	static final Logger LOG = LoggerFactory.getLogger(ProcessDefinition.class);
 
 	public ProcessDefinition(String accountName, String processName, String processVersion){
 		
@@ -66,11 +70,17 @@ public class ProcessDefinition implements Serializable {
 	}
 	
 	public String addNode(Node node){
+		
+		LOG.debug(String.format("addNode() --> nodeId: %s, nodeName: %s", node.getNodeId(), node.getNodeName()));
+		
 		nodes.put(node.getNodeId(), node);
 		return node.getNodeId();
 	}
 	
 	public String addNodeFrom(Node node, String fromNodeId){
+		
+		LOG.debug(String.format("addNodeFrom() --> nodeId: %s, nodeName: %s, fromNodeId: %s", node.getNodeId(), node.getNodeName(), fromNodeId));
+		
 		this.addNode(node);
 		this.addTransition(fromNodeId, node.getNodeId());
 		return node.getNodeId();
@@ -91,6 +101,8 @@ public class ProcessDefinition implements Serializable {
 	 */
 	public String addNodeFrom(Node node, String fromNodeId, List<String> precedingNodes){
 		
+		LOG.debug(String.format("addNodeFrom() --> nodeId: %s, nodeName: %s, fromNodeId: %s, precedingNodes: %s", node.getNodeId(), node.getNodeName(), fromNodeId, precedingNodes.toString()));
+		
 		Iterator<String> it = precedingNodes.iterator();
 		while (it.hasNext()) {
 			this.precedingNodes.put(node.getNodeId(), it.next());
@@ -100,6 +112,9 @@ public class ProcessDefinition implements Serializable {
 	}
 	
 	public String addNodeFrom(Node node, List<String> fromNodeIds){
+		
+		LOG.debug(String.format("addNodeFrom() --> nodeId: %s, nodeName: %s, fromNodeIds: %s", node.getNodeId(), node.getNodeName(), fromNodeIds.toString()));
+		
 		this.addNode(node);
 		
 		//if a node has more than one incoming transition (e.g. a merge node)

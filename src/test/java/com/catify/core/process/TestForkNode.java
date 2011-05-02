@@ -87,7 +87,7 @@ public class TestForkNode extends SpringTestBase {
 				"		</correlation>\n" +
 				"	</inPipeline>\n" +
 				"</start>\n" +
-				"<fork ns:receivingLines=\""+awaitedHits+"\">\n" +
+				"<fork ns:name=\"fork01\" ns:receivingLines=\""+awaitedHits+"\">\n" +
 				"	<line ns:name=\"1\">\n" +
 				"		<receive ns:name=\"wait_line1\">\n" +
 				"			<timeEvent ns:time=\"30000\">\n" +
