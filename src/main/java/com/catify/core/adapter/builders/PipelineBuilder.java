@@ -38,7 +38,7 @@ public class PipelineBuilder {
 					.routeId(String.format("%s-%s", STARTPIPELINE, definition.getProcessId()))
 					.setHeader(ROUTING, constant(routingSlip))
 					.routingSlip(ROUTING)
-					.to(String.format("activemq:queue:%s", QueueConstants.IN_QUEUE));
+					.to(String.format("hazelcast:%s%s", HazelcastConstants.SEDA_PREFIX, QueueConstants.IN_QUEUE));
 				}
 			});
 		} catch (Exception e) {

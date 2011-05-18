@@ -6,7 +6,6 @@ import org.apache.camel.component.hazelcast.HazelcastConstants;
 
 import com.catify.core.configuration.GlobalConfiguration;
 import com.catify.core.constants.CacheConstants;
-import com.catify.core.constants.GlobalConstants;
 import com.catify.core.constants.MessageConstants;
 import com.catify.core.process.model.ProcessDefinition;
 import com.catify.core.process.xml.model.Endpoint;
@@ -377,7 +376,7 @@ public class XmlPipelineBuilder {
 		builder.append("\t\t</setBody>\n");
 		
 		//send message to queue
-		builder.append(String.format("\t\t<inOnly uri=\"activemq:queue:in_%s\"/>\n", nodeId));
+		builder.append(String.format("\t\t<inOnly uri=\"hazelcast:%sin_%s\"/>\n", HazelcastConstants.SEDA_PREFIX, nodeId));
 		
 		this.appendEndRoute(builder);
 	}
@@ -419,7 +418,7 @@ public class XmlPipelineBuilder {
 	}
 	
 	private void appendGetMessageFromQueue(StringBuilder builder, String nodeId){
-		builder.append(String.format("\t\t<from uri=\"activemq:queue:out_%s\"/>\n", nodeId));
+		builder.append(String.format("\t\t<from uri=\"hazelcast:%sout_%s\"/>\n", HazelcastConstants.SEDA_PREFIX, nodeId));
 	}
 	
 	private void appendConstantHeader(StringBuilder builder, String key, String value){

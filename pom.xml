@@ -16,7 +16,7 @@
 
 	<groupId>com.catify</groupId>
 	<artifactId>catify-core</artifactId>
-	<packaging>jar</packaging>
+	<packaging>bundle</packaging>
 	<version>1.0-SNAPSHOT</version>
 
 	<name>A Camel Route</name>
@@ -30,6 +30,10 @@
 		<akka-version>1.0-RC1</akka-version>
 		<!-- <drools-version>5.2.0-SNAPSHOT</drools-version> -->
 		<drools-version>5.1.1</drools-version>
+		<xalan-version>2.7.1_4</xalan-version>
+		<commons.codec-version>1.3_4</commons.codec-version>
+		<!-- <commons.collections-version>3.2.1_2</commons.collections-version> -->
+		<commons.pool-version>1.5.4_3</commons.pool-version>
 	</properties>
 
 	<dependencies>
@@ -69,9 +73,14 @@
 			<version>${camel-version}</version>
 		</dependency>
 		<dependency>
-			<groupId>xalan</groupId>
-			<artifactId>xalan</artifactId>
-			<version>2.7.1</version>
+			<groupId>org.apache.camel</groupId>
+			<artifactId>camel-xstream</artifactId>
+			<version>${camel-version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.servicemix.bundles</groupId>
+			<artifactId>org.apache.servicemix.bundles.xalan</artifactId>
+			<version>${xalan-version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.activemq</groupId>
@@ -79,24 +88,26 @@
 			<version>5.4.2</version>
 		</dependency>
 		<dependency>
-			<groupId>commons-codec</groupId>
-			<artifactId>commons-codec</artifactId>
-			<version>1.4</version>
+			<groupId>org.apache.servicemix.bundles</groupId>
+			<artifactId>org.apache.servicemix.bundles.commons-codec</artifactId>
+			<version>${commons.codec-version}</version>
 		</dependency>
+		<!-- 
+				<dependency>
+			<groupId>org.apache.servicemix.bundles</groupId>
+			<artifactId>org.apache.servicemix.bundles.commons-collections</artifactId>
+			<version>${commons.collections-version}</version>
+		</dependency>
+		 -->
 		<dependency>
-			<groupId>commons-collections</groupId>
-			<artifactId>commons-collections</artifactId>
-			<version>3.2.1</version>
+			<groupId>org.apache.servicemix.bundles</groupId>
+			<artifactId>org.apache.servicemix.bundles.commons-pool</artifactId>
+			<version>${commons.pool-version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.xbean</groupId>
 			<artifactId>xbean-spring</artifactId>
 			<version>3.7</version>
-		</dependency>
-		<dependency>
-			<groupId>commons-pool</groupId>
-			<artifactId>commons-pool</artifactId>
-			<version>1.5.5</version>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
@@ -159,8 +170,7 @@
 		<repository>
 			<id>apache.snapshots</id>
 			<name>Apache Development Snapshot Repository</name>
-			<url>https://repository.apache.org/content/repositories/snapshots/
-			</url>
+			<url>https://repository.apache.org/content/repositories/snapshots/</url>
 			<releases>
 				<enabled>false</enabled>
 			</releases>
@@ -191,6 +201,19 @@
 			</snapshots>
 		</repository>
 	</repositories>
+	<pluginRepositories>
+		<pluginRepository>
+			<id>apache.snapshots.plugin</id>
+			<name>Apache Development Snapshot Repository</name>
+			<url>https://repository.apache.org/content/repositories/snapshots/</url>
+			<releases>
+				<enabled>false</enabled>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</pluginRepository>
+	</pluginRepositories>
 
 	<build>
 		<defaultGoal>install</defaultGoal>
@@ -223,19 +246,10 @@
 					</execution>
 				</executions>
 			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-jar-plugin</artifactId>
-				<configuration>
-					<archive>
-						<manifest>
-							<addClasspath>true</addClasspath>
-							<classpathPrefix>lib/</classpathPrefix>
-							<mainClass>com.catify.core.Catify</mainClass>
-						</manifest>
-					</archive>
-				</configuration>
-			</plugin>
+			<!-- <plugin> <groupId>org.apache.maven.plugins</groupId> <artifactId>maven-jar-plugin</artifactId> 
+				<configuration> <archive> <manifest> <addClasspath>true</addClasspath> <classpathPrefix>lib/</classpathPrefix> 
+				<mainClass>com.catify.core.Catify</mainClass> </manifest> </archive> </configuration> 
+				</plugin> -->
 			<plugin>
 				<groupId>org.apache.felix</groupId>
 				<artifactId>maven-bundle-plugin</artifactId>
@@ -243,19 +257,35 @@
 				<extensions>true</extensions>
 				<configuration>
 					<instructions>
-						<Bundle-Name>${project.artifactId}</Bundle-Name>
+						<Bundle-Name>${pom.groupId}.${project.artifactId}</Bundle-Name>
 						<Bundle-SymbolicName>catify-osgi</Bundle-SymbolicName>
+						<Bundle-Name>${pom.name}-osgi</Bundle-Name>
+						<Bundle-Version>${pom.version}</Bundle-Version>
 						<Export-Package>
-							com.catify.core
+							com.catify.core.*
 						</Export-Package>
-						<Import-Package>*</Import-Package>
-						<DynamicImport-Package>*</DynamicImport-Package>
-						<Implementation-Title>Catify Process Engine OSGi</Implementation-Title>
-						<Implementation-Version>${project.version}</Implementation-Version>
 					</instructions>
 				</configuration>
 			</plugin>
-
+			<!-- <plugin> <groupId>org.apache.karaf.tooling</groupId> <artifactId>features-maven-plugin</artifactId> 
+				<version>2.1.99-SNAPSHOT</version> <executions> <execution> <id>generate</id> 
+				<phase>generate-resources</phase> <goals> <goal>generate-features-xml</goal> 
+				</goals> <configuration> <bundles>src/main/resources/bundles.properties</bundles> 
+				<kernelVersion>2.1.99-SNAPSHOT</kernelVersion> <outputFile>target/features.xml</outputFile> 
+				</configuration> </execution> </executions> </plugin> -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<configuration>
+					<forkMode>pertest</forkMode>
+					<childDelegation>false</childDelegation>
+					<useFile>true</useFile>
+					<failIfNoTests>false</failIfNoTests>
+					<includes>
+						<include>**/*Test.java</include>
+					</includes>
+				</configuration>
+			</plugin>
 		</plugins>
 	</build>
 	<profiles>

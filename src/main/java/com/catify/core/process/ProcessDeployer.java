@@ -247,7 +247,8 @@ public class ProcessDeployer {
 			@Override
 			public void configure() throws Exception {
 
-				fromF("activemq:queue:in_%s",
+				fromF("hazelcast:%sin_%s",
+								HazelcastConstants.SEDA_PREFIX,
 								definition.getProcessId())
 						.routeId(
 								String.format("process-%s",
@@ -348,7 +349,7 @@ public class ProcessDeployer {
 				// ----------------------------------------
 				// second part
 				// ----------------------------------------
-				from("activemq:queue:event_" + nodeId)
+				fromF("hazelcast:%sevent_%s", HazelcastConstants.SEDA_PREFIX, nodeId)
 						.routeId(String.format("waekup-%s", nodeId))
 						.onCompletion()
 							.to("direct://done")
@@ -653,9 +654,13 @@ public class ProcessDeployer {
 						.routeId(String.format("check-node-%s", nodeId))
 						.setHeader(MessageConstants.TASK_ID, constant(nodeId))
 						// create a task instance id...
-//						.processRef("taskInstanceIdProcessor")
 						.to("direct:getState")
 						.setBody(simple("${body.state}"))
+						/*
+						 * this part is important to guarantee idempotence 
+						 * in case of e.g. one line merge (first message
+						 * wins).
+						 */
 						.choice()
 							.when(body().isNotEqualTo(ProcessConstants.STATE_DONE))
 								.toF("direct:node-%s", nodeId)
@@ -673,6 +678,9 @@ public class ProcessDeployer {
 						
 				fromF("direct:node-%s", nodeId)
 						.routeId(String.format("node-%s", nodeId))
+						.onCompletion()
+							.to("direct://destroy")
+						.end()
 						.log(LEVEL,
 								String.format("REQUEST NODE '%s'", definition
 										.getNode(nodeId).getNodeName()),
@@ -682,7 +690,7 @@ public class ProcessDeployer {
 										definition.getProcessVersion(),
 										MessageConstants.INSTANCE_ID))
 						// ...put it into the cache...
-						.wireTap("direct:working")
+						.to("direct:working")
 						//destroy state from previous node
 						.setHeader(HazelcastConstants.OBJECT_ID, simple(String.format("${header.%s}-%s", MessageConstants.INSTANCE_ID, previousTaskId)))
 						.to("direct://destroy_with_given_id")
@@ -691,11 +699,13 @@ public class ProcessDeployer {
 								String.format("REQUEST NODE '%s'", definition
 										.getNode(nodeId).getNodeName()),
 								String.format(
-										"sending message to 'activemq:queue:out_%s'.   process name --> '%s' | process version --> '%s' | instanceId --> ${header.%s}",
+										"sending message to 'hazelcast:%sout_%s'.   process name --> '%s' | process version --> '%s' | instanceId --> ${header.%s}",
+										HazelcastConstants.SEDA_PREFIX, 
 										nodeId, definition.getProcessName(),
 										definition.getProcessVersion(),
 										MessageConstants.INSTANCE_ID))
-						.wireTap(String.format("activemq:queue:out_%s", nodeId))
+						.setBody(constant("x"))
+						.toF("hazelcast:%sout_%s", HazelcastConstants.SEDA_PREFIX, nodeId)
 						// ...goto next node...
 						.log(LEVEL,
 								String.format("REQUEST NODE '%s'", definition
@@ -708,9 +718,7 @@ public class ProcessDeployer {
 										definition.getProcessVersion(),
 										MessageConstants.INSTANCE_ID))
 						.toF("seda:node-%s", definition
-								.getTransitionsFromNode(nodeId).get(0))
-						// ...remove own state.
-						.to("direct:destroy");
+								.getTransitionsFromNode(nodeId).get(0));
 			}
 		};
 	}
@@ -765,7 +773,7 @@ public class ProcessDeployer {
 				// 2. there is no current state at all -->
 				// the set state to 'wait' and wait for
 				// the initialization from the process
-				fromF("activemq:queue:in_%s", nodeId)
+				fromF("hazelcast:%sin_%s", HazelcastConstants.SEDA_PREFIX, nodeId)
 						.routeId(String.format("aqnode-%s", nodeId))
 						.onCompletion()
 							.to("direct://working")
@@ -845,7 +853,7 @@ public class ProcessDeployer {
 				// ----------------------------------------
 				// time out event node
 				// ----------------------------------------
-				fromF("activemq:queue:event_%s", parentNodeId)
+				fromF("hazelcast:%sevent_%s", HazelcastConstants.SEDA_PREFIX, parentNodeId)
 						.routeId(String.format("event-%s", parentNodeId))
 						.onCompletion()
 							.to("direct://done")

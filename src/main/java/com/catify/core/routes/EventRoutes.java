@@ -48,7 +48,7 @@ public class EventRoutes extends RouteBuilder {
 		//simple and flexible way to route the event messages
 		//to the different queues
 		//------------
-		.setHeader("event-routing", simple("activemq:queue:event_${body[1]}"))
+		.setHeader("event-routing", simple("hazelcast:seda:event_${body[1]}"))
 		.setBody(constant(""))
 		.routingSlip("event-routing");
 

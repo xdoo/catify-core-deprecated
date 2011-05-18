@@ -45,7 +45,7 @@
 
 
 	<!-- camel -->
-	<camel:camelContext id="camelContext" trace="false">
+	<camel:camelContext id="camelContext" trace="true">
 		<camel:routeBuilder ref="processRoutes" />
 		<camel:routeBuilder ref="pipelineRoutes" />
 		<camel:routeBuilder ref="eventRoutes" />
