@@ -22,16 +22,16 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.apache.camel</groupId>
+        <groupId>com.catify</groupId>
         <artifactId>karaf</artifactId>
-        <version>2.8-SNAPSHOT</version>
+        <version>1.0-SNAPSHOT</version>
         <relativePath>..</relativePath>
     </parent>
 
-    <groupId>org.apache.camel.karaf</groupId>
-    <artifactId>apache-camel</artifactId>
+    <groupId>com.catify.karaf</groupId>
+    <artifactId>catify-features</artifactId>
     <packaging>pom</packaging>
-    <name>Camel :: Platforms :: Apache Karaf :: Features</name>
+    <name>Catify :: Platforms :: Apache Karaf :: Features</name>
 
     <!-- some of the bundles is located at: http://repo1.maven.org/maven2/org/apache/servicemix/bundles/ -->
     <properties>
