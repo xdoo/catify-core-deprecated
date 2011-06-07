@@ -376,7 +376,7 @@ public class XmlPipelineBuilder {
 		builder.append("\t\t</setBody>\n");
 		
 		//send message to queue
-		builder.append(String.format("\t\t<inOnly uri=\"hazelcast:%sin_%s\"/>\n", HazelcastConstants.SEDA_PREFIX, nodeId));
+		builder.append(String.format("\t\t<inOnly uri=\"hazelcast:%sin_%s?transferExchange=true\"/>\n", HazelcastConstants.SEDA_PREFIX, nodeId));
 		
 		this.appendEndRoute(builder);
 	}

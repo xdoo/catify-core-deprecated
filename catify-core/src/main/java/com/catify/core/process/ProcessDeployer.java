@@ -453,14 +453,13 @@ public class ProcessDeployer {
 								HazelcastConstants.OBJECT_ID,
 								simple(String.format("${header.%s}",
 										MessageConstants.INSTANCE_ID)))
-						// create fact
 						.setHeader(HazelcastConstants.OPERATION,
 								constant(HazelcastConstants.GET_OPERATION))
 						.toF("hazelcast:%s%s",
 								HazelcastConstants.MAP_PREFIX,
 								CacheConstants.PAYLOAD_CACHE)
 						.process(new TransformDecisionPayloadProcessor())
-//						set signal header in line node to be here thread safe...
+						//set signal header in line node to be here thread safe...
 						.beanRef("decisionRouter", "route");// mark decision route with @DynamicRouter
 			}
 		};
