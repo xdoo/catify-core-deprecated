@@ -47,13 +47,11 @@
 		<camel:routeBuilder ref="eventRoutes" />
 		<camel:routeBuilder ref="configurationRoutes" />
 		<camel:routeBuilder ref="startupRoutes" />
-		<!-- <camel:routeBuilder ref="playRoutes" /> -->
 	</camel:camelContext>
 
 	<!-- routes -->
 	<bean id="processRoutes" class="com.catify.core.routes.ProcessRoutes" />
 	<bean id="pipelineRoutes" class="com.catify.core.routes.PipelineRoutes" />
-	<bean id="playRoutes" class="com.catify.core.routes.PlayRoutes" />
 	<bean id="eventRoutes" class="com.catify.core.routes.EventRoutes" />
 	<bean id="configurationRoutes" class="com.catify.core.routes.ConfigurationRoutes" />
 	<bean id="startupRoutes" class="com.catify.core.routes.StartupRoutes" />
@@ -73,10 +71,7 @@
 	<bean id="readCorrelationProcessor" class="com.catify.core.process.processors.ReadCorrelationProcessor"/>
 	
 	<!-- routers -->
-	<bean id="decisionRouter" class="com.catify.core.process.routers.impl.ReceiveRouter"/>
-	
-	<!-- data marshalling -->
-	<bean id="csvMarshallProcessor" class="com.catify.core.data.marshall.CsvMarshallProcessor"/>
+	<!-- <bean id="decisionRouter" class="com.catify.core.process.routers.impl.ReceiveRouter"/> -->
 	
 	<!-- events -->
 	<!-- TODO replace the implementation by property replacement -->

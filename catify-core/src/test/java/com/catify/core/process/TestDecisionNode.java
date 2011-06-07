@@ -1,19 +1,15 @@
 package com.catify.core.process;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
-import org.springframework.context.support.AbstractXmlApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import com.catify.core.constants.CacheConstants;
 import com.catify.core.constants.MessageConstants;
-import com.catify.core.constants.QueueConstants;
 import com.catify.core.process.builders.CatifyProcessBuilder;
 import com.catify.core.process.model.ProcessDefinition;
 import com.catify.core.testsupport.SpringTestBase;
