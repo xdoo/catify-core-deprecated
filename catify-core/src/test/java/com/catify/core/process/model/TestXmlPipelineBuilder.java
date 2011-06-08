@@ -10,7 +10,8 @@ import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.converter.jaxb.JaxbDataFormat;
 import org.apache.camel.model.RoutesDefinition;
 import org.apache.camel.spi.DataFormat;
-import org.apache.camel.test.CamelSpringTestSupport;
+import org.apache.camel.test.junit4.CamelSpringTestSupport;
+import org.junit.Test;
 import org.springframework.context.support.AbstractXmlApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
@@ -27,6 +28,7 @@ public class TestXmlPipelineBuilder extends CamelSpringTestSupport {
 		return  new ClassPathXmlApplicationContext("/META-INF/spring/camel-context.xml");
 	}
 	
+	@Test
 	public void testBuildStartPipeline() throws Exception {
 		Process process = template.requestBody("direct:xml", this.xmlStart(), com.catify.core.process.xml.model.Process.class);
 		XmlProcessBuilder processBuilder = (XmlProcessBuilder) applicationContext.getBean("xmlProcessBuilder");
@@ -57,6 +59,7 @@ public class TestXmlPipelineBuilder extends CamelSpringTestSupport {
 		template.sendBody(context.getRoute("in-rest-e8c2eb9abd37d710f4447af1f4da99ef").getEndpoint(), this.getXml1());
 	}
 
+	@Test
 	public void testBuildInPipeline() throws Exception {
 		Process process = template.requestBody("direct:xml", this.xmlReceive(), com.catify.core.process.xml.model.Process.class);
 		XmlProcessBuilder processBuilder = (XmlProcessBuilder) applicationContext.getBean("xmlProcessBuilder");
@@ -81,6 +84,7 @@ public class TestXmlPipelineBuilder extends CamelSpringTestSupport {
 		assertNotNull(context.getRoute("get-correlation-3e68dd4a3a52369301021ceb61158950"));
 	}
 
+	@Test
 	public void testBuildOutPipeline() throws Exception {
 		Process process = template.requestBody("direct:xml", this.xmlRequest(), com.catify.core.process.xml.model.Process.class);
 		XmlProcessBuilder processBuilder = (XmlProcessBuilder) applicationContext.getBean("xmlProcessBuilder");
@@ -102,6 +106,7 @@ public class TestXmlPipelineBuilder extends CamelSpringTestSupport {
 		assertNotNull(context.getRoute("load-payload-a600aa727f9df80c45b0674eda578fea"));
 	}
 	
+	@Test
 	public void testDeployProcessWithPipelines() throws InterruptedException{
 		Process process = template.requestBody("direct:xml", this.xmlProcess(), com.catify.core.process.xml.model.Process.class);
 		XmlProcessBuilder processBuilder = (XmlProcessBuilder) applicationContext.getBean("xmlProcessBuilder");
@@ -133,6 +138,7 @@ public class TestXmlPipelineBuilder extends CamelSpringTestSupport {
 		assertMockEndpointsSatisfied(10000, TimeUnit.MILLISECONDS);
 	}
 	
+	@Test
 	public void testCallProcessTwice() throws InterruptedException{
 		Process process = template.requestBody("direct:xml", this.xmlProcess2(), com.catify.core.process.xml.model.Process.class);
 		XmlProcessBuilder processBuilder = (XmlProcessBuilder) applicationContext.getBean("xmlProcessBuilder");

@@ -5,12 +5,14 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.camel.Exchange;
+import org.junit.Test;
 
 import com.catify.core.process.model.ProcessDefinition;
 import com.catify.core.testsupport.SpringTestBase;
 
 public class TestWaitNode extends SpringTestBase {
 
+	@Test
 	public void testSleepNode(){
 
 		ProcessDefinition definition = this.deploy();

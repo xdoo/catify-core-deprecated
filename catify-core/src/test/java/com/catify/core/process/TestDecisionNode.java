@@ -7,6 +7,7 @@ import java.util.concurrent.TimeUnit;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
+import org.junit.Test;
 
 import com.catify.core.constants.CacheConstants;
 import com.catify.core.constants.MessageConstants;
@@ -18,6 +19,7 @@ import com.hazelcast.core.IMap;
 
 public class TestDecisionNode extends SpringTestBase {
 	
+	@Test
 	public void testDecisionNode(){
 		
 		//create process deployer
@@ -48,6 +50,7 @@ public class TestDecisionNode extends SpringTestBase {
 		assertEquals("fb4b2d94895dc05e79d383c80b6af23a", ex.getIn().getHeader(MessageConstants.TASK_ID));
 	}
 	
+	@Test
 	public void testConcurrentModus() throws Exception{
 		
 		context.addRoutes(this.getMocks());

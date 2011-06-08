@@ -5,14 +5,14 @@ import java.util.List;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.test.CamelSpringTestSupport;
+import org.apache.camel.test.junit4.CamelSpringTestSupport;
+import org.junit.Test;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import com.catify.core.constants.CacheConstants;
 import com.catify.core.constants.EventConstants;
 import com.catify.core.constants.MessageConstants;
-import com.catify.core.constants.QueueConstants;
 import com.catify.core.event.impl.beans.TimerEvent;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.IMap;
@@ -22,13 +22,15 @@ public class TestEventRoutes extends CamelSpringTestSupport {
 
 	private IMap<String,TimerEvent> timerCache;
 	
-	protected void setUp() throws Exception {
+	@Override
+	public void setUp() throws Exception {
 		super.setUp();
 		this.timerCache = Hazelcast.getMap(CacheConstants.TIMER_CACHE);
 		this.timerCache.clear();
 	}
-
-	protected void tearDown() throws Exception {		
+	
+	@Override
+	public void tearDown() throws Exception {		
 		super.tearDown();
 		this.timerCache.clear();
 	}
@@ -38,6 +40,7 @@ public class TestEventRoutes extends CamelSpringTestSupport {
 		return  new ClassPathXmlApplicationContext("/META-INF/spring/camel-context.xml");
 	}
 	
+	@Test
 	public void testRegister(){	
 		assertNotNull(context.getRoute("set-timer-event"));
 		assertEquals(0, this.timerCache.size());
@@ -45,6 +48,7 @@ public class TestEventRoutes extends CamelSpringTestSupport {
 		assertEquals(1, this.timerCache.size());
 	}
 	
+	@Test
 	public void testUnRegister(){
 		assertNotNull(context.getRoute("delete-timer-event"));
 		
@@ -54,6 +58,7 @@ public class TestEventRoutes extends CamelSpringTestSupport {
 		assertEquals(0, this.timerCache.size());
 	}
 	
+	@Test
 	public void testTimer(){
 		assertNotNull(context.getRoute("fire-timer-event"));
 		
@@ -63,7 +68,8 @@ public class TestEventRoutes extends CamelSpringTestSupport {
 		assertEquals("event_4711", exchange.getIn().getHeader(MessageConstants.TASK_ID));
 	}
 	
-	public void testCreateeventMessage(){
+	@Test
+	public void testCreateEventMessage(){
 		assertNotNull(context.getRoute("create-timer-event-message"));
 		
 		List<String> list = new ArrayList<String>();

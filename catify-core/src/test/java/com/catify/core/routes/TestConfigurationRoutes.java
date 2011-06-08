@@ -1,10 +1,13 @@
 package com.catify.core.routes;
 
+import org.junit.Test;
+
 import com.catify.core.process.ProcessHelper;
 import com.catify.core.testsupport.SpringTestBase;
 
 public class TestConfigurationRoutes extends SpringTestBase {
 
+	@Test
 	public void testXsltDeploymentWithTask() throws InterruptedException{
 		
 		String pid = ProcessHelper.createProcessId("CATIFY", "process" , "1.0");
@@ -19,6 +22,7 @@ public class TestConfigurationRoutes extends SpringTestBase {
 		assertTrue(xslt.contains("<xsl:template match=\"*\">"));
 	}
 	
+	@Test
 	public void testXsltDeploymentWithProcess() throws InterruptedException{
 		
 		String pid = ProcessHelper.createProcessId("CATIFY", "process" , "1.0");

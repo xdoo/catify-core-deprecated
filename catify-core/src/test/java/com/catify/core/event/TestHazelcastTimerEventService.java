@@ -7,7 +7,8 @@ import java.util.Map;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.test.CamelTestSupport;
+import org.apache.camel.test.junit4.CamelTestSupport;
+import org.junit.Test;
 
 import com.catify.core.constants.CacheConstants;
 import com.catify.core.constants.EventConstants;
@@ -22,16 +23,19 @@ public class TestHazelcastTimerEventService extends CamelTestSupport {
 
 	private IMap<String, TimerEvent> cache = Hazelcast.getMap(CacheConstants.TIMER_CACHE);
 	
-	protected void setUp() throws Exception {
+	@Override
+	public void setUp() throws Exception {
 		super.setUp();
 		cache.clear();
 	}
 	
-	protected void tearDown() throws Exception {
+	@Override
+	public void tearDown() throws Exception {
 		cache.clear();
 		super.tearDown();
 	}
 	
+	@Test
 	public void testRegister(){
 		this.registerEvent(1000, "1", "4711");
 		
@@ -43,6 +47,7 @@ public class TestHazelcastTimerEventService extends CamelTestSupport {
 		assertEquals("4711", event.getTaskId());
 	}
 	
+	@Test
 	public void testUnregister(){
 		
 		assertEquals(0, cache.size());
@@ -53,6 +58,7 @@ public class TestHazelcastTimerEventService extends CamelTestSupport {
 		assertEquals(0, cache.size());
 	}
 	
+	@Test
 	public void testFire() throws InterruptedException{
 		
 		assertEquals(0, cache.size());

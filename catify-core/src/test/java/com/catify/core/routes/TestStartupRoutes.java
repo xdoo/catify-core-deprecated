@@ -6,6 +6,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.camel.EndpointInject;
 import org.apache.camel.component.mock.MockEndpoint;
+import org.junit.Test;
 
 import com.catify.core.constants.CacheConstants;
 import com.catify.core.process.model.ProcessDefinition;
@@ -18,7 +19,7 @@ public class TestStartupRoutes extends SpringTestBase {
 	@EndpointInject(uri = "mock:out")
 	private MockEndpoint out;
 	
-	
+	@Test
 	public void testpipelineLoad() throws InterruptedException{
 		
 		ProcessDefinition d1 = super.getProcessDefinition(this.getProcess("process01"));

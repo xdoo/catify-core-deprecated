@@ -7,6 +7,7 @@ import java.util.concurrent.TimeUnit;
 import org.apache.camel.EndpointInject;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
+import org.junit.Test;
 
 import com.catify.core.constants.CacheConstants;
 import com.catify.core.process.model.ProcessDefinition;
@@ -41,6 +42,7 @@ public class TestReceiveNode extends SpringTestBase {
 	 * 
 	 * @throws Exception
 	 */
+	@Test
 	public void testReceiveWithWait() throws Exception{		
 		this.deploy();
 		this.createMessageCopyRoute(1500);
@@ -54,6 +56,7 @@ public class TestReceiveNode extends SpringTestBase {
 		assertMockEndpointsSatisfied(5, TimeUnit.SECONDS);
 	}
 	
+	@Test
 	public void testReceiveWithoutWait() throws Exception{		
 		this.deploy();
 		this.createMessageCopyRoute(500);
@@ -72,6 +75,7 @@ public class TestReceiveNode extends SpringTestBase {
 	 * 
 	 * @throws Exception
 	 */
+	@Test
 	public void testReceiveTimeOut() throws Exception{		
 		this.deploy();
 		this.createMessageCopyRoute(6000);

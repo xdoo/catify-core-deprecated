@@ -5,7 +5,8 @@ import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.converter.jaxb.JaxbDataFormat;
 import org.apache.camel.spi.DataFormat;
-import org.apache.camel.test.CamelSpringTestSupport;
+import org.apache.camel.test.junit4.CamelSpringTestSupport;
+import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.support.AbstractXmlApplicationContext;
@@ -33,11 +34,13 @@ public class TestProcessDeploymentProcessor extends CamelSpringTestSupport {
 		super.tearDown();
 	}
 	
+	@Test
 	public void testDirectMarshalling(){
 		String body = template.requestBody("direct:xml", this.xml3(), String.class);
 		System.out.println(body);
 	}
 	
+	@Test
 	public void testSimpleMarshalling() throws Exception{		
 		String body = template.requestBody("restlet:http://localhost:9080/catify/deploy_process?restletMethod=post", this.xml2(), String.class);	
 
@@ -54,6 +57,7 @@ public class TestProcessDeploymentProcessor extends CamelSpringTestSupport {
 		assertNotNull(context.getRoute("node-05cc5b277e32985b01d5a44b20a491d7"));
 	}
 	
+	@Test
 	public void testComplexMarshalling() throws Exception{		
 		String body = template.requestBody("restlet:http://localhost:9080/catify/deploy_process?restletMethod=post", this.xml1(), String.class);
 		
@@ -76,6 +80,7 @@ public class TestProcessDeploymentProcessor extends CamelSpringTestSupport {
 		
 	}
 	
+	@Test
 	public void testTimeOut() throws InterruptedException{
 		
 		//deploy process

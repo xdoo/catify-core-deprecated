@@ -2,12 +2,14 @@ package com.catify.core.process.processors;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.test.CamelTestSupport;
+import org.apache.camel.test.junit4.CamelTestSupport;
+import org.junit.Test;
 
 import com.catify.core.constants.MessageConstants;
 
 public class TestInitProcessProcessor extends CamelTestSupport {
 
+	@Test
 	public void testWithGivenId() throws Exception{
 		context.addRoutes(getRoutes());
 		template.sendBody("direct:with", "foo");
@@ -15,6 +17,7 @@ public class TestInitProcessProcessor extends CamelTestSupport {
 		assertEquals("4711", exchange.getIn().getHeader(MessageConstants.INSTANCE_ID));
 	}
 	
+	@Test
 	public void testWithoutId() throws Exception{
 		context.addRoutes(getRoutes());
 		template.sendBody("direct:without", "foo");

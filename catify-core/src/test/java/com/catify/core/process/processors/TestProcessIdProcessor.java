@@ -2,13 +2,15 @@ package com.catify.core.process.processors;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.test.CamelTestSupport;
+import org.apache.camel.test.junit4.CamelTestSupport;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.junit.Test;
 
 import com.catify.core.constants.MessageConstants;
 
 public class TestProcessIdProcessor extends CamelTestSupport {
 
+	@Test
 	public void testProcessIdCreation() throws Exception{
 		
 		context.addRoutes(getRoutes());

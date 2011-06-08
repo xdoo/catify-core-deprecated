@@ -9,7 +9,8 @@ import org.apache.camel.EndpointInject;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.hazelcast.HazelcastConstants;
 import org.apache.camel.component.mock.MockEndpoint;
-import org.apache.camel.test.CamelTestSupport;
+import org.apache.camel.test.junit4.CamelTestSupport;
+import org.junit.Test;
 
 import com.catify.core.constants.CacheConstants;
 import com.catify.core.constants.MessageConstants;
@@ -36,6 +37,7 @@ public class TestProcessRoutes extends CamelTestSupport {
 		cache.clear();
 	}
 	
+	@Override
 	public void tearDown() throws Exception{
 		super.tearDown();
 		
@@ -43,22 +45,27 @@ public class TestProcessRoutes extends CamelTestSupport {
 		cache.clear();
 	}
 	
+	@Test
 	public void testReadyState() throws InterruptedException{		
 		this.testState("ready", ProcessConstants.STATE_READY);		
 	}
 	
+	@Test
 	public void testWorkingState() throws InterruptedException{
 		this.testState("working", ProcessConstants.STATE_WORKING);
 	}
 	
+	@Test
 	public void testWaitingState() throws InterruptedException{
 		this.testState("waiting", ProcessConstants.STATE_WAITING);
 	}
 	
+	@Test
 	public void testDoneState() throws InterruptedException{
 		this.testState("done", ProcessConstants.STATE_DONE);
 	}
 	
+	@Test
 	public void testDestroy() throws InterruptedException{
 		
 		// fill the cache
@@ -69,6 +76,7 @@ public class TestProcessRoutes extends CamelTestSupport {
 		assertEquals(0, cache.size());
 	}
 	
+	@Test
 	public void testGetState() throws InterruptedException{
 		
 		//fill the cache
@@ -82,6 +90,7 @@ public class TestProcessRoutes extends CamelTestSupport {
 		assertEquals(ProcessConstants.STATE_WAITING, event.getState());
 	}
 	
+	@Test
 	public void testGetStateForInstance() throws InterruptedException{
 		
 		//fill the cache 
@@ -92,6 +101,7 @@ public class TestProcessRoutes extends CamelTestSupport {
 		assertEquals(3, events.size());
 	}
 	
+	@Test
 	public void testForNoState(){
 		
 		//fill the cache

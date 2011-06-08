@@ -2,7 +2,8 @@ package com.catify.core.process.routers;
 
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
-import org.apache.camel.test.CamelTestSupport;
+import org.apache.camel.test.junit4.CamelTestSupport;
+import org.junit.Test;
 
 import com.catify.core.constants.CacheConstants;
 import com.catify.core.constants.MessageConstants;
@@ -18,7 +19,7 @@ public class TestReceiveRouter extends CamelTestSupport {
 	private String instanceId = "123";
 	private String taskId 	  = "4711";
 	
-	
+	@Test
 	public void testGo() throws Exception{
 		context.addRoutes(getRoutes());
 		String id = String.format("%s-%s", instanceId, taskId);
@@ -36,6 +37,7 @@ public class TestReceiveRouter extends CamelTestSupport {
 		map.remove(id);
 	}
 	
+	@Test
 	public void testWait() throws Exception{
 		context.addRoutes(getRoutes());
 		String id = String.format("%s-%s", instanceId, taskId);

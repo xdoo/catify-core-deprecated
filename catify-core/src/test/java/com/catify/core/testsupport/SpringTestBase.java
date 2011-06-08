@@ -9,7 +9,8 @@ import java.util.Map;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.converter.jaxb.JaxbDataFormat;
 import org.apache.camel.spi.DataFormat;
-import org.apache.camel.test.CamelSpringTestSupport;
+import org.apache.camel.test.junit4.CamelSpringTestSupport;
+
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
@@ -23,17 +24,6 @@ import com.catify.core.process.xml.model.Process;
 import com.hazelcast.core.Hazelcast;
 
 public class SpringTestBase extends CamelSpringTestSupport {
-
-	protected void setUp() throws Exception {
-		
-		super.setUp();
-		
-	}
-
-	protected void tearDown() throws Exception {
-		
-		super.tearDown();
-	}
 	
 	@Override
 	protected AbstractApplicationContext createApplicationContext() {

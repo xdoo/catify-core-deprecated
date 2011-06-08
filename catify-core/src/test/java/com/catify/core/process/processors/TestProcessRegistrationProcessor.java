@@ -3,7 +3,8 @@ package com.catify.core.process.processors;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.converter.jaxb.JaxbDataFormat;
 import org.apache.camel.spi.DataFormat;
-import org.apache.camel.test.CamelSpringTestSupport;
+import org.apache.camel.test.junit4.CamelSpringTestSupport;
+import org.junit.Test;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
@@ -17,7 +18,8 @@ public class TestProcessRegistrationProcessor extends CamelSpringTestSupport {
 	protected AbstractApplicationContext createApplicationContext() {
 		return  new ClassPathXmlApplicationContext("/META-INF/spring/camel-context.xml");
 	}
-	
+
+	@Test
 	public void testProcessRegistration() throws InterruptedException{
 		template.sendBody("direct:xml", this.xml());
 		
@@ -29,6 +31,7 @@ public class TestProcessRegistrationProcessor extends CamelSpringTestSupport {
 		map.clear();
 	}
 	
+	@Test
 	public void testProcessRegistrationRoute() throws InterruptedException{
 		String body = template.requestBody("restlet:http://localhost:9080/catify/deploy_process?restletMethod=post", this.xml(), String.class);
 		

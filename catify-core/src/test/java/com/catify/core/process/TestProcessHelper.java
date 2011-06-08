@@ -4,7 +4,7 @@ import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.converter.jaxb.JaxbDataFormat;
 import org.apache.camel.spi.DataFormat;
 import org.apache.camel.test.CamelSpringTestSupport;
-import org.apache.camel.test.CamelTestSupport;
+import org.junit.Test;
 import org.springframework.context.support.AbstractXmlApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
@@ -19,6 +19,7 @@ public class TestProcessHelper extends CamelSpringTestSupport {
 		return  new ClassPathXmlApplicationContext("/META-INF/spring/camel-context.xml");
 	}
 	
+	@Test
 	public void testGetNormalNode() {
 		String nodeId = ProcessHelper.getNormalNode(getProcessDefinition(), "7fdce0391f138ba3913c4c2cd6d8795b");
 		
@@ -26,6 +27,7 @@ public class TestProcessHelper extends CamelSpringTestSupport {
 		assertEquals("5e98c5e23510afc3d405f0ec2017abd4", nodeId);
 	}
 
+	@Test
 	public void testGetTimerEvent() {
 		String eventId = ProcessHelper.getTimerEvent(getProcessDefinition(), "7fdce0391f138ba3913c4c2cd6d8795b");
 		

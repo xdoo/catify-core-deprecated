@@ -1,12 +1,12 @@
 package com.catify.core.process;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.camel.EndpointInject;
 import org.apache.camel.component.mock.MockEndpoint;
+import org.junit.Test;
 
 import com.catify.core.constants.CacheConstants;
 import com.catify.core.constants.MessageConstants;
@@ -31,11 +31,13 @@ public class TestSubprocessCall extends SpringTestBase {
 		cache.clear();
 	}
 	
+	@Override
 	public void tearDown() throws Exception {
 		super.tearDown();
 		cache.clear();
 	}
 	
+	@Test
 	public void testCallSubProcess() throws InterruptedException{
 		this.deployProcess();
 		

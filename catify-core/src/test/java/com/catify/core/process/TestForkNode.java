@@ -6,6 +6,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.camel.EndpointInject;
 import org.apache.camel.component.mock.MockEndpoint;
+import org.junit.Test;
 
 import com.catify.core.testsupport.SpringTestBase;
 
@@ -23,6 +24,7 @@ public class TestForkNode extends SpringTestBase {
 	@EndpointInject(uri = "mock:out_line3")
 	private MockEndpoint outLine3;
 	
+	@Test
 	public void testReceiveAllLines() throws InterruptedException{
 
 		this.deployProcess(-1);
@@ -47,6 +49,7 @@ public class TestForkNode extends SpringTestBase {
 		
 	}
 	
+	@Test
 	public void testReceiveTwoLines() throws InterruptedException{
 		
 		this.deployProcess(2);

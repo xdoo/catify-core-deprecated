@@ -1,10 +1,15 @@
 package com.catify.core.process.model;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+
 import java.util.List;
 
 import junit.framework.TestCase;
 
 import org.apache.commons.codec.digest.DigestUtils;
+import org.junit.Test;
 
 import com.catify.core.process.nodes.Node;
 import com.catify.core.process.builders.CatifyProcessBuilder;
@@ -13,8 +18,9 @@ import com.catify.core.process.nodes.StartNode;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.IMap;
 
-public class TestProcessDefinition extends TestCase {
+public class TestProcessDefinition {
 
+	@Test
 	public void testMetadata(){
 		ProcessDefinition pd = new ProcessDefinition("tester", "testprocess", "1.0");
 		
@@ -24,6 +30,7 @@ public class TestProcessDefinition extends TestCase {
 		assertEquals(DigestUtils.md5Hex(String.format("%s%s%s", "tester", "testprocess", "1.0")), pd.getProcessId());
 	}
 	
+	@Test
 	public void testNodeHandling(){
 		ProcessDefinition pd = new ProcessDefinition("tester", "testprocess", "1.0");
 		
@@ -34,6 +41,7 @@ public class TestProcessDefinition extends TestCase {
 		assertEquals("start", node.getNodeName());
 	}
 	
+	@Test
 	public void testTransitionHandling(){
 		ProcessDefinition pd = new ProcessDefinition("tester", "testprocess", "1.0");
 		
@@ -65,6 +73,7 @@ public class TestProcessDefinition extends TestCase {
 		
 	}
 	
+	@Test
 	public void testHazelcastSerialization(){
 		IMap<String, ProcessDefinition> map = Hazelcast.getMap("definition");
 		
