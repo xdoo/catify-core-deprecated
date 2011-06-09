@@ -699,8 +699,8 @@ public class ProcessDeployer {
 										nodeId, definition.getProcessName(),
 										definition.getProcessVersion(),
 										MessageConstants.INSTANCE_ID))
-						.setBody(constant("x"))
-						.toF("hazelcast:%sout_%s", HazelcastConstants.SEDA_PREFIX, nodeId)
+//						.setBody(constant("x"))
+						.toF("hazelcast:%sout_%s?transferExchange=true", HazelcastConstants.SEDA_PREFIX, nodeId)
 						// ...goto next node...
 						.log(LEVEL,
 								String.format("REQUEST NODE '%s'", definition
