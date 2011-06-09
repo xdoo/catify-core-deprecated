@@ -35,10 +35,6 @@ public class TestXmlPipelineBuilder extends CamelSpringTestSupport {
 		
 		ProcessDefinition definition = processBuilder.build(process);
 		
-//		System.out.println(definition.getStartPipeline());
-		
-//		System.out.println("-------------------------------------------------->");
-		
 		//insert xslt to caches
 		this.insertXslts();
 		
@@ -46,17 +42,11 @@ public class TestXmlPipelineBuilder extends CamelSpringTestSupport {
 		RoutesDefinition routes = context.loadRoutesDefinition(is);
 		context.addRouteDefinitions(routes.getRoutes());
 		
-//		Thread.sleep(2500);
-		
 		assertNotNull(context.getRoute("in-file-e8c2eb9abd37d710f4447af1f4da99ef"));
 		assertNotNull(context.getRoute("in-rest-e8c2eb9abd37d710f4447af1f4da99ef"));
 		assertNotNull(context.getRoute("save-payload-e8c2eb9abd37d710f4447af1f4da99ef"));
 		assertNotNull(context.getRoute("send-to-queue-e8c2eb9abd37d710f4447af1f4da99ef"));
 		assertNotNull(context.getRoute("create-correlation-e8c2eb9abd37d710f4447af1f4da99ef"));
-		
-		//send message
-		System.out.println("--------------------------------------------------> sending message");
-		template.sendBody(context.getRoute("in-rest-e8c2eb9abd37d710f4447af1f4da99ef").getEndpoint(), this.getXml1());
 	}
 
 	@Test
@@ -119,21 +109,17 @@ public class TestXmlPipelineBuilder extends CamelSpringTestSupport {
 		
 		deployer.deployProcess(definition);
 		
-		assertNotNull(context.getRoute("in-rest-e8c2eb9abd37d710f4447af1f4da99ef"));
-		Endpoint rest1 = context.getRoute("in-rest-e8c2eb9abd37d710f4447af1f4da99ef").getEndpoint();
-		Endpoint rest2 = context.getRoute("in-rest-3e68dd4a3a52369301021ceb61158950").getEndpoint();
-		
 		MockEndpoint end = getMockEndpoint("mock:end");
 		end.expectedMessageCount(1);
 		
 		//send message to process
 		System.out.println("--------------------------> sending message to init process");
-		template.sendBody(rest1 , this.getXml1());
+		template.sendBody("seda://start" , this.getXml1());
 		
 		//send message to receive node
 		Thread.sleep(5000);
 		System.out.println("--------------------------> sending message to 'wait_for_payload'");
-		template.sendBody(rest2, this.getXml2());
+		template.sendBody("seda://receive", this.getXml2());
 		
 		assertMockEndpointsSatisfied(10000, TimeUnit.MILLISECONDS);
 	}
@@ -151,23 +137,19 @@ public class TestXmlPipelineBuilder extends CamelSpringTestSupport {
 		
 		deployer.deployProcess(definition);
 		
-		assertNotNull(context.getRoute("in-rest-e8c2eb9abd37d710f4447af1f4da99ef"));
-		Endpoint rest1 = context.getRoute("in-rest-e8c2eb9abd37d710f4447af1f4da99ef").getEndpoint();
-		Endpoint rest2 = context.getRoute("in-rest-3e68dd4a3a52369301021ceb61158950").getEndpoint();
-		
 		MockEndpoint end = getMockEndpoint("mock:end");
 		end.expectedMessageCount(2);
 		
 		//send message to process
 		System.out.println("--------------------------> sending message to init process");
-		template.sendBody(rest1 , this.getXml1());
+		template.sendBody("seda://start" , this.getXml1());
 		
 		//send message to receive node
 		Thread.sleep(5000);
 		System.out.println("--------------------------> sending 1. message to 'wait_for_payload'");
-		template.sendBody(rest2, this.getXml2());
+		template.sendBody("seda://receive", this.getXml2());
 		System.out.println("--------------------------> sending 2. message to 'wait_for_payload'");
-		template.sendBody(rest2, this.getXml2());
+		template.sendBody("seda://receive", this.getXml2());
 		
 		assertMockEndpointsSatisfied(10000, TimeUnit.MILLISECONDS);
 	}
@@ -207,7 +189,6 @@ public class TestXmlPipelineBuilder extends CamelSpringTestSupport {
 //				"				<rest ns:uri=\"restlet:http://localhost:9080/myprocess?restletMethod=post\"/>\n" +
 				"				<rest />\n" +
 				"			</fromEndpoint>\n" +
-				"			<marshaller ns:type=\"csvMarshallProcessor\"/>\n" +
 				"			<split ns:xpath=\"/foo\"/>\n" +
 				"			<correlation>\n" +
 				"				<xpath>/foo/x</xpath>\n" +
@@ -232,7 +213,6 @@ public class TestXmlPipelineBuilder extends CamelSpringTestSupport {
 				"				<file ns:uri=\"file:../files?delete=false\"/>\n" +
 				"				<rest/>\n" +
 				"			</fromEndpoint>\n" +
-				"			<marshaller ns:type=\"csvMarshallProcessor\"/>\n" +
 				"			<split ns:xpath=\"/foo\"/>\n" +
 				"			<correlation>\n" +
 				"				<xpath>/foo/x</xpath>\n" +
@@ -254,7 +234,6 @@ public class TestXmlPipelineBuilder extends CamelSpringTestSupport {
 				"			<toEndpoint>\n" +
 				"				<hazelcast ns:uri=\"hazelcast:map:foo\" ns:operation=\"put\"/>\n" +
 				"			</toEndpoint>\n" +
-				"			<marshaller ns:type=\"csvMarshallProcessor\"/>\n" +
 				"		</outPipeline>\n" +
 				"	</request>" +
 				"	<end ns:name=\"end\"/>\n" +
@@ -268,7 +247,7 @@ public class TestXmlPipelineBuilder extends CamelSpringTestSupport {
 				"	<start ns:name=\"start\">\n" +
 				"		<inPipeline>\n" +
 				"			<fromEndpoint>\n" +
-				"				<rest />\n" +
+				"				<generic ns:uri=\"seda:start\"/>\n" +
 				"			</fromEndpoint>\n" +
 				"			<correlation>\n" +
 				"				<xpath>/foo/a</xpath>\n" +
@@ -290,7 +269,7 @@ public class TestXmlPipelineBuilder extends CamelSpringTestSupport {
 				"		</timeEvent>\n" +
 				"		<inPipeline>\n" +
 				"			<fromEndpoint>\n" +
-				"				<rest/>\n" +
+				"				<generic ns:uri=\"seda:receive\"/>\n" +
 				"			</fromEndpoint>\n" +
 				"			<correlation>\n" +
 				"				<xpath>/bar/a</xpath>\n" +
@@ -316,7 +295,7 @@ public class TestXmlPipelineBuilder extends CamelSpringTestSupport {
 				"	<start ns:name=\"start\">\n" +
 				"		<inPipeline>\n" +
 				"			<fromEndpoint>\n" +
-				"				<rest />\n" +
+				"				<generic ns:uri=\"seda:start\"/>\n" +
 				"			</fromEndpoint>\n" +
 				"			<correlation>\n" +
 				"				<xpath>/foo/a</xpath>\n" +
@@ -338,7 +317,7 @@ public class TestXmlPipelineBuilder extends CamelSpringTestSupport {
 				"		</timeEvent>\n" +
 				"		<inPipeline>\n" +
 				"			<fromEndpoint>\n" +
-				"				<rest/>\n" +
+				"				<generic ns:uri=\"seda:receive\"/>\n" +
 				"			</fromEndpoint>\n" +
 				"			<correlation>\n" +
 				"				<xpath>/bar/a</xpath>\n" +
