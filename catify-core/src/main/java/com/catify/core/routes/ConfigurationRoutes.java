@@ -100,6 +100,7 @@ public class ConfigurationRoutes extends RouteBuilder {
 		.processRef("processIdProcessor")
 		.processRef("taskIdProcessor")
 		//put it into the cache
+		.log(String.format("XSLT --> ${header.%s}, ${header.%s}, ${header.%s}, ${header.%s} with id --> ${header.%s}", MessageConstants.ACCOUNT_NAME, MessageConstants.PROCESS_NAME, MessageConstants.PROCESS_VERSION, MessageConstants.TASK_NAME, MessageConstants.TASK_ID))
 		.setHeader(HazelcastConstants.OBJECT_ID, header(MessageConstants.TASK_ID))
         .setHeader(HazelcastConstants.OPERATION, constant(HazelcastConstants.PUT_OPERATION))
         .toF("hazelcast:%s%s", HazelcastConstants.MAP_PREFIX, CacheConstants.TRANSFORMATION_CACHE);
