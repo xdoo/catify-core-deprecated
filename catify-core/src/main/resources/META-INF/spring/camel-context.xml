@@ -41,7 +41,7 @@
 
 
 	<!-- camel -->
-	<camel:camelContext id="camelContext" trace="true">
+	<camel:camelContext id="camelContext" trace="false">
 		<camel:routeBuilder ref="processRoutes" />
 		<camel:routeBuilder ref="pipelineRoutes" />
 		<camel:routeBuilder ref="eventRoutes" />
@@ -83,7 +83,7 @@
 	<!-- properties -->
 	<bean id="propertyPlaceholder"
 		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
-		<property name="location" value="classpath:network.properties" />
+		<!-- <property name="location" value="classpath:network.properties" /> -->
 	</bean>
 
 </beans>

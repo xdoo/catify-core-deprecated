@@ -426,6 +426,13 @@
           </excludes>
         </configuration>
       </plugin>
+	<plugin>
+	  <groupId>org.apache.camel</groupId>
+	  <artifactId>camel-maven-plugin</artifactId>
+	  <configuration>
+	    <fileApplicationContextUri>src/main/resources/META-INF/spring/camel*.xml</fileApplicationContextUri>
+	  </configuration>
+	</plugin>
     </plugins>
   </build>
 

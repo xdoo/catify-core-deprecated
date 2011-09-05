@@ -35,7 +35,7 @@
   <properties>
     <compiler.fork>false</compiler.fork>
 
-    <apache-camel-version>2.8-SNAPSHOT</apache-camel-version>
+    <apache-camel-version>2.8.0</apache-camel-version>
     <commons-codec-version>1.4</commons-codec-version>
     <commons-collections-version>3.2.1</commons-collections-version>
     <xalan-version>2.7.1</xalan-version>
