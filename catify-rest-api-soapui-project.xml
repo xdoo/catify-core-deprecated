@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<con:soapui-project name="catify rest api" soapui-version="3.5.1" xmlns:con="http://eviware.com/soapui/config"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.actions.iface.tools.soapui.TestRunnerAction@values-local"><![CDATA[<xml-fragment xmlns:con="http://eviware.com/soapui/config">
+<con:soapui-project name="catify rest api" soapui-version="3.5.1" abortOnError="false" runType="SEQUENTIAL" resourceRoot="" xmlns:con="http://eviware.com/soapui/config"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.actions.iface.tools.soapui.TestRunnerAction@values-local"><![CDATA[<xml-fragment xmlns:con="http://eviware.com/soapui/config">
   <con:entry key="Global Properties" value=""/>
   <con:entry key="TestSuite" value="catify rest api TestSuite"/>
   <con:entry key="Report to Generate" value=""/>
@@ -28,115 +28,304 @@
   <con:entry key="Save After" value="false"/>
   <con:entry key="Add Settings" value="false"/>
   <con:entry key="Endpoint" value=""/>
-</xml-fragment>]]></con:setting></con:settings><con:interface xsi:type="con:RestService" wadlVersion="http://wadl.dev.java.net/2009/02" name="catify rest api" type="rest" basePath="/catify" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:settings/><con:definitionCache type="TEXT" rootPart=""/><con:endpoints><con:endpoint>http://localhost:9080/catify/deploy_pipeline/4711</con:endpoint></con:endpoints><con:resource name="process" path="deploy_process"><con:settings/><con:parameters/><con:method name="deployProcess" method="POST"><con:settings/><con:parameters/><con:representation type="REQUEST"><con:mediaType>application/xml</con:mediaType><con:params/><con:element xmlns:ns="http://www.catify.com/api/1.0">ns:process</con:element></con:representation><con:representation type="RESPONSE"><con:mediaType>text/plain</con:mediaType><con:status>200</con:status><con:params/><con:element xmlns:ns="http://www.catify.com/api/1.0">ns:process</con:element></con:representation><con:request name="deployProcess" mediaType="application/xml" postQueryString="false"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers">&lt;xml-fragment/></con:setting></con:settings><con:endpoint>http://localhost:9080/catify/deploy_process</con:endpoint><con:request><![CDATA[<process processVersion="1.0" processName="process01" accountName="sbk" xmlns="http://www.catify.com/api/1.0" xmlns:n1="http://www.catify.com/api/1.0" >
-	<start n1:name="start"/>
-	<request n1:name="bam_step_01"/>
-	<receive n1:name="wait_for_payload">
-		<timeEvent n1:time="60000">
-			<request n1:name="throw_time_out_exception"/>
-			<end n1:name="end_time_out"/>
-		</timeEvent>
-	</receive>
-	<request n1:name="bam_step_02"/>
-	<end n1:name="end"/>
-</process>]]></con:request><con:jmsConfig JMSDeliveryMode="PERSISTENT"/><con:jmsPropertyConfig/><con:parameters/></con:request></con:method></con:resource><con:resource name="pipeline" path="deploy_pipeline"><con:settings/><con:parameters/><con:method name="deployPipelineForRequest01" method="POST"><con:settings/><con:parameters/><con:representation type="FAULT"><con:mediaType>text/plain</con:mediaType><con:status>500</con:status><con:params/><con:element>data</con:element></con:representation><con:representation type="REQUEST"><con:mediaType>application/xml</con:mediaType><con:params/><con:element>data</con:element></con:representation><con:representation type="RESPONSE"><con:mediaType>text/plain</con:mediaType><con:status>200</con:status><con:params/><con:element>data</con:element></con:representation><con:request name="deployPipelineForRequest01" mediaType="application/xml" postQueryString="false"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers">&lt;xml-fragment/></con:setting></con:settings><con:endpoint>http://localhost:9080/catify/deploy_pipeline/4712</con:endpoint><con:request><![CDATA[<routes xmlns="http://camel.apache.org/schema/spring">
-	<route id="out-18105b19823a55855d936410564e604f">
-		<from uri="activemq:queue:out_queue?selector=catify_taskId%3D%2718105b19823a55855d936410564e604f%27"/>
-		<setHeader headerName="catify_taskId">
-        		<constant>a22d59661ac00a7e6f73c7c4445d261b</constant>
-   		</setHeader>
-		<process ref="taskInstanceIdProcessor"/>
-		<delay>
-            		<constant>50</constant>
-        	</delay>
-		<log message="request01: ${body}"/>
-		<to uri="activemq:queue:in_queue"/>
-	</route>
-</routes>]]></con:request><con:jmsConfig JMSDeliveryMode="PERSISTENT"/><con:jmsPropertyConfig/><con:parameters/></con:request></con:method><con:method name="deployPipelineForProcessStart" method="POST"><con:settings/><con:parameters/><con:representation type="RESPONSE"><con:mediaType>text/plain</con:mediaType><con:status>200</con:status><con:params/><con:element>data</con:element></con:representation><con:representation type="REQUEST"><con:mediaType>application/xml</con:mediaType><con:params/><con:element>data</con:element></con:representation><con:request name="deployPipelineForProcessStart" mediaType="application/xml" postQueryString="false"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers">&lt;xml-fragment/></con:setting></con:settings><con:endpoint>http://localhost:9080/catify/deploy_pipeline/4711</con:endpoint><con:request><![CDATA[<routes xmlns="http://camel.apache.org/schema/spring">
-	<route id="in-68106b1419878a5415672183c94b2f32">
-		<from uri="file:../files?delete=true"/>
-		<log message="consuming file..."/>
-		<setHeader headerName="catify_accountName">
-        		<constant>sbk</constant>
-   		</setHeader>
-		<setHeader headerName="catify_processName">
-        		<constant>process01</constant>
-   		</setHeader>
-		<setHeader headerName="catify_processVersion">
-        		<constant>1.0</constant>
-   		</setHeader>
-		<setHeader headerName="catify_taskId">
-        		<constant>start</constant>
-   		</setHeader>
-		<process ref="processIdProcessor"/>
-		<split stopOnException="false" streaming="true">
-			<tokenize token="\n"/>
-			<process ref="csvMarshallProcessor"/>
-			<process ref="initProcessProcessor"/>
-			<log message="started: ${header.catify_instanceId}"/>
-			<to uri="activemq:queue:in_queue"/>
-		</split>
-	</route>
-</routes>]]></con:request><con:jmsConfig JMSDeliveryMode="PERSISTENT"/><con:jmsPropertyConfig/><con:parameters/></con:request></con:method><con:method name="deployPipelineForRequest02" method="POST"><con:settings/><con:parameters/><con:representation type="REQUEST"><con:mediaType>application/xml</con:mediaType><con:params/><con:element>data</con:element></con:representation><con:representation type="RESPONSE"><con:mediaType>text/plain</con:mediaType><con:status>200</con:status><con:params/><con:element>data</con:element></con:representation><con:request name="deployPipelineForRequest02" mediaType="application/xml" postQueryString="false"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers">&lt;xml-fragment/></con:setting></con:settings><con:endpoint>http://localhost:9080/catify/deploy_pipeline/4713</con:endpoint><con:request><![CDATA[<routes xmlns="http://camel.apache.org/schema/spring">
-	<route id="out-e98f75cf1f8349f257872f9cdcf8378e">
-		<from uri="activemq:queue:out_queue?selector=catify_taskId%3D%27e98f75cf1f8349f257872f9cdcf8378e%27"/>
-		<log message="ended: ${body}"/>
-	</route>
-</routes>]]></con:request><con:jmsConfig JMSDeliveryMode="PERSISTENT"/><con:jmsPropertyConfig/><con:parameters/></con:request></con:method></con:resource></con:interface><con:testSuite name="catify rest api TestSuite"><con:description>TestSuite generated for REST Service [catify rest api]</con:description><con:settings/><con:runType>SEQUENTIAL</con:runType><con:testCase failOnError="true" failTestCaseOnErrors="true" keepSession="false" maxResults="0" name="process TestCase" searchProperties="true"><con:description>TestCase generated for REST Resource [process] located at [/deploy_process]</con:description><con:settings/><con:properties/></con:testCase><con:testCase failOnError="true" failTestCaseOnErrors="true" keepSession="false" maxResults="0" name="pipeline TestCase" searchProperties="true" id="c347afa7-803f-4554-99b4-8dc93ca669a8"><con:description>TestCase generated for REST Resource [pipeline] located at [/deploy_pipeline]</con:description><con:settings/><con:testStep type="restrequest" name="deployProcess"><con:settings/><con:config service="catify rest api" resourcePath="/catify/deploy_process" methodName="deployProcess" xsi:type="con:RestRequestStep" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:restRequest name="deployProcess" mediaType="application/xml" postQueryString="false"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers">&lt;xml-fragment/></con:setting></con:settings><con:endpoint>http://localhost:9080/catify/deploy_process</con:endpoint><con:request><![CDATA[<process processVersion="1.0" processName="process01" accountName="sbk" xmlns="http://www.catify.com/api/1.0" xmlns:n1="http://www.catify.com/api/1.0" >
-	<start n1:name="start"/>
-	<request n1:name="bam_step_01"/>
-	<receive n1:name="wait_for_payload">
-		<timeEvent n1:time="60000">
-			<request n1:name="throw_time_out_exception"/>
-			<end n1:name="end_time_out"/>
-		</timeEvent>
-	</receive>
-	<request n1:name="bam_step_02"/>
-	<end n1:name="end"/>
-</process>]]></con:request><con:jmsConfig JMSDeliveryMode="PERSISTENT"/><con:jmsPropertyConfig/><con:parameters/></con:restRequest></con:config></con:testStep><con:testStep type="delay" name="d0"><con:settings/><con:config><delay>1000</delay></con:config></con:testStep><con:testStep type="restrequest" name="deployPipelineForRequest01"><con:settings/><con:config service="catify rest api" resourcePath="/catify/deploy_pipeline" methodName="deployPipelineForRequest01" xsi:type="con:RestRequestStep" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:restRequest name="deployPipelineForRequest01" mediaType="application/xml" postQueryString="false"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers">&lt;xml-fragment/></con:setting></con:settings><con:endpoint>http://localhost:9080/catify/deploy_pipeline/4712</con:endpoint><con:request><![CDATA[<routes xmlns="http://camel.apache.org/schema/spring">
-	<route id="out-18105b19823a55855d936410564e604f">
-		<from uri="activemq:queue:out_queue?selector=catify_taskId%3D%2718105b19823a55855d936410564e604f%27"/>
-		<setHeader headerName="catify_taskId">
-        		<constant>a22d59661ac00a7e6f73c7c4445d261b</constant>
-   		</setHeader>
-		<process ref="taskInstanceIdProcessor"/>
-		<delay>
-            		<constant>50</constant>
-        	</delay>
-		<log message="request01 --> ${header.catify_instanceId}"/>
-		<to uri="activemq:queue:in_queue"/>
-	</route>
-</routes>]]></con:request><con:jmsConfig JMSDeliveryMode="PERSISTENT"/><con:jmsPropertyConfig/><con:parameters/></con:restRequest></con:config></con:testStep><con:testStep type="delay" name="d1"><con:settings/><con:config><delay>50</delay></con:config></con:testStep><con:testStep type="restrequest" name="deployPipelineForProcessStart"><con:settings/><con:config service="catify rest api" resourcePath="/catify/deploy_pipeline" methodName="deployPipelineForProcessStart" xsi:type="con:RestRequestStep" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:restRequest name="deployPipelineForProcessStart" mediaType="application/xml" postQueryString="false"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers">&lt;xml-fragment/></con:setting></con:settings><con:endpoint>http://localhost:9080/catify/deploy_pipeline/4711</con:endpoint><con:request><![CDATA[<routes xmlns="http://camel.apache.org/schema/spring">
-	<route id="in-68106b1419878a5415672183c94b2f32">
-		<from uri="file:../files?delete=true"/>
-		<log message="consuming file..."/>
-		<setHeader headerName="catify_accountName">
-        		<constant>sbk</constant>
-   		</setHeader>
-		<setHeader headerName="catify_processName">
-        		<constant>process01</constant>
-   		</setHeader>
-		<setHeader headerName="catify_processVersion">
-        		<constant>1.0</constant>
-   		</setHeader>
-		<setHeader headerName="catify_taskId">
-        		<constant>start</constant>
-   		</setHeader>
-		<process ref="processIdProcessor"/>
-		<split stopOnException="false" streaming="true">
-			<tokenize token="\n"/>
-			<process ref="csvMarshallProcessor"/>
-			<process ref="initProcessProcessor"/>
-			<setBody>
-				<simple>${header.catify_instanceId}</simple>
-			</setBody>
-			<log message="started --> ${body}"/>
-			<to uri="activemq:queue:in_queue"/>
-		</split>
-	</route>
-</routes>]]></con:request><con:jmsConfig JMSDeliveryMode="PERSISTENT"/><con:jmsPropertyConfig/><con:parameters/></con:restRequest></con:config></con:testStep><con:testStep type="delay" name="d2"><con:settings/><con:config><delay>50</delay></con:config></con:testStep><con:testStep type="restrequest" name="deployPipelineForRequest02"><con:settings/><con:config service="catify rest api" resourcePath="/catify/deploy_pipeline" methodName="deployPipelineForRequest02" xsi:type="con:RestRequestStep" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:restRequest name="deployPipelineForRequest02" mediaType="application/xml" postQueryString="false"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers">&lt;xml-fragment/></con:setting></con:settings><con:endpoint>http://localhost:9080/catify/deploy_pipeline/4713</con:endpoint><con:request><![CDATA[<routes xmlns="http://camel.apache.org/schema/spring">
-	<route id="out-e98f75cf1f8349f257872f9cdcf8378e">
-		<from uri="activemq:queue:out_queue?selector=catify_taskId%3D%27e98f75cf1f8349f257872f9cdcf8378e%27"/>
-		<log message="ended --> ${header.catify_instanceId}"/>
-	</route>
-</routes>]]></con:request><con:jmsConfig JMSDeliveryMode="PERSISTENT"/><con:jmsPropertyConfig/><con:parameters/></con:restRequest></con:config></con:testStep><con:properties/></con:testCase><con:properties/></con:testSuite><con:properties/><con:wssContainer/></con:soapui-project>
+</xml-fragment>]]></con:setting></con:settings><con:interface xsi:type="con:RestService" wadlVersion="http://wadl.dev.java.net/2009/02" name="catify rest api" type="rest" basePath="/catify" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:settings/><con:definitionCache type="TEXT" rootPart=""/><con:endpoints><con:endpoint>http://localhost:9080/demo/in_line3</con:endpoint></con:endpoints><con:resource name="process" path="deploy_process"><con:settings/><con:parameters/><con:method name="deployProcess" method="POST"><con:settings/><con:parameters/><con:representation type="REQUEST"><con:mediaType>application/xml</con:mediaType><con:params/><con:element xmlns:ns="http://www.catify.com/api/1.0">ns:process</con:element></con:representation><con:representation type="RESPONSE"><con:mediaType>text/plain</con:mediaType><con:status>200</con:status><con:params/><con:element xmlns:ns="http://www.catify.com/api/1.0">ns:process</con:element></con:representation><con:request name="deployProcess" mediaType="application/xml" postQueryString="false"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers">&lt;xml-fragment/></con:setting></con:settings><con:endpoint>http://localhost:9080/catify/deploy_process</con:endpoint><con:request><![CDATA[<process processVersion="1.0" processName="process01" accountName="CATIFY" xmlns="http://www.catify.com/api/1.0" xmlns:ns="http://www.catify.com/api/1.0" >
+<start ns:name="start">
+	<inPipeline>
+		<fromEndpoint><generic ns:uri="restlet:http://localhost:9080/demo/start_process?restletMethod=put"/></fromEndpoint>
+		<correlation>
+			<xpath>/foo/a</xpath>
+			<xpath>/foo/b</xpath>
+		</correlation>
+	</inPipeline>
+</start>
+<!-- -1 means all -->
+<fork ns:name="fork01" ns:receivingLines="-1">
+	<line ns:name="1">
+		<receive ns:name="wait_line1">
+			<timeEvent ns:time="30000">
+				<end ns:name="end_time_out1"/>
+			</timeEvent>
+			<inPipeline>
+				<fromEndpoint><generic ns:uri="restlet:http://localhost:9080/demo/in_line1?restletMethod=put"/></fromEndpoint>
+				<correlation>
+					<xpath>/foo/a</xpath>
+					<xpath>/foo/b</xpath>
+				</correlation>
+			</inPipeline>
+		</receive>
+		<request ns:name="write_line1">
+			<outPipeline>
+				<toEndpoint><generic ns:uri="log://out_line1"/></toEndpoint>
+			</outPipeline>
+		</request>
+	</line>
+	<line ns:name="2">
+		<receive ns:name="wait_line2">
+			<timeEvent ns:time="30000">
+				<end ns:name="end_time_out2"/>
+			</timeEvent>
+			<inPipeline>
+				<fromEndpoint><generic ns:uri="restlet:http://localhost:9080/demo/in_line2?restletMethod=put"/></fromEndpoint>
+				<correlation>
+					<xpath>/foo/a</xpath>
+					<xpath>/foo/b</xpath>
+				</correlation>
+			</inPipeline>
+		</receive>
+		<request ns:name="write_line2">
+			<outPipeline>
+				<toEndpoint><generic ns:uri="log://out_line2"/></toEndpoint>
+			</outPipeline>
+		</request>
+	</line>
+	<line ns:name="3">
+		<receive ns:name="wait_line3">
+			<timeEvent ns:time="30000">
+				<end ns:name="end_time_out2"/>
+			</timeEvent>
+			<inPipeline>
+				<fromEndpoint><generic ns:uri="restlet:http://localhost:9080/demo/in_line3?restletMethod=put"/></fromEndpoint>
+				<correlation>
+					<xpath>/foo/a</xpath>
+					<xpath>/foo/b</xpath>
+				</correlation>
+			</inPipeline>
+		</receive>
+		<request ns:name="write_line3">
+			<outPipeline>
+				<toEndpoint><generic ns:uri="log://out_line3"/></toEndpoint>
+			</outPipeline>
+		</request>
+	</line>
+	</fork>
+	<request ns:name="final_out">
+		<outPipeline>
+			<toEndpoint><generic ns:uri="log://final_out"/></toEndpoint>
+		</outPipeline>
+	</request>
+	<end ns:name="end"/>
+</process>]]></con:request><con:jmsConfig JMSDeliveryMode="PERSISTENT"/><con:jmsPropertyConfig/><con:parameters/></con:request></con:method></con:resource><con:resource name="xslt" path="/catify/deploy_transformation"><con:settings/><con:parameters/><con:method name="deploy start" method="POST"><con:settings/><con:parameters/><con:representation type="REQUEST"><con:mediaType>application/xml</con:mediaType><con:params/><con:element>data</con:element></con:representation><con:representation type="RESPONSE"><con:mediaType>text/plain</con:mediaType><con:status>200</con:status><con:params/><con:element>data</con:element></con:representation><con:representation type="FAULT"><con:mediaType>text/html</con:mediaType><con:status>404</con:status><con:params/><con:element>html</con:element></con:representation><con:request name="deploy start" mediaType="application/xml" postQueryString="false"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers">&lt;xml-fragment/></con:setting></con:settings><con:endpoint>http://localhost:9080/catify/deploy_transformation/CATIFY/process01/1.0/start</con:endpoint><con:request><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:fo="http://www.w3.org/1999/XSL/Format">
+	<xsl:template match="*">
+		<xsl:copy>
+			<xsl:apply-templates/>
+		</xsl:copy>
+	</xsl:template>
+</xsl:stylesheet>]]></con:request><con:jmsConfig JMSDeliveryMode="PERSISTENT"/><con:jmsPropertyConfig/><con:parameters/></con:request></con:method><con:method name="deploy line 1 in" method="POST"><con:settings/><con:parameters/><con:representation type="REQUEST"><con:mediaType>application/xml</con:mediaType><con:params/><con:element>html</con:element></con:representation><con:representation type="FAULT"><con:mediaType>text/html</con:mediaType><con:status>404</con:status><con:params/><con:element>html</con:element></con:representation><con:request name="deploy in" mediaType="application/xml" postQueryString="false"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers">&lt;xml-fragment/></con:setting></con:settings><con:endpoint>http://localhost:9080/catify/deploy_transformation/CATIFY/process01/1.0/wait_line1</con:endpoint><con:request><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:fo="http://www.w3.org/1999/XSL/Format">
+	<xsl:template match="*">
+		<xsl:copy>
+			<xsl:apply-templates/>
+		</xsl:copy>
+	</xsl:template>
+</xsl:stylesheet>]]></con:request><con:jmsConfig JMSDeliveryMode="PERSISTENT"/><con:jmsPropertyConfig/><con:parameters/></con:request></con:method><con:method name="deploy line 1 out" method="POST"><con:settings/><con:parameters/><con:representation type="REQUEST"><con:mediaType>application/xml</con:mediaType><con:params/><con:element>html</con:element></con:representation><con:representation type="FAULT"><con:mediaType>text/html</con:mediaType><con:status>404</con:status><con:params/><con:element>html</con:element></con:representation><con:request name="deploy out" mediaType="application/xml" postQueryString="false"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers">&lt;xml-fragment/></con:setting></con:settings><con:endpoint>http://localhost:9080/catify/deploy_transformation/CATIFY/process01/1.0/write_line1</con:endpoint><con:request><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:fo="http://www.w3.org/1999/XSL/Format">
+	<xsl:template match="*">
+		<xsl:copy>
+			<xsl:apply-templates/>
+		</xsl:copy>
+	</xsl:template>
+</xsl:stylesheet>]]></con:request><con:jmsConfig JMSDeliveryMode="PERSISTENT"/><con:jmsPropertyConfig/><con:parameters/></con:request></con:method><con:method name="deploy line 2 in" method="POST"><con:settings/><con:parameters/><con:representation type="RESPONSE"><con:mediaType>text/plain</con:mediaType><con:status>200</con:status><con:params/><con:element>data</con:element></con:representation><con:representation type="REQUEST"><con:mediaType>application/xml</con:mediaType><con:params/><con:element>data</con:element></con:representation><con:representation type="FAULT"><con:mediaType>text/html</con:mediaType><con:status>404</con:status><con:params/><con:element>html</con:element></con:representation><con:request name="deploy in" mediaType="application/xml" postQueryString="false"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers">&lt;xml-fragment/></con:setting></con:settings><con:endpoint>http://localhost:9080/catify/deploy_transformation/CATIFY/process01/1.0/wait_line2</con:endpoint><con:request><![CDATA[<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:fo="http://www.w3.org/1999/XSL/Format">
+   <xsl:template match="*">
+      <xsl:copy>
+         <xsl:apply-templates/>
+      </xsl:copy>
+   </xsl:template>
+</xsl:stylesheet>]]></con:request><con:jmsConfig JMSDeliveryMode="PERSISTENT"/><con:jmsPropertyConfig/><con:parameters/></con:request></con:method><con:method name="deploy line 2 out" method="POST"><con:settings/><con:parameters/><con:request name="deploy out" mediaType="application/xml" postQueryString="false"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers">&lt;xml-fragment/></con:setting></con:settings><con:endpoint>http://localhost:9080/catify/deploy_transformation/CATIFY/process01/1.0/write_line2</con:endpoint><con:request><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:fo="http://www.w3.org/1999/XSL/Format">
+	<xsl:template match="*">
+		<xsl:copy>
+			<xsl:apply-templates/>
+		</xsl:copy>
+	</xsl:template>
+</xsl:stylesheet>]]></con:request><con:jmsConfig JMSDeliveryMode="PERSISTENT"/><con:jmsPropertyConfig/><con:parameters/></con:request></con:method><con:method name="deploy line 3 in" method="POST"><con:settings/><con:parameters/><con:request name="deploy in" mediaType="application/xml" postQueryString="false"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers">&lt;xml-fragment/></con:setting></con:settings><con:endpoint>http://localhost:9080/catify/deploy_transformation/CATIFY/process01/1.0/wait_line3</con:endpoint><con:request><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:fo="http://www.w3.org/1999/XSL/Format">
+	<xsl:template match="*">
+		<xsl:copy>
+			<xsl:apply-templates/>
+		</xsl:copy>
+	</xsl:template>
+</xsl:stylesheet>]]></con:request><con:jmsConfig JMSDeliveryMode="PERSISTENT"/><con:jmsPropertyConfig/><con:parameters/></con:request></con:method><con:method name="deploy line 3 out" method="POST"><con:settings/><con:parameters/><con:request name="deploy out" mediaType="application/xml" postQueryString="false"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers">&lt;xml-fragment/></con:setting></con:settings><con:endpoint>http://localhost:9080/catify/deploy_transformation/CATIFY/process01/1.0/write_line3</con:endpoint><con:request><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:fo="http://www.w3.org/1999/XSL/Format">
+	<xsl:template match="*">
+		<xsl:copy>
+			<xsl:apply-templates/>
+		</xsl:copy>
+	</xsl:template>
+</xsl:stylesheet>]]></con:request><con:jmsConfig JMSDeliveryMode="PERSISTENT"/><con:jmsPropertyConfig/><con:parameters/></con:request></con:method><con:method name="deploy end" method="POST"><con:settings/><con:parameters/><con:request name="deploy end" mediaType="application/xml" postQueryString="false"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers">&lt;xml-fragment/></con:setting></con:settings><con:endpoint>http://localhost:9080/catify/deploy_transformation/CATIFY/process01/1.0/final_out</con:endpoint><con:request><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:fo="http://www.w3.org/1999/XSL/Format">
+	<xsl:template match="*">
+		<xsl:copy>
+			<xsl:apply-templates/>
+		</xsl:copy>
+	</xsl:template>
+</xsl:stylesheet>]]></con:request><con:jmsConfig JMSDeliveryMode="PERSISTENT"/><con:jmsPropertyConfig/><con:parameters/></con:request></con:method><con:method name="deploy process transformation" method="POST"><con:settings/><con:parameters/><con:representation type="REQUEST"><con:mediaType>application/xml</con:mediaType><con:params/><con:element>data</con:element></con:representation><con:representation type="RESPONSE"><con:mediaType>text/plain</con:mediaType><con:status>200</con:status><con:params/><con:element>data</con:element></con:representation><con:representation type="FAULT"><con:mediaType>text/html</con:mediaType><con:status>404</con:status><con:params/><con:element>html</con:element></con:representation><con:request name="deploy" mediaType="application/xml" postQueryString="false"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers">&lt;xml-fragment/></con:setting></con:settings><con:endpoint>http://localhost:9080/catify/deploy_transformation/CATIFY/process01/1.0</con:endpoint><con:request><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:fo="http://www.w3.org/1999/XSL/Format">
+	<xsl:template match="*">
+		<xsl:copy>
+			<xsl:apply-templates/>
+		</xsl:copy>
+	</xsl:template>
+</xsl:stylesheet>]]></con:request><con:jmsConfig JMSDeliveryMode="PERSISTENT"/><con:jmsPropertyConfig/><con:parameters/></con:request></con:method></con:resource><con:resource name="call process steps" path="/demo"><con:settings/><con:parameters/><con:method name="init process" method="PUT"><con:settings/><con:parameters/><con:request name="send payload" mediaType="application/xml" postQueryString="false"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers">&lt;xml-fragment/></con:setting></con:settings><con:endpoint>http://localhost:9080/demo/start_process</con:endpoint><con:request><![CDATA[<foo>
+   <a>a</a>
+   <b>b</b>
+</foo>]]></con:request><con:jmsConfig JMSDeliveryMode="PERSISTENT"/><con:jmsPropertyConfig/><con:parameters/></con:request></con:method><con:method name="call line 1" method="PUT"><con:settings/><con:parameters/><con:request name="send payload" mediaType="application/xml" postQueryString="false"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers">&lt;xml-fragment/></con:setting></con:settings><con:endpoint>http://localhost:9080/demo/in_line1</con:endpoint><con:request><![CDATA[<foo>
+   <a>a</a>
+   <b>b</b>
+</foo>]]></con:request><con:jmsConfig JMSDeliveryMode="PERSISTENT"/><con:jmsPropertyConfig/><con:parameters/></con:request></con:method><con:method name="call line 2" method="PUT"><con:settings/><con:parameters/><con:request name="send payload" mediaType="application/xml" postQueryString="false"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers">&lt;xml-fragment/></con:setting></con:settings><con:endpoint>http://localhost:9080/demo/in_line2</con:endpoint><con:request><![CDATA[<foo>
+   <a>a</a>
+   <b>b</b>
+</foo>]]></con:request><con:jmsConfig JMSDeliveryMode="PERSISTENT"/><con:jmsPropertyConfig/><con:parameters/></con:request></con:method><con:method name="call line 3" method="PUT"><con:settings/><con:parameters/><con:request name="send payload" mediaType="application/xml" postQueryString="false"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers">&lt;xml-fragment/></con:setting></con:settings><con:endpoint>http://localhost:9080/demo/in_line3</con:endpoint><con:request><![CDATA[<foo>
+   <a>a</a>
+   <b>b</b>
+</foo>]]></con:request><con:jmsConfig JMSDeliveryMode="PERSISTENT"/><con:jmsPropertyConfig/><con:parameters/></con:request></con:method></con:resource></con:interface><con:testSuite name="catify rest api TestSuite"><con:description>TestSuite generated for REST Service [catify rest api]</con:description><con:settings/><con:runType>SEQUENTIAL</con:runType><con:testCase failOnError="true" failTestCaseOnErrors="true" keepSession="false" maxResults="0" name="deploy-process" searchProperties="true" id="ac55658d-e7e0-4ab3-bca0-f36f00a385dc"><con:settings/><con:testStep type="restrequest" name="start"><con:settings/><con:config service="catify rest api" resourcePath="/catify/catify/deploy_transformation" methodName="deploy start" xsi:type="con:RestRequestStep" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:restRequest name="start" mediaType="application/xml" postQueryString="false"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers">&lt;xml-fragment/></con:setting></con:settings><con:endpoint>http://localhost:9080/catify/deploy_transformation/CATIFY/process01/1.0/start</con:endpoint><con:request><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:fo="http://www.w3.org/1999/XSL/Format">
+	<xsl:template match="*">
+		<xsl:copy>
+			<xsl:apply-templates/>
+		</xsl:copy>
+	</xsl:template>
+</xsl:stylesheet>]]></con:request><con:jmsConfig JMSDeliveryMode="PERSISTENT"/><con:jmsPropertyConfig/><con:parameters/></con:restRequest></con:config></con:testStep><con:testStep type="restrequest" name="1 in"><con:settings/><con:config service="catify rest api" resourcePath="/catify/catify/deploy_transformation" methodName="deploy line 1 in" xsi:type="con:RestRequestStep" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:restRequest name="1 in" mediaType="application/xml" postQueryString="false"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers">&lt;xml-fragment/></con:setting></con:settings><con:endpoint>http://localhost:9080/catify/deploy_transformation/CATIFY/process01/1.0/wait_line1</con:endpoint><con:request><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:fo="http://www.w3.org/1999/XSL/Format">
+	<xsl:template match="*">
+		<xsl:copy>
+			<xsl:apply-templates/>
+		</xsl:copy>
+	</xsl:template>
+</xsl:stylesheet>]]></con:request><con:jmsConfig JMSDeliveryMode="PERSISTENT"/><con:jmsPropertyConfig/><con:parameters/></con:restRequest></con:config></con:testStep><con:testStep type="restrequest" name="1 out"><con:settings/><con:config service="catify rest api" resourcePath="/catify/catify/deploy_transformation" methodName="deploy line 1 out" xsi:type="con:RestRequestStep" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:restRequest name="1 out" mediaType="application/xml" postQueryString="false"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers">&lt;xml-fragment/></con:setting></con:settings><con:endpoint>http://localhost:9080/catify/deploy_transformation/CATIFY/process01/1.0/write_line1</con:endpoint><con:request><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:fo="http://www.w3.org/1999/XSL/Format">
+	<xsl:template match="*">
+		<xsl:copy>
+			<xsl:apply-templates/>
+		</xsl:copy>
+	</xsl:template>
+</xsl:stylesheet>]]></con:request><con:jmsConfig JMSDeliveryMode="PERSISTENT"/><con:jmsPropertyConfig/><con:parameters/></con:restRequest></con:config></con:testStep><con:testStep type="restrequest" name="2 in"><con:settings/><con:config service="catify rest api" resourcePath="/catify/catify/deploy_transformation" methodName="deploy line 2 in" xsi:type="con:RestRequestStep" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:restRequest name="2 in" mediaType="application/xml" postQueryString="false"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers">&lt;xml-fragment/></con:setting></con:settings><con:endpoint>http://localhost:9080/catify/deploy_transformation/CATIFY/process01/1.0/wait_line2</con:endpoint><con:request><![CDATA[<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:fo="http://www.w3.org/1999/XSL/Format">
+   <xsl:template match="*">
+      <xsl:copy>
+         <xsl:apply-templates/>
+      </xsl:copy>
+   </xsl:template>
+</xsl:stylesheet>]]></con:request><con:jmsConfig JMSDeliveryMode="PERSISTENT"/><con:jmsPropertyConfig/><con:parameters/></con:restRequest></con:config></con:testStep><con:testStep type="restrequest" name="2 out"><con:settings/><con:config service="catify rest api" resourcePath="/catify/catify/deploy_transformation" methodName="deploy line 2 out" xsi:type="con:RestRequestStep" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:restRequest name="2 out" mediaType="application/xml" postQueryString="false"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers">&lt;xml-fragment/></con:setting></con:settings><con:endpoint>http://localhost:9080/catify/deploy_transformation/CATIFY/process01/1.0/write_line2</con:endpoint><con:request><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:fo="http://www.w3.org/1999/XSL/Format">
+	<xsl:template match="*">
+		<xsl:copy>
+			<xsl:apply-templates/>
+		</xsl:copy>
+	</xsl:template>
+</xsl:stylesheet>]]></con:request><con:jmsConfig JMSDeliveryMode="PERSISTENT"/><con:jmsPropertyConfig/><con:parameters/></con:restRequest></con:config></con:testStep><con:testStep type="restrequest" name="3 in"><con:settings/><con:config service="catify rest api" resourcePath="/catify/catify/deploy_transformation" methodName="deploy line 3 in" xsi:type="con:RestRequestStep" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:restRequest name="3 in" mediaType="application/xml" postQueryString="false"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers">&lt;xml-fragment/></con:setting></con:settings><con:endpoint>http://localhost:9080/catify/deploy_transformation/CATIFY/process01/1.0/wait_line3</con:endpoint><con:request><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:fo="http://www.w3.org/1999/XSL/Format">
+	<xsl:template match="*">
+		<xsl:copy>
+			<xsl:apply-templates/>
+		</xsl:copy>
+	</xsl:template>
+</xsl:stylesheet>]]></con:request><con:jmsConfig JMSDeliveryMode="PERSISTENT"/><con:jmsPropertyConfig/><con:parameters/></con:restRequest></con:config></con:testStep><con:testStep type="restrequest" name="3 out"><con:settings/><con:config service="catify rest api" resourcePath="/catify/catify/deploy_transformation" methodName="deploy line 3 out" xsi:type="con:RestRequestStep" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:restRequest name="3 out" mediaType="application/xml" postQueryString="false"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers">&lt;xml-fragment/></con:setting></con:settings><con:endpoint>http://localhost:9080/catify/deploy_transformation/CATIFY/process01/1.0/write_line3</con:endpoint><con:request><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:fo="http://www.w3.org/1999/XSL/Format">
+	<xsl:template match="*">
+		<xsl:copy>
+			<xsl:apply-templates/>
+		</xsl:copy>
+	</xsl:template>
+</xsl:stylesheet>]]></con:request><con:jmsConfig JMSDeliveryMode="PERSISTENT"/><con:jmsPropertyConfig/><con:parameters/></con:restRequest></con:config></con:testStep><con:testStep type="restrequest" name="end"><con:settings/><con:config service="catify rest api" resourcePath="/catify/catify/deploy_transformation" methodName="deploy end" xsi:type="con:RestRequestStep" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:restRequest name="end" mediaType="application/xml" postQueryString="false"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers">&lt;xml-fragment/></con:setting></con:settings><con:endpoint>http://localhost:9080/catify/deploy_transformation/CATIFY/process01/1.0/final_out</con:endpoint><con:request><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:fo="http://www.w3.org/1999/XSL/Format">
+	<xsl:template match="*">
+		<xsl:copy>
+			<xsl:apply-templates/>
+		</xsl:copy>
+	</xsl:template>
+</xsl:stylesheet>]]></con:request><con:jmsConfig JMSDeliveryMode="PERSISTENT"/><con:jmsPropertyConfig/><con:parameters/></con:restRequest></con:config></con:testStep><con:testStep type="restrequest" name="init process"><con:settings/><con:config service="catify rest api" resourcePath="/catify/catify/deploy_transformation" methodName="deploy process transformation" xsi:type="con:RestRequestStep" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:restRequest name="init process" mediaType="application/xml" postQueryString="false"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers">&lt;xml-fragment/></con:setting></con:settings><con:endpoint>http://localhost:9080/catify/deploy_transformation/CATIFY/process01/1.0</con:endpoint><con:request><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:fo="http://www.w3.org/1999/XSL/Format">
+	<xsl:template match="*">
+		<xsl:copy>
+			<xsl:apply-templates/>
+		</xsl:copy>
+	</xsl:template>
+</xsl:stylesheet>]]></con:request><con:jmsConfig JMSDeliveryMode="PERSISTENT"/><con:jmsPropertyConfig/><con:parameters/></con:restRequest></con:config></con:testStep><con:testStep type="delay" name="wait"><con:settings/><con:config><delay>3000</delay></con:config></con:testStep><con:testStep type="restrequest" name="deploy process"><con:settings/><con:config service="catify rest api" resourcePath="/catify/deploy_process" methodName="deployProcess" xsi:type="con:RestRequestStep" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:restRequest name="deploy process" mediaType="application/xml" postQueryString="false"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers">&lt;xml-fragment/></con:setting></con:settings><con:endpoint>http://localhost:9080/catify/deploy_process</con:endpoint><con:request><![CDATA[<process processVersion="1.0" processName="process01" accountName="CATIFY" xmlns="http://www.catify.com/api/1.0" xmlns:ns="http://www.catify.com/api/1.0" >
+<start ns:name="start">
+	<inPipeline>
+		<fromEndpoint><generic ns:uri="restlet:http://localhost:9080/demo/start_process?restletMethod=post"/></fromEndpoint>
+		<correlation>
+			<xpath>/foo/a</xpath>
+			<xpath>/foo/b</xpath>
+		</correlation>
+	</inPipeline>
+</start>
+<!-- -1 means all -->
+<fork ns:name="fork01" ns:receivingLines="-1">
+	<line ns:name="1">
+		<receive ns:name="wait_line1">
+			<timeEvent ns:time="30000">
+				<end ns:name="end_time_out1"/>
+			</timeEvent>
+			<inPipeline>
+				<fromEndpoint><generic ns:uri="restlet:http://localhost:9080/demo/in_line1?restletMethod=post"/></fromEndpoint>
+				<correlation>
+					<xpath>/foo/a</xpath>
+					<xpath>/foo/b</xpath>
+				</correlation>
+			</inPipeline>
+		</receive>
+		<request ns:name="write_line1">
+			<outPipeline>
+				<toEndpoint><generic ns:uri="log://out_line1"/></toEndpoint>
+			</outPipeline>
+		</request>
+	</line>
+	<line ns:name="2">
+		<receive ns:name="wait_line2">
+			<timeEvent ns:time="30000">
+				<end ns:name="end_time_out2"/>
+			</timeEvent>
+			<inPipeline>
+				<fromEndpoint><generic ns:uri="restlet:http://localhost:9080/demo/in_line2?restletMethod=post"/></fromEndpoint>
+				<correlation>
+					<xpath>/foo/a</xpath>
+					<xpath>/foo/b</xpath>
+				</correlation>
+			</inPipeline>
+		</receive>
+		<request ns:name="write_line2">
+			<outPipeline>
+				<toEndpoint><generic ns:uri="log://out_line2"/></toEndpoint>
+			</outPipeline>
+		</request>
+	</line>
+	<line ns:name="3">
+		<receive ns:name="wait_line3">
+			<timeEvent ns:time="30000">
+				<end ns:name="end_time_out2"/>
+			</timeEvent>
+			<inPipeline>
+				<fromEndpoint><generic ns:uri="restlet:http://localhost:9080/demo/in_line3?restletMethod=post"/></fromEndpoint>
+				<correlation>
+					<xpath>/foo/a</xpath>
+					<xpath>/foo/b</xpath>
+				</correlation>
+			</inPipeline>
+		</receive>
+		<request ns:name="write_line3">
+			<outPipeline>
+				<toEndpoint><generic ns:uri="log://out_line3"/></toEndpoint>
+			</outPipeline>
+		</request>
+	</line>
+	</fork>
+	<request ns:name="final_out">
+		<outPipeline>
+			<toEndpoint><generic ns:uri="log://final_out"/></toEndpoint>
+		</outPipeline>
+	</request>
+	<end ns:name="end"/>
+</process>]]></con:request><con:jmsConfig JMSDeliveryMode="PERSISTENT"/><con:jmsPropertyConfig/><con:parameters/></con:restRequest></con:config></con:testStep><con:properties/></con:testCase><con:testCase failOnError="true" failTestCaseOnErrors="true" keepSession="false" maxResults="0" name="run-process" searchProperties="true" id="2a0793e5-4a2a-4917-9f4e-11f1e5a83b5d"><con:settings/><con:testStep type="restrequest" name="init process"><con:settings/><con:config service="catify rest api" resourcePath="/catify/demo" methodName="init process" xsi:type="con:RestRequestStep" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:restRequest name="inti process" mediaType="application/xml" postQueryString="false"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers">&lt;xml-fragment/></con:setting></con:settings><con:endpoint>http://localhost:9080/demo/start_process</con:endpoint><con:request><![CDATA[<foo>
+   <a>a</a>
+   <b>b</b>
+</foo>]]></con:request><con:jmsConfig JMSDeliveryMode="PERSISTENT"/><con:jmsPropertyConfig/><con:parameters/></con:restRequest></con:config></con:testStep><con:testStep type="delay" name="wait1"><con:settings/><con:config><delay>500</delay></con:config></con:testStep><con:testStep type="restrequest" name="call 3"><con:settings/><con:config service="catify rest api" resourcePath="/catify/demo" methodName="call line 3" xsi:type="con:RestRequestStep" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:restRequest name="call 3" mediaType="application/xml" postQueryString="false"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers">&lt;xml-fragment/></con:setting></con:settings><con:endpoint>http://localhost:9080/demo/in_line3</con:endpoint><con:request><![CDATA[<foo>
+   <a>a</a>
+   <b>b</b>
+</foo>]]></con:request><con:jmsConfig JMSDeliveryMode="PERSISTENT"/><con:jmsPropertyConfig/><con:parameters/></con:restRequest></con:config></con:testStep><con:testStep type="delay" name="wait2"><con:settings/><con:config><delay>1500</delay></con:config></con:testStep><con:testStep type="restrequest" name="call 1"><con:settings/><con:config service="catify rest api" resourcePath="/catify/demo" methodName="call line 1" xsi:type="con:RestRequestStep" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:restRequest name="call 1" mediaType="application/xml" postQueryString="false"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers">&lt;xml-fragment/></con:setting></con:settings><con:endpoint>http://localhost:9080/demo/in_line1</con:endpoint><con:request><![CDATA[<foo>
+   <a>a</a>
+   <b>b</b>
+</foo>]]></con:request><con:jmsConfig JMSDeliveryMode="PERSISTENT"/><con:jmsPropertyConfig/><con:parameters/></con:restRequest></con:config></con:testStep><con:testStep type="delay" name="wait3"><con:settings/><con:config><delay>1000</delay></con:config></con:testStep><con:testStep type="restrequest" name="call 2"><con:settings/><con:config service="catify rest api" resourcePath="/catify/demo" methodName="call line 2" xsi:type="con:RestRequestStep" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:restRequest name="call 2" mediaType="application/xml" postQueryString="false"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers">&lt;xml-fragment/></con:setting></con:settings><con:endpoint>http://localhost:9080/demo/in_line2</con:endpoint><con:request><![CDATA[<foo>
+   <a>a</a>
+   <b>b</b>
+</foo>]]></con:request><con:jmsConfig JMSDeliveryMode="PERSISTENT"/><con:jmsPropertyConfig/><con:parameters/></con:restRequest></con:config></con:testStep><con:properties/></con:testCase><con:properties/></con:testSuite><con:properties/><con:wssContainer/></con:soapui-project>
