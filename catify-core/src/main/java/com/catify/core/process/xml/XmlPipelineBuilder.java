@@ -370,10 +370,13 @@ public class XmlPipelineBuilder {
 		builder.append(String.format("\t<route id=\"send-to-queue-%s\">\n", nodeId));
 		builder.append(String.format("\t\t<from uri=\"direct:send-to-queue-%s\"/>\n", nodeId));
 		
-		//delete message body
+		//delete message body (the body will be saved inside the data grid)
 		builder.append("\t\t<setBody>\n");
 		builder.append("\t\t\t<constant></constant>\n");
 		builder.append("\t\t</setBody>\n");
+		
+		//clean header from objects that are not serializable
+		builder.append("\t\t<process ref=\"serializeableHeadersProcessor\"/>\n");
 		
 		//send message to queue
 		builder.append(String.format("\t\t<inOnly uri=\"hazelcast:%sin_%s?transferExchange=true\"/>\n", HazelcastConstants.SEDA_PREFIX, nodeId));
