@@ -100,6 +100,11 @@
                  <enabled>false</enabled>
              </releases>
          </pluginRepository>
+         <pluginRepository>
+	     <id>fusesource-snapshots</id>
+	     <name>fusesource-snapshots</name>
+	     <url>http://repo.fusesource.com/maven2-snapshot</url>
+	 </pluginRepository>
   </pluginRepositories>
   <modules>
     <module>parent</module>
