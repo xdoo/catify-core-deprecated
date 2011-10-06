@@ -7,6 +7,7 @@ import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.test.junit4.CamelSpringTestSupport;
 import org.junit.Test;
+import org.junit.Ignore;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
@@ -49,11 +50,12 @@ public class TestEventRoutes extends CamelSpringTestSupport {
 	}
 	
 	@Test
+	@Ignore
 	public void testUnRegister(){
 		assertNotNull(context.getRoute("delete-timer-event"));
 		
 		this.insertEvent(1000, "123", "4711");
-		assertEquals(1, this.timerCache.size());
+		assertEquals(1, this.timerCache.size());		
 		template.sendBody("direct:unregister", "foo");
 		assertEquals(0, this.timerCache.size());
 	}
