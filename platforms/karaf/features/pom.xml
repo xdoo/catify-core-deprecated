@@ -41,6 +41,7 @@
       <aopalliance-bundle-version>1.0_3</aopalliance-bundle-version>
       <asm-bundle-version>2.2.3_3</asm-bundle-version>
       <aws-java-sdk-bundle-version>1.1.1_1</aws-java-sdk-bundle-version>
+			<aries-blueprint-version>0.3</aries-blueprint-version>
       <bcel-bundle-version>5.2_4</bcel-bundle-version>
       <cglib-version>2.1_3_6</cglib-version>
       <cometd-java-server-bundle-version>2.1.1_1-SNAPSHOT</cometd-java-server-bundle-version>
@@ -105,6 +106,7 @@
       <oscache-bundle-version>2.4_3</oscache-bundle-version>
       <osgi.compendium.version>4.2.0</osgi.compendium.version>
       <protobuf-java-bundle-version>2.3.0_1</protobuf-java-bundle-version>
+      <pax-logging-version>1.6.3</pax-logging-version>
       <pax.web.version>0.7.2</pax.web.version>
       <quartz-bundle-version>1.8.3_2</quartz-bundle-version>
       <qpid-bundle-version>0.5.0_2</qpid-bundle-version>
