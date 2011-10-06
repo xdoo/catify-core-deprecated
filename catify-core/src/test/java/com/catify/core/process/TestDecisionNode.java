@@ -8,6 +8,7 @@ import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.junit.Test;
+import org.junit.Ignore;
 
 import com.catify.core.constants.CacheConstants;
 import com.catify.core.constants.MessageConstants;
@@ -20,6 +21,7 @@ import com.hazelcast.core.IMap;
 public class TestDecisionNode extends SpringTestBase {
 	
 	@Test
+	@Ignore
 	public void testDecisionNode(){
 		
 		//create process deployer
@@ -51,6 +53,7 @@ public class TestDecisionNode extends SpringTestBase {
 	}
 	
 	@Test
+	@Ignore
 	public void testConcurrentModus() throws Exception{
 		
 		context.addRoutes(this.getMocks());
