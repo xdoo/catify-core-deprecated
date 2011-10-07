@@ -16,8 +16,9 @@
   See the License for the specific language governing permissions and
   limitations under the License.
 -->
-
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" 
+				 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+				 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
   <modelVersion>4.0.0</modelVersion>
 
@@ -31,15 +32,56 @@
   <inceptionYear>2010</inceptionYear>
 
   <prerequisites>
-    <maven>2.2.1</maven>
+    <maven>3.0.3</maven>
   </prerequisites>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <site-repo-url>scpexe://people.apache.org/www/camel.apache.org/maven/</site-repo-url>
-    <felix-version>2.0.1</felix-version>
-    <jdk.version>1.6</jdk.version>
-    <compiler.fork>1.6</compiler.fork>
+
+    <felix.framework.version>2.0.5</felix.framework.version>
+    <apache-camel-version>2.8.0</apache-camel-version>    
+    
+    <compiler.fork>false</compiler.fork>
+		<compiler.source.version>1.6</compiler.source.version>
+		<compiler.target.version>1.6</compiler.target.version>
+    <compiler.maxmem>256M</compiler.maxmem>
+    
+    <!-- encoding -->
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>    
+    
+    <maven-assembly-plugin.version>2.2.1</maven-assembly-plugin.version>
+    <build-helper-maven-plugin.version>1.7</build-helper-maven-plugin.version>
+    <maven-compiler-plugin.version>2.3.2</maven-compiler-plugin.version>
+    <apache-rat-plugin.version>1.0-alpha-3</apache-rat-plugin.version>
+    <maven-eclipse-plugin.version>2.8</maven-eclipse-plugin.version>
+    <maven-idea-plugin.version>2.2</maven-idea-plugin.version>
+    <maven-eclipse-plugin.version>2.8</maven-eclipse-plugin.version>
+    <maven-release-plugin.version>2.2.1</maven-release-plugin.version>
+    <maven-shade-plugin.version>1.4</maven-shade-plugin.version>
+    <maven-war-plugin.version>2.1.1</maven-war-plugin.version>
+    <maven-resource-plugin.version>2.5</maven-resource-plugin.version>
+    <maven-plugin-plugin.version>2.9</maven-plugin-plugin.version>
+    <maven-clean-plugin.version>2.4.1</maven-clean-plugin.version>
+    <maven-install-plugin.version>2.3.1</maven-install-plugin.version>
+    <maven-remote-resources-plugin.version>1.2.1</maven-remote-resources-plugin.version>
+    <maven-jar-plugin.version>2.3.2</maven-jar-plugin.version>
+    <maven-dependency-plugin.version>2.3</maven-dependency-plugin.version>
+    <maven-site-plugin.version>3.0</maven-site-plugin.version>
+    <maven-surefire-plugin.version>2.10</maven-surefire-plugin.version>
+    <maven-checkstyle-plugin.version>2.7</maven-checkstyle-plugin.version>
+    <maven-source-plugin.version>2.1.2</maven-source-plugin.version>
+    <maven-surefire-report-plugin.version>2.10</maven-surefire-report-plugin.version>
+    <properties-maven-plugin.version>1.0-alpha-2</properties-maven-plugin.version>
+    <exec-maven-plugin.version>1.2.1</exec-maven-plugin.version>
+    <ianal-maven-plugin.version>1.0-alpha-1</ianal-maven-plugin.version>
+    <taglist-maven-plugin.version>2.4</taglist-maven-plugin.version>
+    <findbugs-maven-plugin.version>2.3.3</findbugs-maven-plugin.version>
+    <axistools-maven-plugin.version>1.4</axistools-maven-plugin.version>
+    <maven-bundle-plugin.version>2.3.5</maven-bundle-plugin.version>
+    <camel-maven-plugin.version></camel-maven-plugin.version>
+    <cobertura-maven-plugin.version>2.5.1</cobertura-maven-plugin.version>
   </properties>
 
   <mailingLists>
@@ -89,6 +131,7 @@
              </releases>
          </repository>
   </repositories>
+  
   <pluginRepositories>
          <pluginRepository>
              <id>apache.snapshots</id>
@@ -106,6 +149,7 @@
 	     <url>http://repo.fusesource.com/maven2-snapshot</url>
 	 </pluginRepository>
   </pluginRepositories>
+ 
   <modules>
     <module>parent</module>
     <module>catify-core</module>
@@ -126,22 +170,23 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-assembly-plugin</artifactId>
-          <version>2.2</version>
+          <version>${maven-assembly-plugin.version}</version>
         </plugin>
+        
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>build-helper-maven-plugin</artifactId>
-          <version>1.5</version>
+          <version>${build-helper-maven-plugin.version}</version>
         </plugin>
   
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-compiler-plugin</artifactId>
-          <version>2.3.2</version>
+          <version>${maven-compiler-plugin.version}</version>
           <configuration>
-            <source>1.6</source>
-            <target>1.6</target>
-            <maxmem>256M</maxmem>
+            <source>${compiler.source.version}</source>
+            <target>${compiler.target.version}</target>
+            <maxmem>${compiler.maxmem}</maxmem>
             <fork>${compiler.fork}</fork>
           </configuration>
         </plugin>
@@ -149,13 +194,13 @@
         <plugin>
           <groupId>org.apache.rat</groupId>
           <artifactId>apache-rat-plugin</artifactId>
-          <version>0.7</version>
+          <version>${apache-rat-plugin.version}</version>
         </plugin>
    
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-eclipse-plugin</artifactId>
-          <version>2.8</version>
+          <version>${maven-eclipse-plugin.version}</version>
           <configuration>
             <downloadSources>true</downloadSources>
             <downloadJavadocs>true</downloadJavadocs>
@@ -165,7 +210,7 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-idea-plugin</artifactId>
-          <version>2.2</version>
+          <version>${maven-idea-plugin.version}</version>
           <configuration>
             <downloadSources>true</downloadSources>
             <downloadJavadocs>true</downloadJavadocs>
@@ -175,22 +220,22 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-javadoc-plugin</artifactId>
-          <version>2.7</version>
+          <version>${maven-javadoc-plugin.version}</version>
           <configuration>
             <attach>true</attach>
-            <source>1.6</source>
+            <source>${compiler.source.version}</source>
             <quiet>true</quiet>
             <bottom>CATIFY</bottom>
             <detectOfflineLinks>false</detectOfflineLinks>
-            <javadocVersion>1.6</javadocVersion>
-            <encoding>UTF-8</encoding>
+            <javadocVersion>${compiler.source.version}</javadocVersion>
+            <encoding>${project.build.sourceEncoding}</encoding>
           </configuration>
         </plugin>
   
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-release-plugin</artifactId>
-          <version>2.0</version>
+          <version>${maven-release-plugin.version}</version>
           <configuration>
             <!--<tagBase>https://svn.apache.org/repos/asf/camel/tags</tagBase>-->
             <!--<useReleaseProfile>false</useReleaseProfile>-->
@@ -204,14 +249,13 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-shade-plugin</artifactId>
-          <!-- using this version to avoid build error of Maven 2.2.1 -->
-          <version>1.2.1</version>
+          <version>${maven-shade-plugin.version}</version>
         </plugin>
   
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-war-plugin</artifactId>
-          <version>2.1</version>
+          <version>${maven-war-plugin.version}</version>
           <configuration>
             <webResources>
               <!--
@@ -232,20 +276,20 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-resources-plugin</artifactId>
-	      <version>2.4.3</version>
+	      <version>${maven-resource-plugin.version}</version>
 	      <configuration>
-                   <encoding>UTF-8</encoding>
+                   <encoding>${project.build.sourceEncoding}</encoding>
               </configuration>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-plugin-plugin</artifactId>
-          <version>2.6</version>
+          <version>${maven-plugin-plugin.version}</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-clean-plugin</artifactId>
-          <version>2.4.1</version>
+          <version>${maven-clean-plugin.version}</version>
           <configuration>
             <filesets>
               <fileset>
@@ -259,47 +303,47 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-install-plugin</artifactId>
-          <version>2.3.1</version>
+          <version>${maven-install-plugin.version}</version>
         </plugin>
         <plugin>
 	      <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-remote-resources-plugin</artifactId>
-          <version>1.1</version>
+          <version>${maven-remote-resources-plugin.version}</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-jar-plugin</artifactId>
-          <version>2.3.1</version>
+          <version>${maven-jar-plugin.version}</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-dependency-plugin</artifactId>
-          <version>2.1</version>
+          <version>${maven-dependency-plugin.version}</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-site-plugin</artifactId>
-          <version>2.0</version>
+          <version>${maven-site-plugin.version}</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-surefire-plugin</artifactId>
-          <version>2.7.1</version>
+          <version>${maven-surefire-plugin.version}</version>
         </plugin>
         <plugin>
           <groupId>org.apache.felix</groupId>
           <artifactId>maven-bundle-plugin</artifactId>
-          <version>2.3.4</version>
+          <version>${maven-bundle-plugin.version}</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-checkstyle-plugin</artifactId>
-          <version>2.6</version>
+          <version>${maven-checkstyle-plugin.version}</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-source-plugin</artifactId>
-          <version>2.1.2</version>
+          <version>${maven-source-plugin.version}</version>
           <configuration>
 	         <archive>
                <manifestEntries>
@@ -320,37 +364,37 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-surefire-report-plugin</artifactId>
-          <version>2.5</version>
+          <version>${maven-surefire-report-plugin.version}</version>
         </plugin>
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>properties-maven-plugin</artifactId>
-          <version>1.0-alpha-2</version>
+          <version>${properties-maven-plugin.version}</version>
         </plugin>
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>axistools-maven-plugin</artifactId>
-          <version>1.3</version>
+          <version>${axistools-maven-plugin.version}</version>
         </plugin>
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>exec-maven-plugin</artifactId>
-          <version>1.1.1</version>
+          <version>${exec-maven-plugin.version}</version>
         </plugin>
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>ianal-maven-plugin</artifactId>
-          <version>1.0-alpha-1</version>
+          <version>${ianal-maven-plugin.version}</version>
         </plugin>
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>taglist-maven-plugin</artifactId>
-          <version>2.4</version>
+          <version>${taglist-maven-plugin.version}</version>
         </plugin>
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>findbugs-maven-plugin</artifactId>
-          <version>2.3.1</version>
+          <version>${findbugs-maven-plugin.version}</version>
         </plugin>
       </plugins>
     </pluginManagement>
@@ -359,14 +403,14 @@
 			<plugin>
 				<groupId>org.apache.felix</groupId>
 				<artifactId>maven-bundle-plugin</artifactId>
-				<version>${felix-version}</version>
+				<version>${maven-bundle-plugin.version}</version>
 				<extensions>true</extensions>
 				<configuration>
 					<instructions>
-						<Bundle-Name>${pom.groupId}.${project.artifactId}</Bundle-Name>
+						<Bundle-Name>${project.groupId}.${project.artifactId}</Bundle-Name>
 						<Bundle-SymbolicName>catify-osgi</Bundle-SymbolicName>
-						<Bundle-Name>${pom.name}-osgi</Bundle-Name>
-						<Bundle-Version>${pom.version}</Bundle-Version>
+						<Bundle-Name>${project.name}-osgi</Bundle-Name>
+						<Bundle-Version>${project.version}</Bundle-Version>
 						<Export-Package>
 							com.catify.core.*
 						</Export-Package>
@@ -384,13 +428,15 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
-          <forkMode>pertest</forkMode>
+          <forkMode>always</forkMode>
           <childDelegation>false</childDelegation>
           <useFile>true</useFile>
-          <failIfNoTests>false</failIfNoTests>
+          <failIfNoTests>true</failIfNoTests>
+<!--
           <includes>
              <include>**/*Test.java</include>             
           </includes>
+-->          
         </configuration>
       </plugin>
       <plugin>
@@ -434,6 +480,7 @@
 	<plugin>
 	  <groupId>org.apache.camel</groupId>
 	  <artifactId>camel-maven-plugin</artifactId>
+	  <version>${apache-camel-version}</version>
 	  <configuration>
 	    <fileApplicationContextUri>src/main/resources/META-INF/spring/camel*.xml</fileApplicationContextUri>
 	  </configuration>
@@ -446,17 +493,17 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-report-plugin</artifactId>
-        <version>2.5</version>
+        <version>${maven-surefire-report-plugin.version}</version>
       </plugin>
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>taglist-maven-plugin</artifactId>
-        <version>2.4</version>
+        <version>${taglist-maven-plugin.version}</version>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-javadoc-plugin</artifactId>
-        <version>2.7</version>
+        <version>${maven-javadoc-plugin.version}</version>
         <configuration>
           <links>
             <link>http://download.oracle.com/javase/6/docs/api/</link>
@@ -464,8 +511,8 @@
             <link>http://static.springsource.org/spring/docs/3.0.5.RELEASE/api/</link>
           </links>
           <linksource>true</linksource>
-          <maxmemory>500m</maxmemory>
-          <source>1.6</source>
+          <maxmemory>${compiler.maxmem}</maxmemory>
+          <source>${compiler.source.version}</source>
         </configuration>
       </plugin>
       <plugin>
@@ -489,7 +536,7 @@
         <dependency>
           <groupId>com.sun</groupId>
           <artifactId>tools</artifactId>
-          <version>1.5.0</version>
+          <version>1.6.0</version>
           <scope>system</scope>
           <systemPath>${java.home}/../lib/tools.jar</systemPath>
         </dependency>
