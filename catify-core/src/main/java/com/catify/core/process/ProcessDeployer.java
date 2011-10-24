@@ -28,6 +28,7 @@ import com.catify.core.process.nodes.SleepNode;
 import com.catify.core.process.processors.TransformDecisionPayloadProcessor;
 import com.catify.core.process.routers.impl.CheckMergeRouter;
 import com.catify.core.process.routers.impl.ReceiveRouter;
+import com.catify.core.process.xml.model.Receive;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.IMap;
 
@@ -102,11 +103,14 @@ public class ProcessDeployer {
 								node.getNodeId())));
 
 				// create timer event
+				if(ProcessHelper.getTimerEvent(definition,
+						node.getNodeId()) != null){
 				this.addToContext(this.createTimerEventNode(
 						definition,
 						node.getNodeId(),
 						ProcessHelper.getTimerEvent(definition,
 								node.getNodeId())));
+				}
 
 				// TODO --> create other exception events
 				break;
