@@ -71,66 +71,6 @@ public class ConfigurationRoutes extends RouteBuilder {
 			.processRef("pipelineDeploymentProcessor");
 		
 		//---------------------------------------------
-		// transformation
-		//---------------------------------------------
-		
-		//put transformation (xslt) into the cache
-		from("restlet:http://localhost:9080/catify/deploy_transformation/{nodeid}?restletMethod=post")
-		.routeId("put_transformation_into_cache")
-		//TODO --> validate
-		//unmarshal
-		.marshal().string("UTF-8")
-		//put it into the cache
-		.setHeader(HazelcastConstants.OBJECT_ID, header("nodeid"))
-        .setHeader(HazelcastConstants.OPERATION, constant(HazelcastConstants.PUT_OPERATION))
-        .toF("hazelcast:%s%s", HazelcastConstants.MAP_PREFIX, CacheConstants.TRANSFORMATION_CACHE);
-		
-		//convenient method to deploy task transformation
-		from("restlet:http://localhost:9080/catify/deploy_transformation/{account}/{process}/{version}/{task}?restletMethod=post")
-		.routeId("put_transformation_into_cache_for_task")
-		//TODO --> validate
-		//unmarshal
-		.marshal().string("UTF-8")
-		//set variables
-		.setHeader(MessageConstants.ACCOUNT_NAME, header("account"))
-		.setHeader(MessageConstants.PROCESS_NAME, header("process"))
-		.setHeader(MessageConstants.PROCESS_VERSION, header("version"))
-		.setHeader(MessageConstants.TASK_NAME, header("task"))
-		//generate ids
-		.processRef("processIdProcessor")
-		.processRef("taskIdProcessor")
-		//put it into the cache
-		.log(String.format("XSLT --> ${header.%s}, ${header.%s}, ${header.%s}, ${header.%s} with id --> ${header.%s}", MessageConstants.ACCOUNT_NAME, MessageConstants.PROCESS_NAME, MessageConstants.PROCESS_VERSION, MessageConstants.TASK_NAME, MessageConstants.TASK_ID))
-		.setHeader(HazelcastConstants.OBJECT_ID, header(MessageConstants.TASK_ID))
-        .setHeader(HazelcastConstants.OPERATION, constant(HazelcastConstants.PUT_OPERATION))
-        .toF("hazelcast:%s%s", HazelcastConstants.MAP_PREFIX, CacheConstants.TRANSFORMATION_CACHE);
-		
-		//convenient method to deploy process transformation
-		from("restlet:http://localhost:9080/catify/deploy_transformation/{account}/{process}/{version}?restletMethod=post")
-		.routeId("put_transformation_into_cache_for_process")
-		//TODO --> validate
-		//unmarshal
-		.marshal().string("UTF-8")
-		//set variables
-		.setHeader(MessageConstants.ACCOUNT_NAME, header("account"))
-		.setHeader(MessageConstants.PROCESS_NAME, header("process"))
-		.setHeader(MessageConstants.PROCESS_VERSION, header("version"))
-		//generate ids
-		.processRef("processIdProcessor")
-		//put it into the cache
-		.setHeader(HazelcastConstants.OBJECT_ID, header(MessageConstants.PROCESS_ID))
-        .setHeader(HazelcastConstants.OPERATION, constant(HazelcastConstants.PUT_OPERATION))
-        .toF("hazelcast:%s%s", HazelcastConstants.MAP_PREFIX, CacheConstants.TRANSFORMATION_CACHE);
-		
-		//get transformation (xslt) out of the cache
-		from("restlet:http://localhost:9080/catify/get_transformation/{nodeid}?restletMethod=get")
-		.routeId("read_transformation")
-		//read it from cache
-		.setHeader(HazelcastConstants.OBJECT_ID, header("nodeid"))
-        .setHeader(HazelcastConstants.OPERATION, constant(HazelcastConstants.GET_OPERATION))
-        .toF("hazelcast:%s%s", HazelcastConstants.MAP_PREFIX, CacheConstants.TRANSFORMATION_CACHE);
-		
-		//---------------------------------------------
 		// validation
 		//---------------------------------------------
 		

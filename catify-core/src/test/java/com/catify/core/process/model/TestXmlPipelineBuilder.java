@@ -4,7 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.camel.Endpoint;
+import org.apache.camel.EndpointInject;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.converter.jaxb.JaxbDataFormat;
@@ -15,87 +15,92 @@ import org.junit.Test;
 import org.springframework.context.support.AbstractXmlApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-import com.catify.core.constants.CacheConstants;
 import com.catify.core.process.ProcessDeployer;
 import com.catify.core.process.xml.XmlProcessBuilder;
 import com.catify.core.process.xml.model.Process;
-import com.hazelcast.core.Hazelcast;
 
 public class TestXmlPipelineBuilder extends CamelSpringTestSupport {
+
+	@EndpointInject(uri = "mock:out1")
+	private MockEndpoint out1;
+	
+	@EndpointInject(uri = "mock:out2")
+	private MockEndpoint out2;
+	
+	private static final int START = 0;
+	private static final int IN = 1;
+	private static final int OUT = 2;
 
 	@Override
 	protected AbstractXmlApplicationContext createApplicationContext() {
 		return  new ClassPathXmlApplicationContext("/META-INF/spring/camel-context.xml");
 	}
 	
+	/**
+	 * tests if the start pipeline will be build and deployed properly 
+	 * 
+	 * @throws Exception
+	 */
 	@Test
 	public void testBuildStartPipeline() throws Exception {
-		Process process = template.requestBody("direct:xml", this.xmlStart(), com.catify.core.process.xml.model.Process.class);
-		XmlProcessBuilder processBuilder = (XmlProcessBuilder) applicationContext.getBean("xmlProcessBuilder");
 		
-		ProcessDefinition definition = processBuilder.build(process);
+		this.deployRoutes(this.xmlStart(), TestXmlPipelineBuilder.START);
 		
-		//insert xslt to caches
-		this.insertXslts();
-		
-		InputStream is = new ByteArrayInputStream(definition.getStartPipeline().getBytes());
-		RoutesDefinition routes = context.loadRoutesDefinition(is);
-		context.addRouteDefinitions(routes.getRoutes());
-		
-		assertNotNull(context.getRoute("in-file-e8c2eb9abd37d710f4447af1f4da99ef"));
-		assertNotNull(context.getRoute("in-rest-e8c2eb9abd37d710f4447af1f4da99ef"));
-		assertNotNull(context.getRoute("save-payload-e8c2eb9abd37d710f4447af1f4da99ef"));
+		assertNotNull(context.getRoute("start-e8c2eb9abd37d710f4447af1f4da99ef"));
+		assertNotNull(context.getRoute("save-payload-e8c2eb9abd37d710f4447af1f4da99ef-foo"));
 		assertNotNull(context.getRoute("send-to-queue-e8c2eb9abd37d710f4447af1f4da99ef"));
 		assertNotNull(context.getRoute("create-correlation-e8c2eb9abd37d710f4447af1f4da99ef"));
 	}
-
+	
+	/**
+	 * tests if the in pipeline will be build and deployed properly 
+	 * 
+	 * @throws Exception
+	 */
 	@Test
 	public void testBuildInPipeline() throws Exception {
-		Process process = template.requestBody("direct:xml", this.xmlReceive(), com.catify.core.process.xml.model.Process.class);
-		XmlProcessBuilder processBuilder = (XmlProcessBuilder) applicationContext.getBean("xmlProcessBuilder");
 		
-		ProcessDefinition definition = processBuilder.build(process);
+		this.deployRoutes( this.xmlReceive(), TestXmlPipelineBuilder.IN);
 		
-//		System.out.println(definition.getInPipelines().get(0));
-		
-//		System.out.println("-------------------------------------------------->");
-		
-		//insert xslt to caches
-		this.insertXslts();
-		
-		InputStream is = new ByteArrayInputStream(definition.getInPipelines().get(0).getBytes());
-		RoutesDefinition routes = context.loadRoutesDefinition(is);
-		context.addRouteDefinitions(routes.getRoutes());
-		
-		assertNotNull(context.getRoute("in-file-3e68dd4a3a52369301021ceb61158950"));
-		assertNotNull(context.getRoute("in-rest-3e68dd4a3a52369301021ceb61158950"));
-		assertNotNull(context.getRoute("save-payload-3e68dd4a3a52369301021ceb61158950"));
+		assertNotNull(context.getRoute("in-3e68dd4a3a52369301021ceb61158950"));
+		assertNotNull(context.getRoute("save-payload-3e68dd4a3a52369301021ceb61158950-foo"));
 		assertNotNull(context.getRoute("send-to-queue-3e68dd4a3a52369301021ceb61158950"));
 		assertNotNull(context.getRoute("get-correlation-3e68dd4a3a52369301021ceb61158950"));
 	}
 
+	/**
+	 * tests if the out pipeline will be build and deployed properly 
+	 * 
+	 * @throws Exception
+	 */
 	@Test
 	public void testBuildOutPipeline() throws Exception {
-		Process process = template.requestBody("direct:xml", this.xmlRequest(), com.catify.core.process.xml.model.Process.class);
-		XmlProcessBuilder processBuilder = (XmlProcessBuilder) applicationContext.getBean("xmlProcessBuilder");
 		
-		ProcessDefinition definition = processBuilder.build(process);
-		
-//		System.out.println(definition.getOutPipelines().get(0));
-		
-//		System.out.println("-------------------------------------------------->");
-		
-		//insert xslt to caches
-		this.insertXslts();
-		
-		InputStream is = new ByteArrayInputStream(definition.getOutPipelines().get(0).getBytes());
-		RoutesDefinition routes = context.loadRoutesDefinition(is);
-		context.addRouteDefinitions(routes.getRoutes());
+		this.deployRoutes(this.xmlRequest(), TestXmlPipelineBuilder.OUT);
 		
 		assertNotNull(context.getRoute("out-pipeline-a600aa727f9df80c45b0674eda578fea"));
-		assertNotNull(context.getRoute("load-payload-a600aa727f9df80c45b0674eda578fea"));
+		assertNotNull(context.getRoute("load-payload-a600aa727f9df80c45b0674eda578fea-foo"));
+		assertNotNull(context.getRoute("load-payload-a600aa727f9df80c45b0674eda578fea-bar"));
 	}
 	
+	/**
+	 * test if we can build an out pipeline without using variables (loading payload)
+	 * 
+	 * @throws Exception
+	 */
+	@Test
+	public void testBuildOutPipelineWithoutVariables() throws Exception{
+		
+		this.deployRoutes(this.xmlRequest2(), TestXmlPipelineBuilder.OUT);
+		
+		assertNotNull(context.getRoute("out-pipeline-a600aa727f9df80c45b0674eda578fea"));
+	}
+	
+	/**
+	 * test if we can deploy a whole process with pipelines
+	 * 
+	 * @throws InterruptedException
+	 */
 	@Test
 	public void testDeployProcessWithPipelines() throws InterruptedException{
 		Process process = template.requestBody("direct:xml", this.xmlProcess(), com.catify.core.process.xml.model.Process.class);
@@ -103,14 +108,12 @@ public class TestXmlPipelineBuilder extends CamelSpringTestSupport {
 		
 		ProcessDefinition definition = processBuilder.build(process);
 		
-		this.insertXslts();
-		
 		ProcessDeployer deployer = new ProcessDeployer(context);
 		
 		deployer.deployProcess(definition);
 		
-		MockEndpoint end = getMockEndpoint("mock:end");
-		end.expectedMessageCount(1);
+		out1.expectedMessageCount(1);
+		out2.expectedMessageCount(1);
 		
 		//send message to process
 		System.out.println("--------------------------> sending message to init process");
@@ -124,6 +127,11 @@ public class TestXmlPipelineBuilder extends CamelSpringTestSupport {
 		assertMockEndpointsSatisfied(10000, TimeUnit.MILLISECONDS);
 	}
 	
+	/**
+	 * test how an active instance acts, if it will be called twice.
+	 * 
+	 * @throws InterruptedException
+	 */
 	@Test
 	public void testCallProcessTwice() throws InterruptedException{
 		Process process = template.requestBody("direct:xml", this.xmlProcess2(), com.catify.core.process.xml.model.Process.class);
@@ -131,14 +139,12 @@ public class TestXmlPipelineBuilder extends CamelSpringTestSupport {
 		
 		ProcessDefinition definition = processBuilder.build(process);
 		
-		this.insertXslts();
-		
 		ProcessDeployer deployer = new ProcessDeployer(context);
 		
 		deployer.deployProcess(definition);
 		
-		MockEndpoint end = getMockEndpoint("mock:end");
-		end.expectedMessageCount(2);
+		out1.expectedMessageCount(1);
+		out2.expectedMessageCount(2);
 		
 		//send message to process
 		System.out.println("--------------------------> sending message to init process");
@@ -171,12 +177,46 @@ public class TestXmlPipelineBuilder extends CamelSpringTestSupport {
 				.unmarshal(jaxb)
 				.log("${body}");
 				
-				from("restlet:http://localhost:9080/answer?restletMethod=post")
-				.log("${body}")
-				.to("mock:end");
-				
 			}
 		};
+	}
+	
+	/**
+	 * helper to deploy xml routes from a string input.
+	 * 
+	 * @param processXml
+	 * @param direction
+	 * @throws Exception
+	 */
+	private void deployRoutes(String processXml, int direction) throws Exception{
+		Process process = template.requestBody("direct:xml", processXml, com.catify.core.process.xml.model.Process.class);
+		XmlProcessBuilder processBuilder = (XmlProcessBuilder) applicationContext.getBean("xmlProcessBuilder");
+		
+		ProcessDefinition definition = processBuilder.build(process);
+		
+		//deploy correlation rule
+		ProcessDeployer.deployCorrelationRules(definition.getAllCorrelationRules());
+		
+		InputStream is = null;
+		switch (direction) {
+		case 0:
+			//start
+			is = new ByteArrayInputStream(definition.getStartPipeline().getBytes());
+			break;
+
+		case 1:
+			//in
+			is = new ByteArrayInputStream(definition.getInPipelines().get(0).getBytes());
+			break;
+			
+		case 2:
+			//out
+			is = new ByteArrayInputStream(definition.getOutPipelines().get(0).getBytes());
+			break;
+		}
+		
+		RoutesDefinition routes = context.loadRoutesDefinition(is);
+		context.addRouteDefinitions(routes.getRoutes());
 	}
 	
 	private String xmlStart(){
@@ -184,16 +224,14 @@ public class TestXmlPipelineBuilder extends CamelSpringTestSupport {
 				"<process processVersion=\"1.0\" processName=\"process01\" accountName=\"tester\"  xmlns=\"http://www.catify.com/api/1.0\" xmlns:ns=\"http://www.catify.com/api/1.0\" >\n" +
 				"	<start ns:name=\"start\">\n" +
 				"		<inPipeline>\n" +
-				"			<fromEndpoint>\n" +
-				"				<file ns:uri=\"file:../files?delete=false\"/>\n" +
-//				"				<rest ns:uri=\"restlet:http://localhost:9080/myprocess?restletMethod=post\"/>\n" +
-				"				<rest />\n" +
-				"			</fromEndpoint>\n" +
-				"			<split ns:xpath=\"/foo\"/>\n" +
+				"			<endpoint ns:uri=\"direct://foo\"/>\n" +
 				"			<correlation>\n" +
 				"				<xpath>/foo/x</xpath>\n" +
 				"				<xpath>/foo/bar/z</xpath>\n" +
 				"			</correlation>\n" +
+				"			<variables>\n" +
+				"				<variable ns:name=\"foo\" ns:xpath=\"/\"/>\n" +
+				"			</variables>\n" +
 				"		</inPipeline>\n" +
 				"	</start>\n" +
 				"	<end ns:name=\"end\"/>\n" +
@@ -209,15 +247,14 @@ public class TestXmlPipelineBuilder extends CamelSpringTestSupport {
 				"			<end ns:name=\"end_time_out\"/>\n" +
 				"		</timeEvent>\n" +
 				"		<inPipeline>\n" +
-				"			<fromEndpoint>\n" +
-				"				<file ns:uri=\"file:../files?delete=false\"/>\n" +
-				"				<rest/>\n" +
-				"			</fromEndpoint>\n" +
-				"			<split ns:xpath=\"/foo\"/>\n" +
+				"			<endpoint ns:uri=\"direct://foo\"/>\n" +
 				"			<correlation>\n" +
 				"				<xpath>/foo/x</xpath>\n" +
 				"				<xpath>/foo/bar/z</xpath>\n" +
 				"			</correlation>\n" +
+				"			<variables>\n" +
+				"				<variable ns:name=\"foo\" ns:xpath=\"/\"/>\n" +
+				"			</variables>\n" +
 				"		</inPipeline>\n" +
 				"	</receive>" +
 				"	<end ns:name=\"end\"/>\n" +
@@ -231,9 +268,25 @@ public class TestXmlPipelineBuilder extends CamelSpringTestSupport {
 				"	<start ns:name=\"start\"/>\n" +
 				"	<request ns:name=\"send_to_hazelcast\">\n" +
 				"		<outPipeline>\n" +
-				"			<toEndpoint>\n" +
-				"				<hazelcast ns:uri=\"hazelcast:map:foo\" ns:operation=\"put\"/>\n" +
-				"			</toEndpoint>\n" +
+				"			<endpoint ns:uri=\"hazelcast:map:foo\"/>\n" +
+				"			<variables>\n" +
+				"				<variable ns:name=\"foo\" />\n" +
+				"				<variable ns:name=\"bar\" />\n" +
+				"			</variables>\n" +
+				"		</outPipeline>\n" +
+				"	</request>" +
+				"	<end ns:name=\"end\"/>\n" +
+				"</process>";
+		
+	}
+	
+	private String xmlRequest2(){
+		return 	"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+				"<process processVersion=\"1.0\" processName=\"process01\" accountName=\"tester\"  xmlns=\"http://www.catify.com/api/1.0\" xmlns:ns=\"http://www.catify.com/api/1.0\" >\n" +
+				"	<start ns:name=\"start\"/>\n" +
+				"	<request ns:name=\"send_to_hazelcast\">\n" +
+				"		<outPipeline>\n" +
+				"			<endpoint ns:uri=\"hazelcast:map:foo\"/>\n" +
 				"		</outPipeline>\n" +
 				"	</request>" +
 				"	<end ns:name=\"end\"/>\n" +
@@ -246,9 +299,7 @@ public class TestXmlPipelineBuilder extends CamelSpringTestSupport {
 				"<process processVersion=\"1.0\" processName=\"process01\" accountName=\"tester\"  xmlns=\"http://www.catify.com/api/1.0\" xmlns:ns=\"http://www.catify.com/api/1.0\" >\n" +
 				"	<start ns:name=\"start\">\n" +
 				"		<inPipeline>\n" +
-				"			<fromEndpoint>\n" +
-				"				<generic ns:uri=\"seda:start\"/>\n" +
-				"			</fromEndpoint>\n" +
+				"			<endpoint ns:uri=\"seda:start\"/>\n" +
 				"			<correlation>\n" +
 				"				<xpath>/foo/a</xpath>\n" +
 				"				<xpath>/foo/b</xpath>\n" +
@@ -256,11 +307,9 @@ public class TestXmlPipelineBuilder extends CamelSpringTestSupport {
 				"			</correlation>\n" +
 				"		</inPipeline>\n" +
 				"	</start>\n" +
-				"	<request ns:name=\"send_to_hazelcast\">\n" +
+				"	<request ns:name=\"send_to_out1\">\n" +
 				"		<outPipeline>\n" +
-				"			<toEndpoint>\n" +
-				"				<hazelcast ns:uri=\"hazelcast:map:foo\" ns:operation=\"put\"/>\n" +
-				"			</toEndpoint>\n" +
+				"			<endpoint ns:uri=\"mock:out1\"/>\n" +
 				"		</outPipeline>\n" +
 				"	</request>" +
 				"	<receive ns:name=\"wait_for_payload\">\n" +
@@ -268,9 +317,7 @@ public class TestXmlPipelineBuilder extends CamelSpringTestSupport {
 				"			<end ns:name=\"end_time_out\"/>\n" +
 				"		</timeEvent>\n" +
 				"		<inPipeline>\n" +
-				"			<fromEndpoint>\n" +
-				"				<generic ns:uri=\"seda:receive\"/>\n" +
-				"			</fromEndpoint>\n" +
+				" 			<endpoint ns:uri=\"seda:receive\"/>\n" +
 				"			<correlation>\n" +
 				"				<xpath>/bar/a</xpath>\n" +
 				"				<xpath>/bar/b</xpath>\n" +
@@ -278,11 +325,9 @@ public class TestXmlPipelineBuilder extends CamelSpringTestSupport {
 				"			</correlation>\n" +
 				"		</inPipeline>\n" +
 				"	</receive>" +
-				"	<request ns:name=\"send_to_rest\">\n" +
+				"	<request ns:name=\"send_to_out2\">\n" +
 				"		<outPipeline>\n" +
-				"			<toEndpoint>\n" +
-				"				<rest ns:uri=\"restlet:http://localhost:9080/answer?restletMethod=post\"/>\n" +
-				"			</toEndpoint>\n" +
+				"			<endpoint ns:uri=\"mock:out2\"/>\n" +
 				"		</outPipeline>\n" +
 				"	</request>" +
 				"	<end ns:name=\"end\"/>\n" +
@@ -294,9 +339,7 @@ public class TestXmlPipelineBuilder extends CamelSpringTestSupport {
 				"<process processVersion=\"1.0\" processName=\"process01\" accountName=\"tester\"  xmlns=\"http://www.catify.com/api/1.0\" xmlns:ns=\"http://www.catify.com/api/1.0\" >\n" +
 				"	<start ns:name=\"start\">\n" +
 				"		<inPipeline>\n" +
-				"			<fromEndpoint>\n" +
-				"				<generic ns:uri=\"seda:start\"/>\n" +
-				"			</fromEndpoint>\n" +
+				"			<endpoint ns:uri=\"seda:start\"/>\n" +
 				"			<correlation>\n" +
 				"				<xpath>/foo/a</xpath>\n" +
 				"				<xpath>/foo/b</xpath>\n" +
@@ -304,11 +347,9 @@ public class TestXmlPipelineBuilder extends CamelSpringTestSupport {
 				"			</correlation>\n" +
 				"		</inPipeline>\n" +
 				"	</start>\n" +
-				"	<request ns:name=\"send_to_hazelcast\">\n" +
+				"	<request ns:name=\"send_to_out1\">\n" +
 				"		<outPipeline>\n" +
-				"			<toEndpoint>\n" +
-				"				<hazelcast ns:uri=\"hazelcast:map:foo\" ns:operation=\"put\"/>\n" +
-				"			</toEndpoint>\n" +
+				"			<endpoint ns:uri=\"mock:out1\"/>\n" +
 				"		</outPipeline>\n" +
 				"	</request>" +
 				"	<receive ns:name=\"wait_for_payload\">\n" +
@@ -316,9 +357,7 @@ public class TestXmlPipelineBuilder extends CamelSpringTestSupport {
 				"			<end ns:name=\"end_time_out\"/>\n" +
 				"		</timeEvent>\n" +
 				"		<inPipeline>\n" +
-				"			<fromEndpoint>\n" +
-				"				<generic ns:uri=\"seda:receive\"/>\n" +
-				"			</fromEndpoint>\n" +
+				" 			<endpoint ns:uri=\"seda:receive\"/>\n" +
 				"			<correlation>\n" +
 				"				<xpath>/bar/a</xpath>\n" +
 				"				<xpath>/bar/b</xpath>\n" +
@@ -326,43 +365,16 @@ public class TestXmlPipelineBuilder extends CamelSpringTestSupport {
 				"			</correlation>\n" +
 				"		</inPipeline>\n" +
 				"	</receive>" +
-				"	<request ns:name=\"send_to_rest\">\n" +
+				"	<request ns:name=\"send_to_out2\">\n" +
 				"		<outPipeline>\n" +
-				"			<toEndpoint>\n" +
-				"				<rest ns:uri=\"restlet:http://localhost:9080/answer?restletMethod=post\"/>\n" +
-				"			</toEndpoint>\n" +
+				"			<endpoint ns:uri=\"mock:out2\"/>\n" +
 				"		</outPipeline>\n" +
-				"	</request>\n" +
+				"	</request>" +
 				"	<sleep>\n" +
 				"		<timeEvent time=\"20000\"/>\n" +
 				"	</sleep>\n" +
 				"	<end ns:name=\"end\"/>\n" +
 				"</process>";
-	}
-	
-	private String getTransformation(){
-		return "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-				"<xsl:stylesheet version=\"1.0\" xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" xmlns:fo=\"http://www.w3.org/1999/XSL/Format\">\n" +
-				"	<xsl:template match=\"*\">" +
-				"		<xsl:copy>" +
-				"			<xsl:apply-templates/>" +
-				"		</xsl:copy>" +
-				"	</xsl:template>"+
-				"</xsl:stylesheet>";
-	}
-	
-	private String getCorrelation(){
-		return "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-				"<xsl:stylesheet version=\"1.0\" xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" exclude-result-prefixes=\"xs\">" +
-				"	<xsl:output method=\"xml\" encoding=\"UTF-8\" indent=\"yes\"/>" +
-				"	<xsl:template match=\"/\">" +
-				"		<xsl:variable name=\"var1_instance\" select=\".\"/>" +
-				"		<correlation>" +
-				"			<xsl:value-of select=\"concat(concat(string($var1_instance/foo/a), string($var1_instance/foo/b)), string($var1_instance/foo/c/y))\"/>" +
-				"		</correlation>" +
-				"	</xsl:template>" +
-				"</xsl:stylesheet>";
-		
 	}
 	
 	private String getXml1(){
@@ -385,20 +397,6 @@ public class TestXmlPipelineBuilder extends CamelSpringTestSupport {
 				"		<y>y</y>" +
 				"	</c>" +
 				"</bar>";
-	}
-	
-	private void insertXslts(){
-		//insert xslt to caches
-		Hazelcast.getMap(CacheConstants.CORRELATION_RULE_CACHE).put("3e68dd4a3a52369301021ceb61158950", this.getCorrelation());
-		Hazelcast.getMap(CacheConstants.TRANSFORMATION_CACHE).put("3e68dd4a3a52369301021ceb61158950", this.getTransformation());
-		
-		Hazelcast.getMap(CacheConstants.CORRELATION_RULE_CACHE).put("e8c2eb9abd37d710f4447af1f4da99ef", this.getCorrelation());
-		Hazelcast.getMap(CacheConstants.TRANSFORMATION_CACHE).put("e8c2eb9abd37d710f4447af1f4da99ef", this.getTransformation());
-		
-		Hazelcast.getMap(CacheConstants.TRANSFORMATION_CACHE).put("a600aa727f9df80c45b0674eda578fea", this.getTransformation());
-		
-		Hazelcast.getMap(CacheConstants.TRANSFORMATION_CACHE).put("4a9cd68d09e14452f8e9d95b8b43aac8", this.getTransformation());
-		
 	}
 
 }

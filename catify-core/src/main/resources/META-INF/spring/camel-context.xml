@@ -41,7 +41,7 @@
 
 
 	<!-- camel -->
-	<camel:camelContext id="camelContext" trace="false">
+	<camel:camelContext id="camelContext" trace="true">
 		<camel:routeBuilder ref="processRoutes" />
 		<camel:routeBuilder ref="pipelineRoutes" />
 		<camel:routeBuilder ref="eventRoutes" />
@@ -70,6 +70,7 @@
 	<bean id="transformDecisionPayloadProcessor" class="com.catify.core.process.processors.TransformDecisionPayloadProcessor"/>
 	<bean id="writeCorrelationProcessor" class="com.catify.core.process.processors.WriteCorrelationProcessor"/>
 	<bean id="readCorrelationProcessor" class="com.catify.core.process.processors.ReadCorrelationProcessor"/>
+	<bean id="xpathProcessor" class="com.catify.core.process.processors.XPathProcessor"/>
 	
 	<!-- routers -->
 	<!-- <bean id="decisionRouter" class="com.catify.core.process.routers.impl.ReceiveRouter"/> -->

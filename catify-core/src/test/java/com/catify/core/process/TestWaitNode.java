@@ -30,22 +30,14 @@ public class TestWaitNode extends SpringTestBase {
 	}
 	
 	private ProcessDefinition deploy(){
-		
-		List<String> ids = new ArrayList<String>();
-		String pid = ProcessHelper.createProcessId("CATIFY", "process01", "1.0");
-		
-		ids.add(pid);
-		ids.add(ProcessHelper.createTaskId(pid, "start"));
-		ids.add(ProcessHelper.createTaskId(pid, "mock"));
-		
-		return super.deployProcess(this.getProcess(), ids);
+		return super.deployProcess(this.getProcess());
 	}
 	
 	private String getProcess(){
 		return " <process processVersion=\"1.0\" processName=\"process01\" accountName=\"CATIFY\" xmlns=\"http://www.catify.com/api/1.0\" xmlns:ns=\"http://www.catify.com/api/1.0\" >\n" +
 				"	<start ns:name=\"start\">\n" +
 				"		<inPipeline>\n" +
-				"			<fromEndpoint><generic ns:uri=\"seda:init_process\"/></fromEndpoint>\n" +
+				"			<endpoint ns:uri=\"seda:init_process\"/>\n" +
 				"		</inPipeline>\n" +
 				"	</start>\n" +
 				"	<sleep>\n" +
@@ -55,7 +47,7 @@ public class TestWaitNode extends SpringTestBase {
 				"	</sleep>\n" +
 				"	<request ns:name=\"mock\">\n" +
 				"		<outPipeline>\n" +
-				"			<toEndpoint><generic ns:uri=\"seda:out\"/></toEndpoint>\n" +
+				"			<endpoint ns:uri=\"seda:out\"/>\n" +
 				"		</outPipeline>\n" +
 				"	</request>\n" +
 				"	<end ns:name=\"end\"/>\n" +

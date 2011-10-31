@@ -3,7 +3,6 @@ package com.catify.core.constants;
 public class CacheConstants {
 	
 	//cache names
-	public final static String TRANSFORMATION_CACHE 	= "transformation-cache";
 	public final static String VALIDATION_CACHE 		= "validation-cache";
 	public final static String PROCESS_CACHE 			= "process-cache";
 	public final static String PIPELINE_CACHE 			= "pipeline-cache";

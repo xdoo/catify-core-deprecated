@@ -109,11 +109,6 @@ public class PipelineBuilder {
 			routingslip.append(String.format("direct:%s-%s", LOADPAYLOAD, id)).append(",");
 		}
 		
-		if(definition.isTransform()){
-			this.addTransformation(context, id);
-			routingslip.append(String.format("direct:%s-%s", TRANSFORM, id));
-		}
-		
 		if(definition.isValidate()){
 			this.addValidation(context, id);
 			routingslip.append(",").append(String.format("direct:%s-%s", VALIDATE, id));
@@ -157,28 +152,6 @@ public class PipelineBuilder {
 				
 			}
 		});	
-	}
-	
-	/**
-	 * 
-	 * 
-	 * @param context
-	 * @param id
-	 * @throws Exception
-	 */
-	private void addTransformation(CamelContext context, final String id) throws Exception{
-		
-		context.addRoutes(new RouteBuilder() {
-			
-			@Override
-			public void configure() throws Exception {
-				
-				from(String.format("direct:%s-%s", TRANSFORM, id))
-				.routeId(String.format("transform-%s", id))
-				.to(String.format("xslt:http://localhost:9080/rest/%s/%s", CacheConstants.TRANSFORMATION_CACHE, id));
-				
-			}
-		});
 	}
 	
 	/**

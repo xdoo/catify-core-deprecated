@@ -1,7 +1,5 @@
 package com.catify.core.process;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.camel.EndpointInject;
@@ -50,8 +48,13 @@ public class TestReceiveNode extends SpringTestBase {
 		out.setExpectedMessageCount(1);
 		timeout.setExpectedMessageCount(0);
 		
-		//send message 
-		template.sendBody("seda:init_process", super.getXml());
+		//send 1. message 
+		template.sendBody("seda://init_process", super.getXml());
+		
+		Thread.sleep(1500);
+		
+		//send 2. message
+		template.sendBody("seda://in", super.getXml());
 		
 		assertMockEndpointsSatisfied(5, TimeUnit.SECONDS);
 	}
@@ -62,11 +65,13 @@ public class TestReceiveNode extends SpringTestBase {
 		this.createMessageCopyRoute(500);
 		
 		out.setExpectedMessageCount(1);
-		timeout.setExpectedMessageCount(0);
+		timeout.setExpectedMessageCount(0);		
 		
+		//send 1. message 
+		template.sendBody("seda://init_process", super.getXml());
 		
-		//send message 
-		template.sendBody("seda:init_process", super.getXml());
+		//send 2. message
+		template.sendBody("seda://in", super.getXml());
 		
 		assertMockEndpointsSatisfied(5, TimeUnit.SECONDS);
 	}
@@ -106,27 +111,15 @@ public class TestReceiveNode extends SpringTestBase {
 		context.addRoutes(builder);
 	}
 	
-	private ProcessDefinition deploy(){
-		
-		List<String> ids = new ArrayList<String>();
-		
-		String pid = ProcessHelper.createProcessId("CATIFY", "process01", "1.0");
-		
-		ids.add(pid);
-		ids.add(ProcessHelper.createTaskId(pid, "start"));
-		ids.add(ProcessHelper.createTaskId(pid, "send_message"));
-		ids.add(ProcessHelper.createTaskId(pid, "wait_for_answer"));
-		ids.add(ProcessHelper.createTaskId(pid, "mock"));
-		ids.add(ProcessHelper.createTaskId(pid, "mock_timeout"));
-		
-		return super.deployProcess(this.getProcess(), ids);
+	private ProcessDefinition deploy(){	
+		return super.deployProcess(this.getProcess());
 	}
 	
 	private String getProcess(){
 		return " <process processVersion=\"1.0\" processName=\"process01\" accountName=\"CATIFY\" xmlns=\"http://www.catify.com/api/1.0\" xmlns:ns=\"http://www.catify.com/api/1.0\" >\n" +
 				"	<start ns:name=\"start\">\n" +
 				"		<inPipeline>\n" +
-				"			<fromEndpoint><generic ns:uri=\"seda:init_process\"/></fromEndpoint>\n" +
+				"			<endpoint ns:uri=\"seda:init_process\"/>\n" +
 				"			<correlation>\n" +
 				"				<xpath>/foo/a</xpath>\n" +
 				"				<xpath>/foo/b</xpath>\n" +
@@ -135,7 +128,7 @@ public class TestReceiveNode extends SpringTestBase {
 				"	</start>\n" +
 				"	<request ns:name=\"send_message\">\n" +
 				"		<outPipeline>\n" +
-				"			<toEndpoint><generic ns:uri=\"seda:out\"/></toEndpoint>\n" +
+				"			<endpoint ns:uri=\"seda:out\"/>\n" +
 				"		</outPipeline>\n" +
 				"	</request>\n" +
 				"	<sleep>\n" +
@@ -147,13 +140,13 @@ public class TestReceiveNode extends SpringTestBase {
 				"		<timeEvent ns:time=\"3000\">\n" +
 				"			<request ns:name=\"mock_timeout\">\n" +
 				"				<outPipeline>\n" +
-				"					<toEndpoint><generic ns:uri=\"mock:timeout\"/></toEndpoint>\n" +
+				"					<endpoint ns:uri=\"mock:timeout\"/>\n" +
 				"				</outPipeline>\n" +
 				"			</request>\n" +
 				"			<end ns:name=\"end_time_out\"/>\n" +
 				"		</timeEvent>\n" +
 				"		<inPipeline>\n" +
-				"			<fromEndpoint><generic ns:uri=\"seda:in\"/></fromEndpoint>\n" +
+				"			<endpoint ns:uri=\"seda:in\"/>\n" +
 				"			<correlation>\n" +
 				"				<xpath>/foo/a</xpath>\n" +
 				"				<xpath>/foo/b</xpath>\n" +
@@ -162,7 +155,7 @@ public class TestReceiveNode extends SpringTestBase {
 				"	</receive>\n" +
 				"	<request ns:name=\"mock\">\n" +
 				"		<outPipeline>\n" +
-				"			<toEndpoint><generic ns:uri=\"mock:out\"/></toEndpoint>\n" +
+				"			<endpoint ns:uri=\"mock:out\"/>\n" +
 				"		</outPipeline>\n" +
 				"	</request>\n" +
 				"	<end ns:name=\"end\"/>\n" +

@@ -7,98 +7,48 @@
 	#######################################
 	-->
 	<xs:element name="inPipeline" type="InPipeline"/>
-	<xs:complexType name="InPipeline">
+	<xs:complexType name="Pipeline">
 		<xs:sequence>
-			<xs:element ref="fromEndpoint"/>
-			<xs:element ref="marshaller" minOccurs="0"/>
-			<xs:element ref="split" minOccurs="0"/>
+			<xs:element ref="endpoint">
+				<xs:annotation>
+					<xs:documentation>put in here you camel uri like "hazelcast:seda://foo". you can use all component properties.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
 			<xs:element ref="correlation" minOccurs="0"/>
+			<xs:element ref="variables" minOccurs="0"/>
 		</xs:sequence>
+	</xs:complexType>
+	<xs:element name="variables" type="Variables"/>
+	<xs:complexType name="Variables">
+		<xs:sequence>
+			<xs:element ref="variable" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:element name="variable" type="Variable"/>
+	<xs:complexType name="Variable">
+		<xs:attribute ref="name"/>
+		<xs:attribute ref="xpath"/>
+	</xs:complexType>
+	<xs:complexType name="InPipeline">
+		<xs:complexContent>
+			<xs:extension base="Pipeline"/>
+		</xs:complexContent>
 	</xs:complexType>
 	<xs:element name="outPipeline" type="OutPipeline"/>
 	<xs:complexType name="OutPipeline">
-		<xs:sequence>
-			<xs:element ref="toEndpoint"/>
-			<xs:element ref="marshaller" minOccurs="0"/>
-			<xs:element ref="correlation" minOccurs="0"/>
-		</xs:sequence>
+		<xs:complexContent>
+			<xs:extension base="Pipeline"/>
+		</xs:complexContent>
 	</xs:complexType>
 	<!-- from...-->
-	<xs:element name="fromEndpoint" type="FromEndpoint"/>
-	<xs:complexType name="FromEndpoint">
-		<xs:group ref="endpoints" maxOccurs="unbounded"/>
-	</xs:complexType>
+	<xs:element name="fromEndpoint" type="Endpoint"/>
 	<!-- to...-->
-	<xs:element name="toEndpoint" type="ToEndpoint"/>
-	<xs:complexType name="ToEndpoint">
-		<xs:group ref="endpoints"/>
-	</xs:complexType>
+	<xs:element name="toEndpoint" type="Endpoint"/>
 	<!-- endpoints -->
-	<xs:group name="endpoints">
-		<xs:choice>
-			<xs:element ref="generic"/>
-			<xs:element ref="ftp"/>
-			<xs:element ref="rest"/>
-			<xs:element ref="file"/>
-			<xs:element ref="hazelcast"/>
-		</xs:choice>
-	</xs:group>
+	<xs:element name="endpoint" type="Endpoint"/>
 	<xs:complexType name="Endpoint">
 		<xs:attribute ref="uri"/>
 	</xs:complexType>
-	<xs:element name="ftp" type="FtpEndpoint"/>
-	<xs:complexType name="FtpEndpoint">
-		<xs:complexContent>
-			<xs:extension base="Endpoint">
-				<xs:sequence/>
-			</xs:extension>
-		</xs:complexContent>
-	</xs:complexType>
-	<xs:element name="rest" type="RestEndpoint"/>
-	<xs:complexType name="RestEndpoint">
-		<xs:complexContent>
-			<xs:extension base="Endpoint">
-				<xs:sequence/>
-			</xs:extension>
-		</xs:complexContent>
-	</xs:complexType>
-	<xs:element name="generic" type="GenericEndpoint"/>
-	<xs:complexType name="GenericEndpoint">
-		<xs:complexContent>
-			<xs:extension base="Endpoint">
-				<xs:sequence/>
-			</xs:extension>
-		</xs:complexContent>
-	</xs:complexType>
-	<xs:element name="file" type="FileEndpoint"/>
-	<xs:complexType name="FileEndpoint">
-		<xs:complexContent>
-			<xs:extension base="Endpoint">
-				<xs:sequence/>
-			</xs:extension>
-		</xs:complexContent>
-	</xs:complexType>
-	<xs:element name="hazelcast" type="HazelcastEndpoint"/>
-	<xs:complexType name="HazelcastEndpoint">
-		<xs:complexContent>
-			<xs:extension base="Endpoint">
-				<xs:sequence/>
-				<xs:attribute ref="operation" use="required"/>
-				<xs:attribute ref="id" use="optional"/>
-			</xs:extension>
-		</xs:complexContent>
-	</xs:complexType>
-	<!-- marshaller -->
-	<xs:element name="marshaller" type="Marshaller"/>
-	<xs:complexType name="Marshaller">
-		<xs:attribute ref="type"/>
-	</xs:complexType>
-	<!-- splitter -->
-	<xs:element name="split" type="Split"/>
-	<xs:complexType name="Split">
-		<xs:attribute ref="xpath"/>
-	</xs:complexType>
-	<xs:attribute name="xpath" type="xs:string"/>
 	<!-- correlation -->
 	<xs:element name="correlation" type="Correlation"/>
 	<xs:complexType name="Correlation">
@@ -107,6 +57,7 @@
 		</xs:sequence>
 	</xs:complexType>
 	<xs:element name="xpath" type="xs:string"/>
+	<xs:attribute name="xpath" type="xs:string"/>
 	<!--
     #######################################
 	#                          PROCESS                       #

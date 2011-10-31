@@ -51,7 +51,7 @@ public class ProcessDeployer {
 		this.createProcessRoutes(definition);
 		
 		// deploy correlation rules
-		this.deployCorrelationRules(definition.getAllCorrelationRules());
+		deployCorrelationRules(definition.getAllCorrelationRules());
 		
 		// create in and out pipelines
 		this.deployPipelines(definition.getPipelines());
@@ -164,7 +164,7 @@ public class ProcessDeployer {
 		}
 	}
 	
-	private void deployCorrelationRules(Map<String, String> allCorrelationRules) {
+	public static void deployCorrelationRules(Map<String, String> allCorrelationRules) {
 		
 		Iterator<String> it = allCorrelationRules.keySet().iterator();
 		

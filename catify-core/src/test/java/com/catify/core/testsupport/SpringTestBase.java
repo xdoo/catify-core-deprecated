@@ -1,6 +1,5 @@
 package com.catify.core.testsupport;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -10,18 +9,14 @@ import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.converter.jaxb.JaxbDataFormat;
 import org.apache.camel.spi.DataFormat;
 import org.apache.camel.test.junit4.CamelSpringTestSupport;
-
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-import com.catify.core.constants.CacheConstants;
 import com.catify.core.constants.MessageConstants;
 import com.catify.core.process.ProcessDeployer;
-import com.catify.core.process.ProcessHelper;
 import com.catify.core.process.model.ProcessDefinition;
 import com.catify.core.process.xml.XmlProcessBuilder;
 import com.catify.core.process.xml.model.Process;
-import com.hazelcast.core.Hazelcast;
 
 public class SpringTestBase extends CamelSpringTestSupport {
 	
@@ -53,17 +48,6 @@ public class SpringTestBase extends CamelSpringTestSupport {
 		}
 	}
 	
-	protected String getTransformation(){
-		return "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-				"<xsl:stylesheet version=\"1.0\" xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" xmlns:fo=\"http://www.w3.org/1999/XSL/Format\">\n" +
-				"	<xsl:template match=\"*\">" +
-				"		<xsl:copy>" +
-				"			<xsl:apply-templates/>" +
-				"		</xsl:copy>" +
-				"	</xsl:template>"+
-				"</xsl:stylesheet>";
-	}
-	
 	protected String getXml(){
 		return "<foo>" +
 				"	<a>a</a>" +
@@ -71,40 +55,9 @@ public class SpringTestBase extends CamelSpringTestSupport {
 				"</foo>";
 	}
 	
-	protected void insertXslts(List<String> ids){
-		
-		Iterator<String> it = ids.iterator();
-		while (it.hasNext()) {
-			Hazelcast.getMap(CacheConstants.TRANSFORMATION_CACHE).put(it.next(), this.getTransformation());
-			
-		}
-		
-	}
-	
-	protected void insertXslts(List<String> names, String process, String version, String account){
-		
-		List<String> ids = new ArrayList<String>();
-		String pid = ProcessHelper.createProcessId(account, process, version);
-		
-		//always inster process xslt
-		ids.add(pid);
-		
-		Iterator<String> it = names.iterator();
-		while (it.hasNext()) {
-			String name = (String) it.next();
-			ids.add(ProcessHelper.createTaskId(pid, name));
-		}
-		
-		//put them into cache
-		this.insertXslts(ids);
-		
-	}
-	
-	protected ProcessDefinition deployProcess(String process, List<String> ids){
+	protected ProcessDefinition deployProcess(String process){
 		
 		ProcessDefinition definition = this.getProcessDefinition(process);
-		
-		this.insertXslts(ids);
 		
 		ProcessDeployer deployer = new ProcessDeployer(context);
 		deployer.deployProcess(definition);

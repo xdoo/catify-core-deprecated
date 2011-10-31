@@ -37,10 +37,6 @@ public class TestStartupRoutes extends SpringTestBase {
 		names.add("start");
 		names.add("mock");
 		
-		super.insertXslts(names, d1.getProcessName(), d1.getProcessVersion(), d1.getAccountName());
-		super.insertXslts(names, d2.getProcessName(), d2.getProcessVersion(), d2.getAccountName());
-		super.insertXslts(names, d3.getProcessName(), d3.getProcessVersion(), d3.getAccountName());
-		
 		out.setExpectedMessageCount(3);
 		
 		template.sendBody("seda://load_process_definitions", "");
@@ -59,12 +55,12 @@ public class TestStartupRoutes extends SpringTestBase {
 		return " <process processVersion=\"1.0\" processName=\""+name+"\" accountName=\"CATIFY\" xmlns=\"http://www.catify.com/api/1.0\" xmlns:ns=\"http://www.catify.com/api/1.0\" >\n" +
 				"	<start ns:name=\"start\">\n" +
 				"		<inPipeline>\n" +
-				"			<fromEndpoint><generic ns:uri=\"seda:init_"+name+"\"/></fromEndpoint>\n" +
+				"			<endpoint ns:uri=\"seda:init_"+name+"\"/>\n" +
 				"		</inPipeline>\n" +
 				"	</start>\n" +
 				"	<request ns:name=\"mock\">\n" +
 				"		<outPipeline>\n" +
-				"			<toEndpoint><generic ns:uri=\"mock:out\"/></toEndpoint>\n" +
+				"			<endpoint ns:uri=\"mock:out\"/>\n" +
 				"		</outPipeline>\n" +
 				"	</request>\n" +
 				"	<end ns:name=\"end\"/>\n" +
