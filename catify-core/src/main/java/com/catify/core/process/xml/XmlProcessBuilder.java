@@ -211,10 +211,13 @@ public class XmlProcessBuilder {
 	}
 
 	private String addReceiveNode(Receive node) {
-		node.setId(this.addNodeWithCurrent(new ReceiveNode(this.definition.getProcessId(), node.getName(), node.getTimeEvent().getTime())));
-		
-		//add timer event
-		this.addTimerEventNode(node.getTimeEvent(), node.getName());
+		//add timer event if existing
+		if(node.getTimeEvent() != null){
+			node.setId(this.addNodeWithCurrent(new ReceiveNode(this.definition.getProcessId(), node.getName(), node.getTimeEvent().getTime())));
+			this.addTimerEventNode(node.getTimeEvent(), node.getName());
+		} else {
+			node.setId(this.addNodeWithCurrent(new ReceiveNode(this.definition.getProcessId(), node.getName())));
+		}
 		
 		//build pipeline if available
 		InPipeline pipeline = node.getInPipeline();

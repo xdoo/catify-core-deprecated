@@ -9,6 +9,11 @@ public class ReceiveNode extends Node{
 		
 		this.timeout = timeout;
 	}
+	
+	public ReceiveNode(String processId, String nodeName) {
+		super(processId, nodeName);
+		
+	}
 
 	private static final long serialVersionUID = 3446867841175541457L;
 	private long timeout;
