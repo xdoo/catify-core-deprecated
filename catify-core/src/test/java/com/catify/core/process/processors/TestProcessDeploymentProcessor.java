@@ -14,6 +14,12 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import com.catify.core.constants.MessageConstants;
 
+/**
+ * Tests, if a process definition can be deployed.
+ * 
+ * @author claus
+ *
+ */
 public class TestProcessDeploymentProcessor extends CamelSpringTestSupport {
 	
 	static final Logger LOG = LoggerFactory

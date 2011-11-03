@@ -620,7 +620,8 @@ public class ProcessDeployer {
 				while (it1.hasNext()) {
 					
 					//get preceding nodes for each line end node
-					Iterator<String> it2 = definition.getPrecedingNodesToNode(it1.next()).iterator();
+					List<String> precedingNodesToNode = definition.getPrecedingNodesToNode(it1.next());
+					Iterator<String> it2 = precedingNodesToNode.iterator();
 					
 					while (it2.hasNext()) {
 						String id = (String) it2.next();

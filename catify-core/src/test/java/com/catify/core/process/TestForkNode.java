@@ -8,6 +8,12 @@ import org.junit.Test;
 
 import com.catify.core.testsupport.SpringTestBase;
 
+/**
+ * Tests if the fork node works correct.
+ * 
+ * @author claus
+ *
+ */
 public class TestForkNode extends SpringTestBase {
 	
 	@EndpointInject(uri = "mock:out")
@@ -22,10 +28,9 @@ public class TestForkNode extends SpringTestBase {
 	@EndpointInject(uri = "mock:out_line3")
 	private MockEndpoint outLine3;
 	
-	@Test
-	public void testReceiveAllLines() throws InterruptedException{
+	@Test public void testReceiveAllLines() throws InterruptedException{
 
-		this.deployProcess(-1);
+		this.deployProcess(-1, "fork01");
 		
 		Thread.sleep(3000);
 		
@@ -47,10 +52,9 @@ public class TestForkNode extends SpringTestBase {
 		
 	}
 	
-	@Test
-	public void testReceiveTwoLines() throws InterruptedException{
+	@Test public void testReceiveTwoLines() throws InterruptedException{
 		
-		this.deployProcess(2);
+		this.deployProcess(2, "fork01");
 		
 		Thread.sleep(3000);
 		
@@ -77,7 +81,22 @@ public class TestForkNode extends SpringTestBase {
 		
 	}
 	
-	private String getProcess(int awaitedHits){
+	/**
+	 * Tests, if a fork node can be deployed without a name - 
+	 * which should be possible regarding to the XML schema.
+	 */
+	@Test public void testDeployForkWithoutName(){
+		this.deployProcess(2, null);
+	}
+	
+	private String getProcess(int awaitedHits, String name){
+		
+		if(name != null) {
+			name = String.format("ns:name=\"%s\"", name);
+		} else {
+			name = "";
+		}
+		
 		return " <process processVersion=\"1.0\" processName=\"process01\" accountName=\"CATIFY\" xmlns=\"http://www.catify.com/api/1.0\" xmlns:ns=\"http://www.catify.com/api/1.0\" >" +
 				"<start ns:name=\"start\">\n" +
 				"	<inPipeline>\n" +
@@ -88,7 +107,7 @@ public class TestForkNode extends SpringTestBase {
 				"		</correlation>\n" +
 				"	</inPipeline>\n" +
 				"</start>\n" +
-				"<fork ns:name=\"fork01\" ns:receivingLines=\""+awaitedHits+"\">\n" +
+				"<fork "+ name +" ns:receivingLines=\""+awaitedHits+"\">\n" +
 				"	<line ns:name=\"1\">\n" +
 				"		<receive ns:name=\"wait_line1\">\n" +
 				"			<timeEvent ns:time=\"30000\">\n" +
@@ -156,9 +175,9 @@ public class TestForkNode extends SpringTestBase {
 				"</process>";
 	}
 	
-	private void deployProcess(int awaitedHits){
+	private void deployProcess(int awaitedHits, String name){
 		
-		super.deployProcess(this.getProcess(awaitedHits));
+		super.deployProcess(this.getProcess(awaitedHits, name));
 	}
 	
 }
