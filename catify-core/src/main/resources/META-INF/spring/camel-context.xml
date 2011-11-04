@@ -67,6 +67,7 @@
 		<constructor-arg name="processBuilder" ref="xmlProcessBuilder"/>
 	</bean>
 	<bean id="taskInstanceIdProcessor" class="com.catify.core.process.processors.TaskInstanceIdProcessor"/>
+	<bean id="terminateProcessor" class="com.catify.core.process.processors.TerminateProcessor"/>
 	<bean id="transformDecisionPayloadProcessor" class="com.catify.core.process.processors.TransformDecisionPayloadProcessor"/>
 	<bean id="writeCorrelationProcessor" class="com.catify.core.process.processors.WriteCorrelationProcessor"/>
 	<bean id="readCorrelationProcessor" class="com.catify.core.process.processors.ReadCorrelationProcessor"/>

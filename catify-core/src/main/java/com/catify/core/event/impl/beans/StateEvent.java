@@ -14,20 +14,24 @@ public class StateEvent implements Serializable {
 	
 	private String instanceId;
 	private int state;
+	private String nodeId;
 
 	public StateEvent(){}
 	
-	public StateEvent(String instanceId, int state){
+	public StateEvent(String instanceId, int state, String nodeId){
 		this.instanceId = instanceId;
 		this.state = state;
+		this.nodeId = nodeId;
 	}
-	
+
 	@Handler
 	public StateEvent proxy(	@Header(MessageConstants.INSTANCE_ID) String instanceId,
-								@Header(ProcessConstants.STATE) int state){
+								@Header(ProcessConstants.STATE) int state,
+								@Header(MessageConstants.TASK_ID) String nodeId){
 		
 		this.instanceId = instanceId;
 		this.state 		= state;
+		this.nodeId		= nodeId;
 		
 		return this;
 	}
@@ -46,6 +50,14 @@ public class StateEvent implements Serializable {
 
 	public void setState(int state) {
 		this.state = state;
+	}
+	
+	public String getNodeId() {
+		return nodeId;
+	}
+
+	public void setNodeId(String nodeId) {
+		this.nodeId = nodeId;
 	}
 	
 }

@@ -81,6 +81,13 @@ public class ProcessDeployer {
 				this.addToContext(this.createEndNode(definition,
 						node.getNodeId()));
 				break;
+				
+			case ProcessConstants.TERMINATE:
+				LOG.info(String.format("creating TERMINATE node '%s' with id '%s'.",
+						node.getNodeName(), node.getNodeId()));
+				this.addToContext(this.createTerminateNode(definition,
+						node.getNodeId()));
+				break;
 
 			case ProcessConstants.REQUEST:
 				LOG.info(String.format(
@@ -921,4 +928,32 @@ public class ProcessDeployer {
 			}
 		};
 	}
+	
+	private RouteBuilder createTerminateNode(final ProcessDefinition definition,
+			final String nodeId) {
+			
+	final String previousTaskId = definition.getTransitionsToNode(nodeId).get(0);
+	
+	return new RouteBuilder() {
+
+		@Override
+		public void configure() throws Exception {
+			fromF("seda:node-%s?concurrentConsumers=5", nodeId)
+					.routeId(String.format("node-%s", nodeId))
+					.onCompletion()
+						.to("seda://destroy")
+					.end()
+					.setHeader(MessageConstants.TASK_ID, constant(nodeId))
+					// ...put it into the cache...
+					.to("direct:working")
+					//destroy state from previous node
+					.setHeader(HazelcastConstants.OBJECT_ID, simple(String.format("${header.%s}-%s", MessageConstants.INSTANCE_ID, previousTaskId)))
+					.to("direct://destroy_with_given_id")
+					// remove corresponding instances
+					.processRef("terminateProcessor")
+					;
+		}
+	};
+}
+	
 }

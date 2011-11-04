@@ -16,6 +16,7 @@ public class ProcessConstants {
 	public static final int TIMEREVENT			= 50;
 	public static final int EXCEPTIONEVENT		= 55;
 	public static final int END					= 100;
+	public static final int TERMINATE			= 200;
 	
 	//state
 	public static final int STATE_READY			= 1;

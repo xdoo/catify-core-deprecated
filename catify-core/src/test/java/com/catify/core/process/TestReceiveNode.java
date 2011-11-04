@@ -35,46 +35,48 @@ public class TestReceiveNode extends SpringTestBase {
 		Hazelcast.getMap(CacheConstants.TIMER_CACHE).clear();
 	}
 	
-	/**
-	 * the process waits for an incoming message
-	 * 
-	 * @throws Exception
-	 */
-	@Test
-	public void testReceiveWithWait() throws Exception{		
-		this.deploy();
-		this.createMessageCopyRoute(1500);
-		
-		out.setExpectedMessageCount(1);
-		timeout.setExpectedMessageCount(0);
-		
-		//send 1. message 
-		template.sendBody("seda://init_process", super.getXml());
-		
-		Thread.sleep(1500);
-		
-		//send 2. message
-		template.sendBody("seda://in", super.getXml());
-		
-		assertMockEndpointsSatisfied(5, TimeUnit.SECONDS);
-	}
-	
-	@Test
-	public void testReceiveWithoutWait() throws Exception{		
-		this.deploy();
-		this.createMessageCopyRoute(500);
-		
-		out.setExpectedMessageCount(1);
-		timeout.setExpectedMessageCount(0);		
-		
-		//send 1. message 
-		template.sendBody("seda://init_process", super.getXml());
-		
-		//send 2. message
-		template.sendBody("seda://in", super.getXml());
-		
-		assertMockEndpointsSatisfied(5, TimeUnit.SECONDS);
-	}
+//	/**
+//	 * the process waits for an incoming message
+//	 * 
+//	 * @throws Exception
+//	 */
+//	@Test
+//	public void testReceiveWithWait() throws Exception{		
+//		this.deploy();
+//		this.createMessageCopyRoute(1500);
+//		
+//		out.setExpectedMessageCount(1);
+//		timeout.setExpectedMessageCount(0);
+//		
+//		//send 1. message 
+//		template.sendBody("seda:init_process", super.getXml());
+//		
+//		Thread.sleep(1500);
+//		
+//		//send 2. message
+//		template.sendBody("seda:in", super.getXml());
+//		
+//		assertMockEndpointsSatisfied(5, TimeUnit.SECONDS);
+//	}
+//	
+//	
+//	
+//	@Test
+//	public void testReceiveWithoutWait() throws Exception{		
+//		this.deploy();
+//		this.createMessageCopyRoute(500);
+//		
+//		out.setExpectedMessageCount(1);
+//		timeout.setExpectedMessageCount(0);		
+//		
+//		//send 1. message 
+//		template.sendBody("seda:init_process", super.getXml());
+//		
+//		//send 2. message
+//		template.sendBody("seda:in", super.getXml());
+//		
+//		assertMockEndpointsSatisfied(5, TimeUnit.SECONDS);
+//	}
 	
 	/**
 	 * 

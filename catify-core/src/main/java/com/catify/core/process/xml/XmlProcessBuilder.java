@@ -20,6 +20,7 @@ import com.catify.core.process.nodes.ReplyNode;
 import com.catify.core.process.nodes.RequestNode;
 import com.catify.core.process.nodes.SleepNode;
 import com.catify.core.process.nodes.StartNode;
+import com.catify.core.process.nodes.TerminateNode;
 import com.catify.core.process.nodes.TimerEventNode;
 import com.catify.core.process.xml.model.Decision;
 import com.catify.core.process.xml.model.End;
@@ -34,6 +35,7 @@ import com.catify.core.process.xml.model.Reply;
 import com.catify.core.process.xml.model.Request;
 import com.catify.core.process.xml.model.Sleep;
 import com.catify.core.process.xml.model.Start;
+import com.catify.core.process.xml.model.Terminate;
 import com.catify.core.process.xml.model.TimeEvent;
 
 public class XmlProcessBuilder {
@@ -120,6 +122,10 @@ public class XmlProcessBuilder {
 				ids.add(this.addEndNode((End) node));
 			}
 			
+			if(node instanceof Terminate){
+				ids.add(this.addTerminateNode((Terminate) node));
+			}
+			
 			if(node instanceof Fork){
 				ids.add(this.addForkNode((Fork) node));
 			}
@@ -196,6 +202,13 @@ public class XmlProcessBuilder {
 		node.setId(endNode.getNodeId());
 		
 		return endNode.getNodeId();
+	}
+	
+	private String addTerminateNode(Terminate node) {
+		String nodeId = this.addNodeWithCurrent(new TerminateNode(this.definition.getProcessId(), node.getName()));
+		node.setId(nodeId);
+
+		return nodeId;
 	}
 
 	private String addSleepNode(Sleep node) {

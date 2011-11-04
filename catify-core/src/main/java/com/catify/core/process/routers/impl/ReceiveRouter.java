@@ -63,7 +63,7 @@ public class ReceiveRouter {
 			
 			//check if the node is waiting for a message
 			if(state == ProcessConstants.STATE_WAITING){
-				map.put(key, new StateEvent(message.getHeader(MessageConstants.INSTANCE_ID, String.class), ProcessConstants.STATE_DONE));
+				map.put(key, new StateEvent(message.getHeader(MessageConstants.INSTANCE_ID, String.class), ProcessConstants.STATE_DONE, key));
 				
 				if(LOG.isDebugEnabled()){
 					LOG.info(String.format("returning go route for '%s' / '%s' --> %s", instanceId, taskId, goRoute));
