@@ -28,7 +28,6 @@ import com.catify.core.process.nodes.SleepNode;
 import com.catify.core.process.processors.TransformDecisionPayloadProcessor;
 import com.catify.core.process.routers.impl.CheckMergeRouter;
 import com.catify.core.process.routers.impl.ReceiveRouter;
-import com.catify.core.process.xml.model.Receive;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.IMap;
 
