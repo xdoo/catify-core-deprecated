@@ -64,9 +64,6 @@ public class XmlPipelineBuilder {
 		//open xml route
 		openRoutes(builder);
 		
-		
-		boolean correlation = Boolean.FALSE;
-		
 		String tab = "\t\t";
 			
 		Endpoint endpoint = in.getEndpoint();
@@ -88,7 +85,6 @@ public class XmlPipelineBuilder {
 			
 		//check if a correlation is needed
 		if(in.getCorrelation() != null){
-			correlation = Boolean.TRUE;
 					
 			//create correlation rule file
 			definition.addCorrelationRule(definition.getProcessId(), this.correlationRuleBuilder.buildCorrelationDefinition(in.getCorrelation().getXpath()));
@@ -152,7 +148,13 @@ public class XmlPipelineBuilder {
 		
 		// add task id to the message header
 		this.appendConstantHeader(builder, MessageConstants.TASK_ID, nodeId);
-						
+		
+		// store payload inside header
+		// -----
+		// we have to do this, because we need the
+		// payload after correlation
+		this.appendSimpleHeader(builder, MessageConstants.TMP_PAYLOAD, "${body}");
+		
 		// add correlation handling
 		this.appendGetCorrelation(builder, nodeId);
 			
@@ -163,7 +165,16 @@ public class XmlPipelineBuilder {
 				this.appendGetCorrelationRoute(this.additionalRoutes, nodeId);
 			}
 		}
-			
+		
+		// restore payload
+		// -----
+		// transfer the payload into the message
+		// body and empty the header
+		this.appendSimpleBody(builder, String.format("${header.%s}", MessageConstants.TMP_PAYLOAD));
+		this.appendConstantHeader(builder, MessageConstants.TMP_PAYLOAD, "");
+		
+		builder.append("\t\t<to uri=\"log:FOO\"/>\n");
+		
 		//save payload
 		this.appendSavePayload(builder, nodeId, in.getVariables());
 			
@@ -183,7 +194,7 @@ public class XmlPipelineBuilder {
 		
 		return builder.toString();
 	}
-	
+
 	public String buildOutPipeline(OutPipeline out, String nodeId){
 		
 		//++++++++++++++++++++++++++++
@@ -322,7 +333,7 @@ public class XmlPipelineBuilder {
 	 * @param nodeId
 	 */
 	private void appendGetCorrelation(StringBuilder builder, String nodeId){
-		builder.append(String.format("\t\t\t<to uri=\"direct:get-correlation-%s\"/>\n", nodeId));
+		builder.append(String.format("\t\t<to uri=\"direct:get-correlation-%s\"/>\n", nodeId));
 	}
 	
 	/**
@@ -386,7 +397,7 @@ public class XmlPipelineBuilder {
 			
 			while (it.hasNext()) {
 				Variable variable = (Variable) it.next();
-				builder.append(String.format("\t\t\t\t<to uri=\"direct:save-payload-%s-%s\"/>\n", nodeId, variable.getName()));
+				builder.append(String.format("\t\t<to uri=\"direct:save-payload-%s-%s\"/>\n", nodeId, variable.getName()));
 				
 				//create route
 				this.appendSavePayloadRoute(this.additionalRoutes, nodeId, variable);
@@ -489,7 +500,7 @@ public class XmlPipelineBuilder {
 	 * @param nodeId
 	 */
 	private void appendToQueue(StringBuilder builder, String nodeId){
-		builder.append(String.format("\t\t\t\t<to uri=\"direct:send-to-queue-%s\"/>\n", nodeId));
+		builder.append(String.format("\t\t<to uri=\"direct:send-to-queue-%s\"/>\n", nodeId));
 		
 		//create route
 		appendToQueueRoute(this.additionalRoutes, nodeId);
@@ -517,9 +528,7 @@ public class XmlPipelineBuilder {
 		builder.append(String.format("\t\t<from uri=\"direct:send-to-queue-%s\"/>\n", nodeId));
 		
 		//delete message body (the body will be saved inside the data grid)
-		builder.append("\t\t<setBody>\n");
-		builder.append("\t\t\t<constant></constant>\n");
-		builder.append("\t\t</setBody>\n");
+		this.appendConstantBody(builder, "");
 		
 		//clean header from objects that are not serializable
 		builder.append("\t\t<process ref=\"serializeableHeadersProcessor\"/>\n");
@@ -528,6 +537,40 @@ public class XmlPipelineBuilder {
 		builder.append(String.format("\t\t<inOnly uri=\"hazelcast:%sin_%s?transferExchange=true\"/>\n", HazelcastConstants.SEDA_PREFIX, nodeId));
 		
 		this.appendEndRoute(builder);
+	}
+	
+	/**
+	 * fills the body with the given value
+	 * 
+	 * <pre>
+	 * 	 &lt;setBody>
+	 *     &lt;constant>{VALUE}&lt;/constant>
+	 *   &lt;/setBody>
+	 * </pre>
+	 * @param builder
+	 * @param value
+	 */
+	private void appendConstantBody(StringBuilder builder, String value) {
+		builder.append("\t\t<setBody>\n");
+		builder.append(String.format("\t\t\t<constant>%s</constant>\n", value));
+		builder.append("\t\t</setBody>\n");		
+	}
+	
+	/**
+	 * fills the body with the given value
+	 * 
+	 * <pre>
+	 * 	 &lt;setBody>
+	 *     &lt;simple>{VALUE}&lt;/simple>
+	 *   &lt;/setBody>
+	 * </pre>
+	 * @param builder
+	 * @param value
+	 */
+	private void appendSimpleBody(StringBuilder builder, String value) {
+		builder.append("\t\t<setBody>\n");
+		builder.append(String.format("\t\t\t<simple>%s</simple>\n", value));
+		builder.append("\t\t</setBody>\n");		
 	}
 	
 	/**

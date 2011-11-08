@@ -15,16 +15,17 @@ import com.hazelcast.core.Hazelcast;
 public class TestReceiveNode extends SpringTestBase {
 
 	
-	@EndpointInject(uri = "mock:out")
+	@EndpointInject(uri = "mock://out")
 	private MockEndpoint out;
 	
-	@EndpointInject(uri = "mock:timeout")
+	@EndpointInject(uri = "mock://timeout")
 	private MockEndpoint timeout;
 	
 	@Override
 	public void setUp() throws Exception{
 		super.setUp();
 		
+		out.reset();
 		Hazelcast.getMap(CacheConstants.TIMER_CACHE).clear();
 	}
 	
@@ -32,6 +33,7 @@ public class TestReceiveNode extends SpringTestBase {
 	public void tearDown() throws Exception{
 		super.tearDown();
 		
+		out.reset();
 		Hazelcast.getMap(CacheConstants.TIMER_CACHE).clear();
 	}
 	
@@ -97,6 +99,25 @@ public class TestReceiveNode extends SpringTestBase {
 		
 	}
 	
+	@Test public void testPayloadHandling() throws InterruptedException{
+		super.deployProcess(this.getProcess02());
+		
+		out.setExpectedMessageCount(1);
+		out.expectedBodiesReceived(this.getXml());
+		
+		//init process
+		System.out.println("Message 1 ---------------------");
+		template.sendBody("seda:init_process02", this.getXml());
+		
+		Thread.sleep(500);
+		
+		//send payload
+		System.out.println("Message 2 ---------------------");
+		template.sendBody("seda:in", this.getXml());
+		
+		assertMockEndpointsSatisfied(10, TimeUnit.SECONDS);
+	}
+	
 	private void createMessageCopyRoute(final int delay) throws Exception{
 
 		RouteBuilder builder = new RouteBuilder(){
@@ -114,10 +135,10 @@ public class TestReceiveNode extends SpringTestBase {
 	}
 	
 	private ProcessDefinition deploy(){	
-		return super.deployProcess(this.getProcess());
+		return super.deployProcess(this.getProcess01());
 	}
 	
-	private String getProcess(){
+	private String getProcess01(){
 		return " <process processVersion=\"1.0\" processName=\"process01\" accountName=\"CATIFY\" xmlns=\"http://www.catify.com/api/1.0\" xmlns:ns=\"http://www.catify.com/api/1.0\" >\n" +
 				"	<start ns:name=\"start\">\n" +
 				"		<inPipeline>\n" +
@@ -157,7 +178,45 @@ public class TestReceiveNode extends SpringTestBase {
 				"	</receive>\n" +
 				"	<request ns:name=\"mock\">\n" +
 				"		<outPipeline>\n" +
-				"			<endpoint ns:uri=\"mock:out\"/>\n" +
+				"			<endpoint ns:uri=\"mock://out\"/>\n" +
+				"		</outPipeline>\n" +
+				"	</request>\n" +
+				"	<end ns:name=\"end\"/>\n" +
+				"</process>";
+	}
+	
+	private String getProcess02(){
+		return 	" <process processVersion=\"1.0\" processName=\"process02\" accountName=\"CATIFY\" xmlns=\"http://www.catify.com/api/1.0\" xmlns:ns=\"http://www.catify.com/api/1.0\" >\n" +
+				"	<start ns:name=\"start\">\n" +
+				"		<inPipeline>\n" +
+				"			<endpoint ns:uri=\"seda:init_process02\"/>\n" +
+				"			<correlation>\n" +
+				"				<xpath>/foo/a</xpath>\n" +
+				"				<xpath>/foo/b</xpath>\n" +
+				"			</correlation>\n" +
+				"		</inPipeline>\n" +
+				"	</start>\n" +
+				"	<receive ns:name=\"wait_for_payload\">\n" +
+				"		<timeEvent ns:time=\"3000\">\n" +
+				"			<end ns:name=\"end_time_out\"/>\n" +
+				"		</timeEvent>\n" +
+				"		<inPipeline>\n" +
+				"			<endpoint ns:uri=\"seda:in\"/>\n" +
+				"			<variables>\n" +
+				"				<variable ns:name=\"foo\" ns:xpath=\"/\" />\n" +
+				"			</variables>\n" +
+				"			<correlation>\n" +
+				"				<xpath>/foo/a</xpath>\n" +
+				"				<xpath>/foo/b</xpath>\n" +
+				"			</correlation>\n" +
+				"		</inPipeline>\n" +
+				"	</receive>\n" +
+				"	<request ns:name=\"mock_p2\">\n" +
+				"		<outPipeline>\n" +
+				"			<endpoint ns:uri=\"mock://out\"/>\n" +
+				"			<variables>\n" +
+				"				<variable ns:name=\"foo\" />\n" +
+				"			</variables>\n" +
 				"		</outPipeline>\n" +
 				"	</request>\n" +
 				"	<end ns:name=\"end\"/>\n" +
