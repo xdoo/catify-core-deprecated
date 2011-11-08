@@ -23,6 +23,8 @@ import org.apache.camel.component.hazelcast.HazelcastConstants;
 import com.catify.core.configuration.GlobalConfiguration;
 import com.catify.core.constants.CacheConstants;
 import com.catify.core.constants.MessageConstants;
+import com.catify.core.event.impl.beans.PayloadEvent;
+import com.catify.core.event.impl.beans.StateEvent;
 import com.catify.core.process.model.ProcessDefinition;
 import com.catify.core.process.processors.XPathProcessor;
 import com.catify.core.process.xml.model.Endpoint;
@@ -30,6 +32,8 @@ import com.catify.core.process.xml.model.InPipeline;
 import com.catify.core.process.xml.model.OutPipeline;
 import com.catify.core.process.xml.model.Variable;
 import com.catify.core.process.xml.model.Variables;
+import com.hazelcast.core.Hazelcast;
+import com.hazelcast.core.IMap;
 
 public class XmlPipelineBuilder {
 
@@ -94,6 +98,9 @@ public class XmlPipelineBuilder {
 			
 		//store payload in cache
 		this.appendSavePayload(builder, definition.getProcessId(), in.getVariables());
+		
+		IMap<String, Object> map = Hazelcast.getMap("payload-cache");
+		
 			
 		//send message to queue
 		this.appendToQueue(builder, definition.getProcessId()); // process & node id are equal in case of a start node
@@ -172,7 +179,7 @@ public class XmlPipelineBuilder {
 		this.closeRoutes(builder);
 		
 		//FIXME
-//		System.out.println(builder.toString());
+		System.out.println(builder.toString());
 		
 		return builder.toString();
 	}
@@ -223,7 +230,7 @@ public class XmlPipelineBuilder {
 		closeRoutes(builder);
 			
 		//FIXME
-//		System.out.println(builder.toString());
+		System.out.println(builder.toString());
 		
 		return builder.toString();
 	}
@@ -377,7 +384,6 @@ public class XmlPipelineBuilder {
 		if(variables != null) {
 			Iterator<Variable> it = variables.getVariable().iterator();
 			
-			
 			while (it.hasNext()) {
 				Variable variable = (Variable) it.next();
 				builder.append(String.format("\t\t\t\t<to uri=\"direct:save-payload-%s-%s\"/>\n", nodeId, variable.getName()));
@@ -412,7 +418,7 @@ public class XmlPipelineBuilder {
 	 */
 	private void appendSavePayloadRoute(StringBuilder builder, String nodeId, Variable variable){
 		builder.append(String.format("\t<route id=\"save-payload-%s-%s\">\n", nodeId, variable.getName()));
-		builder.append(String.format("\t\t<from uri=\"direct:save-payload-%s-%s\"/>\n", nodeId,variable.getName()));
+		builder.append(String.format("\t\t<from uri=\"direct:save-payload-%s-%s\"/>\n", nodeId, variable.getName()));
 		
 		//get xml snippet from xpath processor
 		appendConstantHeader(builder, XPathProcessor.XPATH, variable.getXpath());
@@ -422,6 +428,8 @@ public class XmlPipelineBuilder {
 		appendConstantHeader(builder, HazelcastConstants.OPERATION, "put");
 		appendSimpleHeader(builder, HazelcastConstants.OBJECT_ID, String.format("${header.%s}-%s", MessageConstants.INSTANCE_ID, variable.getName()));
 		builder.append(String.format("\t\t<to uri=\"hazelcast:%s%s\"/>\n", HazelcastConstants.MAP_PREFIX, CacheConstants.PAYLOAD_CACHE));
+		
+		System.out.println("################################################" + builder);
 		
 		this.appendEndRoute(builder);
 		

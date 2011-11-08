@@ -7,6 +7,7 @@ import org.apache.camel.component.hazelcast.HazelcastConstants;
 import com.catify.core.constants.CacheConstants;
 import com.catify.core.constants.MessageConstants;
 import com.catify.core.constants.QueueConstants;
+import com.catify.core.event.impl.beans.PayloadEvent;
 import com.catify.core.model.pipeline.PipelineDefinition;
 
 public class PipelineBuilder {

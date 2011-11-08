@@ -119,10 +119,10 @@ public class TestProcessRoutes extends CamelTestSupport {
 //	helper ---------------------------------------------
 
 	private void fillCache(){
-		cache.put("3", new StateEvent("5", ProcessConstants.STATE_WAITING));
-		cache.put("6", new StateEvent("5", ProcessConstants.STATE_DONE));
-		cache.put("9", new StateEvent("4", ProcessConstants.STATE_WORKING));
-		cache.put("7", new StateEvent("5", ProcessConstants.STATE_WAITING));
+		cache.put("3", new StateEvent("5", ProcessConstants.STATE_WAITING, null));
+		cache.put("6", new StateEvent("5", ProcessConstants.STATE_DONE, null));
+		cache.put("9", new StateEvent("4", ProcessConstants.STATE_WORKING, null));
+		cache.put("7", new StateEvent("5", ProcessConstants.STATE_WAITING, null));
 	}
 	
 	private Map<String,Object> getHeaders(){

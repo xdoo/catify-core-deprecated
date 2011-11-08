@@ -28,7 +28,7 @@ public class TestReceiveRouter extends CamelTestSupport {
 		out.setExpectedMessageCount(1);
 		
 		IMap<String, StateEvent> map = Hazelcast.getMap(CacheConstants.NODE_CACHE);
-		map.put(id, new StateEvent(instanceId, ProcessConstants.STATE_WAITING));
+		map.put(id, new StateEvent(instanceId, ProcessConstants.STATE_WAITING, id));
 		
 		template.sendBody("direct:start", "foo");
 		
@@ -46,7 +46,7 @@ public class TestReceiveRouter extends CamelTestSupport {
 		out.setExpectedMessageCount(1);
 		
 		IMap<String, StateEvent> map = Hazelcast.getMap(CacheConstants.NODE_CACHE);
-		map.put(id, new StateEvent(instanceId, ProcessConstants.STATE_WORKING));
+		map.put(id, new StateEvent(instanceId, ProcessConstants.STATE_WORKING, id));
 		
 		template.sendBody("direct:start", "foo");
 		
