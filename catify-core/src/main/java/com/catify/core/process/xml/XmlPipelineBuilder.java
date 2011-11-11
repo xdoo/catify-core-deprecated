@@ -28,6 +28,8 @@ import com.catify.core.process.processors.XPathProcessor;
 import com.catify.core.process.xml.model.Endpoint;
 import com.catify.core.process.xml.model.InPipeline;
 import com.catify.core.process.xml.model.OutPipeline;
+import com.catify.core.process.xml.model.PipelineExceptionEvent;
+import com.catify.core.process.xml.model.PipelineExceptionType;
 import com.catify.core.process.xml.model.Variable;
 import com.catify.core.process.xml.model.Variables;
 
@@ -105,7 +107,7 @@ public class XmlPipelineBuilder {
 		closeRoutes(builder);
 		
 		//FIXME
-//		System.out.println(builder.toString());
+		System.out.println(builder.toString());
 		
 		return builder.toString();
 	}
@@ -155,7 +157,17 @@ public class XmlPipelineBuilder {
 		if(in.getCorrelation() != null) {
 			if(in.getCorrelation().getXpath() != null){
 				definition.addCorrelationRule(nodeId, this.correlationRuleBuilder.buildCorrelationDefinition(in.getCorrelation().getXpath()));
-				this.appendGetCorrelationRoute(this.additionalRoutes, nodeId);
+				
+				// if there is a correlation exception event defined 
+				// create a try...catch clause to handle correlation
+				// failures.
+				if(in.getPipelineExceptionEvent() != null
+				   && in.getPipelineExceptionEvent().getPipelineExceptionType().value().equals("CorrelationException")) {
+					this.appendGetCorrelationRoute(this.additionalRoutes, nodeId, in.getPipelineExceptionEvent());	
+				} else {
+					// if not - just ignore errors
+					this.appendGetCorrelationRoute(this.additionalRoutes, nodeId, null);
+				}
 			}
 		}
 		
@@ -165,8 +177,6 @@ public class XmlPipelineBuilder {
 		// body and empty the header
 		this.appendSimpleBody(builder, String.format("${header.%s}", MessageConstants.TMP_PAYLOAD));
 		this.appendConstantHeader(builder, MessageConstants.TMP_PAYLOAD, "");
-		
-		builder.append("\t\t<to uri=\"log:FOO\"/>\n");
 		
 		//save payload
 		this.appendSavePayload(builder, nodeId, in.getVariables());
@@ -183,7 +193,7 @@ public class XmlPipelineBuilder {
 		this.closeRoutes(builder);
 		
 		//FIXME
-//		System.out.println(builder.toString());
+		System.out.println(builder.toString());
 		
 		return builder.toString();
 	}
@@ -336,21 +346,48 @@ public class XmlPipelineBuilder {
 	 * &lt;route id="get-correlation-{NODE_ID}">
 	 *   &lt:from uri="direct:get-correlation-{NODE_ID}"/>
 	 *   &lt;to uri="xslt:http://localhost:{PORT}/catify/get_correlation_rule/{NODE_ID}?transformerFactory=transformerFactory"/>
-	 *   &lt;process ref="readCorrelationProcessor"/>
+	 *   &lt;doTry>
+	 *     &lt;process ref="readCorrelationProcessor"/>
+	 *     &lt;doCatch>
+	 *       &lt;exception>com.catify.core.exceptions.CorrelationException&lt;/exception>
+	 *       &lt;setBody>
+	 *     		&lt;simple>${header.catify_tmp_payload}&lt;/simple>
+	 *   	 &lt;/setBody>
+	 *   	 &lt;setHeader headerName="{HAZELCAST_OBJECT_ID}">
+	 *     		&lt;constant>&lt;/constant>
+	 *       &lt;/setHeader>
+	 *       &lt;to uri="{URI}"/>
+	 *     &lt;/doCatch>
+	 *   &lt;/doTry>
 	 * &lt;/route>
 	 * </pre>
 	 * 
 	 * @param builder
 	 * @param nodeId
 	 */
-	private void appendGetCorrelationRoute(StringBuilder builder, String nodeId){
+	private void appendGetCorrelationRoute(StringBuilder builder, String nodeId, PipelineExceptionEvent ex){
 		builder.append(String.format("\t<route id=\"get-correlation-%s\">\n", nodeId));
 		builder.append(String.format("\t\t<from uri=\"direct:get-correlation-%s\"/>\n", nodeId));
 		
-		this.appendCreateCorrelationRule(builder, nodeId);
+		this.appendCreateCorrelationRule(builder, nodeId);	
 		
-		//generate correlation hash
-		builder.append("\t\t<process ref=\"readCorrelationProcessor\"/>\n");
+		if(ex != null) {
+			
+			// generate try catch
+			builder.append("\t\t<doTry>\n");
+			builder.append("\t\t\t<process ref=\"readCorrelationProcessor\"/>\n");
+			builder.append("\t\t\t<doCatch>\n");
+			builder.append("\t\t\t<exception>com.catify.core.exceptions.CorrelationException</exception>\n");
+			this.appendSimpleBody(builder, String.format("${header.%s}", MessageConstants.TMP_PAYLOAD));
+			this.appendConstantHeader(builder, MessageConstants.TMP_PAYLOAD, "");
+			builder.append(String.format("\t\t\t<to uri=\"%s\"/>\n", ex.getUri()));
+			builder.append("\t\t\t</doCatch>\n");
+			builder.append("\t\t</doTry>\n");
+			
+		} else {
+			// generate correlation hash
+			builder.append("\t\t<process ref=\"readCorrelationProcessor\"/>\n");
+		}
 		
 		this.appendEndRoute(builder);
 	}
@@ -413,7 +450,7 @@ public class XmlPipelineBuilder {
 	 *     &lt;constant>{HAZELCAST_PUT}&lt;/constant>
 	 * 	 &lt;/setHeader>
 	 *   &lt;setHeader headerName="{HAZELCAST_OBJECT_ID}">
-	 *     &lt;constant>${header.{INSTANCE_ID}}&lt;/constant>
+	 *     &lt;constant>${header.{INSTANCE_ID}}-{VARIBALE_NAME}&lt;/constant>
 	 *   &lt;/setHeader>
 	 *   &lt;to uri="hazelcast:map:payload-cache"/>
 	 * &lt;/route>

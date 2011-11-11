@@ -14,24 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.catify.core.process.processors;
+package com.catify.core.exceptions;
 
-import org.apache.camel.Exchange;
-import org.apache.camel.component.hazelcast.HazelcastConstants;
-import org.apache.commons.codec.digest.DigestUtils;
+public class CorrelationException extends Exception {
 
-public abstract class CorrelationProcessor extends BaseProcessor {
-
-	public abstract void process(Exchange ex) throws Exception;
+	private static final long serialVersionUID = 7930583528692526491L;
+	private String message;
 	
-	protected void generateCorrelationId(Exchange ex){
-		
-//		creates a md5 hash as correlation id for the given string
-		String correlationId = DigestUtils.md5Hex(ex.getIn().getBody(String.class));
-		
-		super.copyBodyAndHeaders(ex);
-		
-		ex.getOut().setHeader(HazelcastConstants.OBJECT_ID, correlationId);
+	public CorrelationException() {
+		// nothing to do
 	}
-
+	
+	public CorrelationException(String message) {
+		this.message = message;
+	}
+	
+	public String getMessage(){
+		return this.message;
+	}
 }

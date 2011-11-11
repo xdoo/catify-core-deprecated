@@ -50,6 +50,8 @@ public class TestXmlPipelineBuilder extends CamelSpringTestSupport {
 		assertNotNull(context.getRoute("save-payload-e8c2eb9abd37d710f4447af1f4da99ef-foo"));
 		assertNotNull(context.getRoute("send-to-queue-e8c2eb9abd37d710f4447af1f4da99ef"));
 		assertNotNull(context.getRoute("create-correlation-e8c2eb9abd37d710f4447af1f4da99ef"));
+		
+		//TODO test functionality 
 	}
 	
 	/**
@@ -66,6 +68,27 @@ public class TestXmlPipelineBuilder extends CamelSpringTestSupport {
 		assertNotNull(context.getRoute("save-payload-3e68dd4a3a52369301021ceb61158950-foo"));
 		assertNotNull(context.getRoute("send-to-queue-3e68dd4a3a52369301021ceb61158950"));
 		assertNotNull(context.getRoute("get-correlation-3e68dd4a3a52369301021ceb61158950"));
+		
+		//TODO test functionality 
+	}
+	
+	/**
+	 * 
+	 * 
+	 * @throws Exception
+	 */
+	@Test
+	public void testBuildInPipelineWithCorrelationException() throws Exception{
+		
+		this.deployRoutes(this.xmlReceiveCorrelationException(), TestXmlPipelineBuilder.IN);
+		
+		assertNotNull(context.getRoute("in-3e68dd4a3a52369301021ceb61158950"));
+		assertNotNull(context.getRoute("save-payload-3e68dd4a3a52369301021ceb61158950-foo"));
+		assertNotNull(context.getRoute("send-to-queue-3e68dd4a3a52369301021ceb61158950"));
+		assertNotNull(context.getRoute("get-correlation-3e68dd4a3a52369301021ceb61158950"));
+		
+		//TODO test functionality 
+		
 	}
 
 	/**
@@ -81,6 +104,8 @@ public class TestXmlPipelineBuilder extends CamelSpringTestSupport {
 		assertNotNull(context.getRoute("out-pipeline-a600aa727f9df80c45b0674eda578fea"));
 		assertNotNull(context.getRoute("load-payload-a600aa727f9df80c45b0674eda578fea-foo"));
 		assertNotNull(context.getRoute("load-payload-a600aa727f9df80c45b0674eda578fea-bar"));
+		
+		//TODO test functionality 
 	}
 	
 	/**
@@ -247,6 +272,31 @@ public class TestXmlPipelineBuilder extends CamelSpringTestSupport {
 				"			<end ns:name=\"end_time_out\"/>\n" +
 				"		</timeEvent>\n" +
 				"		<inPipeline>\n" +
+				"			<endpoint ns:uri=\"direct://foo\"/>\n" +
+				"			<correlation>\n" +
+				"				<xpath>/foo/x</xpath>\n" +
+				"				<xpath>/foo/bar/z</xpath>\n" +
+				"			</correlation>\n" +
+				"			<variables>\n" +
+				"				<variable ns:name=\"foo\" ns:xpath=\"/\"/>\n" +
+				"			</variables>\n" +
+				"		</inPipeline>\n" +
+				"	</receive>" +
+				"	<end ns:name=\"end\"/>\n" +
+				"</process>";
+		
+	}
+	
+	private String xmlReceiveCorrelationException(){
+		return 	"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+				"<process processVersion=\"1.0\" processName=\"process01\" accountName=\"tester\"  xmlns=\"http://www.catify.com/api/1.0\" xmlns:ns=\"http://www.catify.com/api/1.0\" >\n" +
+				"	<start ns:name=\"start\"/>\n" +
+				"	<receive ns:name=\"wait_for_payload\">\n" +
+				"		<timeEvent ns:time=\"60000\">\n" +
+				"			<end ns:name=\"end_time_out\"/>\n" +
+				"		</timeEvent>\n" +
+				"		<inPipeline>\n" +
+				"			<pipelineExceptionEvent ns:pipelineExceptionType=\"CorrelationException\" ns:uri=\"mock://error\" ns:attachPayload=\"true\"/>\n" +
 				"			<endpoint ns:uri=\"direct://foo\"/>\n" +
 				"			<correlation>\n" +
 				"				<xpath>/foo/x</xpath>\n" +

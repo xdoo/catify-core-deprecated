@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- edited with XMLSpy v2010 (http://www.altova.com) by Claus Straube (Hochschule München SCE-catify) -->
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://www.catify.com/api/1.0" targetNamespace="http://www.catify.com/api/1.0" elementFormDefault="unqualified" attributeFormDefault="unqualified">
 	<!--
     #######################################
@@ -9,6 +8,7 @@
 	<xs:element name="inPipeline" type="InPipeline"/>
 	<xs:complexType name="Pipeline">
 		<xs:sequence>
+			<xs:element ref="pipelineExceptionEvent" minOccurs="0"/>
 			<xs:element ref="endpoint">
 				<xs:annotation>
 					<xs:documentation>put in here you camel uri like "hazelcast:seda://foo". you can use all component properties.</xs:documentation>
@@ -17,6 +17,27 @@
 			<xs:element ref="correlation" minOccurs="0"/>
 			<xs:element ref="variables" minOccurs="0"/>
 		</xs:sequence>
+	</xs:complexType>
+	<xs:element name="pipelineExceptionEvent" type="PipelineExceptionEvent"/>
+	<xs:complexType name="PipelineExceptionEvent">
+		<xs:annotation>
+			<xs:documentation>the difference between a process exception and a pipeline exception is, that you may not know the instance inside the pipeline. inside a process you're always knowing the instance - which means you can navigate inside your process (e.g. initiate a compensation).  </xs:documentation>
+		</xs:annotation>
+		<xs:attribute ref="pipelineExceptionType">
+			<xs:annotation>
+				<xs:documentation>put in here the exception type (e.g. CorrelationException)</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute ref="uri">
+			<xs:annotation>
+				<xs:documentation>put in here the uri of your 'dead letter channel' </xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute ref="attachPayload">
+			<xs:annotation>
+				<xs:documentation>set this to true, to send the payload with the message (deafult is true)</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
 	</xs:complexType>
 	<xs:element name="variables" type="Variables"/>
 	<xs:complexType name="Variables">
@@ -40,11 +61,7 @@
 			<xs:extension base="Pipeline"/>
 		</xs:complexContent>
 	</xs:complexType>
-	<!-- from...-->
-	<xs:element name="fromEndpoint" type="Endpoint"/>
-	<!-- to...-->
-	<xs:element name="toEndpoint" type="Endpoint"/>
-	<!-- endpoints -->
+	<!-- endpoint -->
 	<xs:element name="endpoint" type="Endpoint"/>
 	<xs:complexType name="Endpoint">
 		<xs:attribute ref="uri"/>
@@ -256,4 +273,11 @@
 	<xs:attribute name="uri" type="xs:string"/>
 	<xs:attribute name="operation" type="xs:string"/>
 	<xs:attribute name="receivingLines" type="xs:int" default="-1"/>
+	<xs:attribute name="attachPayload" type="xs:boolean" default="true"/>
+	<xs:attribute name="pipelineExceptionType" type="PipelineExceptionType"/>
+	<xs:simpleType name="PipelineExceptionType">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="CorrelationException"/>
+		</xs:restriction>
+	</xs:simpleType>
 </xs:schema>
