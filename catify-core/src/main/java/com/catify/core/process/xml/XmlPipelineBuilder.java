@@ -367,15 +367,20 @@ public class XmlPipelineBuilder {
 	 */
 	private void appendGetCorrelationRoute(StringBuilder builder, String nodeId, PipelineExceptionEvent ex){
 		builder.append(String.format("\t<route id=\"get-correlation-%s\">\n", nodeId));
-		builder.append(String.format("\t\t<from uri=\"direct:get-correlation-%s\"/>\n", nodeId));
+		builder.append(String.format("\t\t<from uri=\"direct:get-correlation-%s\"/>\n", nodeId));	
 		
-		this.appendCreateCorrelationRule(builder, nodeId);	
+		this.appendCreateCorrelationRule(builder, nodeId);
 		
 		if(ex != null) {
 			
 			// generate try catch
-			builder.append("\t\t<doTry>\n");
+			builder.append("\t\t<doTry>\n");			
 			builder.append("\t\t\t<process ref=\"readCorrelationProcessor\"/>\n");
+			
+			// this is a workaround for a camel bug. if there
+			// is no 'to' before the 'doCatch' an error will 
+			// be thrown... TODO - resolve this
+			builder.append("\t\t\t<to uri=\"log:AFTER-CORRELATION\"/>\n");
 			builder.append("\t\t\t<doCatch>\n");
 			builder.append("\t\t\t<exception>com.catify.core.exceptions.CorrelationException</exception>\n");
 			this.appendSimpleBody(builder, String.format("${header.%s}", MessageConstants.TMP_PAYLOAD));

@@ -159,6 +159,14 @@ public class ProcessDeployer {
 				this.addToContext(this.createSleepNode(definition,
 						node.getNodeId()));
 				break;
+				
+//			case ProcessConstants.EXCEPTIONEVENT:
+//				LOG.info(String.format(
+//						"creating EXCEPTION node '%s' with id '%s'.",
+//						node.getNodeName(), node.getNodeId()));
+//				this.addToContext(this.createSleepNode(definition,
+//						node.getNodeId()));
+//				break;
 
 			default:
 				break;

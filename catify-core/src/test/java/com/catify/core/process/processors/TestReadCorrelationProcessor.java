@@ -77,7 +77,10 @@ public class TestReadCorrelationProcessor extends CamelTestSupport {
 		out.expectedHeaderReceived(MessageConstants.INSTANCE_ID, iid);
 		
 		// send message
-		template.sendBody("direct://in", "mycorrelationmessage");
+//		template.sendBody("direct://in", "mycorrelationmessage");
+		Object body = template.requestBody("direct://in", "mycorrelationmessage");
+		
+		System.out.println("--------------> " + body);
 		
 		assertMockEndpointsSatisfied(5, TimeUnit.SECONDS);
 	}

@@ -69,7 +69,7 @@ public class ReceiveRouter {
 					LOG.info(String.format("returning go route for '%s' / '%s' --> %s", instanceId, taskId, goRoute));
 				}
 				
-				
+				// signal for 'go'!!!
 				return goRoute;
 			}
 			
@@ -80,6 +80,7 @@ public class ReceiveRouter {
 					LOG.info(String.format("returning wait route for '%s' / '%s' --> %s", instanceId, taskId, waitRoute));
 				}
 				
+				// signal for 'wait'!!!
 				return waitRoute;
 				
 			}
