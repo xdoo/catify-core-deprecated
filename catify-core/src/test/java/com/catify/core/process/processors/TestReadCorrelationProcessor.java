@@ -19,6 +19,7 @@ package com.catify.core.process.processors;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.camel.EndpointInject;
+import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.test.junit4.CamelTestSupport;
@@ -93,10 +94,12 @@ public class TestReadCorrelationProcessor extends CamelTestSupport {
 	 */
 	@Test public void testFailtoReadInstanceId() throws InterruptedException {
 		error.setExpectedMessageCount(1);
+		error.expectedBodiesReceived("notacorrelationmessage");
+		error.expectedHeaderReceived("instanceid", "4711");
 		out.setExpectedMessageCount(0);
 		
 		// send message
-		template.sendBody("direct://in", "notacorrelationmessage");
+		template.sendBodyAndHeader("direct://in", "notacorrelationmessage", "instanceid", "4711");
 		
 		assertMockEndpointsSatisfied(5, TimeUnit.SECONDS);
 	}
@@ -109,11 +112,15 @@ public class TestReadCorrelationProcessor extends CamelTestSupport {
 			public void configure() throws Exception {
 				
 				from("direct://in")
-				.doTry()
-					.process(new ReadCorrelationProcessor())
-					.to("mock://out")
-				.doCatch(CorrelationException.class)
-					.to("mock://error");
+				.process(new ReadCorrelationProcessor())
+				.choice()
+					.when(header(ReadCorrelationProcessor.CORRELATION_EXCEPTION_HEADER).isEqualTo("yes"))
+						.to("seda://deadletter")
+					.otherwise()
+						.to("mock://out");
+				
+				from("seda://deadletter")
+				.to("mock://error");
 				
 			}
 		};

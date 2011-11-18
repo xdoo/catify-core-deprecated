@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory;
 import com.catify.core.constants.PipelineConstants;
 import com.catify.core.process.ProcessHelper;
 import com.catify.core.process.nodes.Node;
+import com.catify.core.process.xml.model.PipelineExceptionEvent;
 
 public class ProcessDefinition implements Serializable {
 	

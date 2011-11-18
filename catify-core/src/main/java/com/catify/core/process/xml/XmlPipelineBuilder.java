@@ -24,12 +24,12 @@ import com.catify.core.configuration.GlobalConfiguration;
 import com.catify.core.constants.CacheConstants;
 import com.catify.core.constants.MessageConstants;
 import com.catify.core.process.model.ProcessDefinition;
+import com.catify.core.process.processors.ReadCorrelationProcessor;
 import com.catify.core.process.processors.XPathProcessor;
 import com.catify.core.process.xml.model.Endpoint;
 import com.catify.core.process.xml.model.InPipeline;
 import com.catify.core.process.xml.model.OutPipeline;
 import com.catify.core.process.xml.model.PipelineExceptionEvent;
-import com.catify.core.process.xml.model.PipelineExceptionType;
 import com.catify.core.process.xml.model.Variable;
 import com.catify.core.process.xml.model.Variables;
 
@@ -158,15 +158,14 @@ public class XmlPipelineBuilder {
 			if(in.getCorrelation().getXpath() != null){
 				definition.addCorrelationRule(nodeId, this.correlationRuleBuilder.buildCorrelationDefinition(in.getCorrelation().getXpath()));
 				
-				// if there is a correlation exception event defined 
-				// create a try...catch clause to handle correlation
-				// failures.
-				if(in.getPipelineExceptionEvent() != null
-				   && in.getPipelineExceptionEvent().getPipelineExceptionType().value().equals("CorrelationException")) {
-					this.appendGetCorrelationRoute(this.additionalRoutes, nodeId, in.getPipelineExceptionEvent());	
+				// we have to deploy the error handler separate
+				// (this is a camel issue)
+				if(in.getPipelineExceptionEvent() != null){	
+					this.appendGetCorrelationRouteWithExceptionHandler(this.additionalRoutes, nodeId, in.getPipelineExceptionEvent());
+					// append error handler route
+					this.appendPipelineExceptionRoute(this.additionalRoutes, nodeId, in.getPipelineExceptionEvent());
 				} else {
-					// if not - just ignore errors
-					this.appendGetCorrelationRoute(this.additionalRoutes, nodeId, null);
+					this.appendGetCorrelationRoute(this.additionalRoutes, nodeId);
 				}
 			}
 		}
@@ -344,56 +343,72 @@ public class XmlPipelineBuilder {
 	 * 
 	 * <pre>
 	 * &lt;route id="get-correlation-{NODE_ID}">
-	 *   &lt:from uri="direct:get-correlation-{NODE_ID}"/>
+	 *   &lt;from uri="direct:get-correlation-{NODE_ID}"/>
+	 *   &lt;errorHandler id="{NODE_ID}" type="DeadLetterChannel"
+	 *   				  deadLetterUri="seda://pipeline-exception-{NODE_ID}" useOriginalMessage="true"/>
 	 *   &lt;to uri="xslt:http://localhost:{PORT}/catify/get_correlation_rule/{NODE_ID}?transformerFactory=transformerFactory"/>
-	 *   &lt;doTry>
-	 *     &lt;process ref="readCorrelationProcessor"/>
-	 *     &lt;doCatch>
-	 *       &lt;exception>com.catify.core.exceptions.CorrelationException&lt;/exception>
-	 *       &lt;setBody>
-	 *     		&lt;simple>${header.catify_tmp_payload}&lt;/simple>
-	 *   	 &lt;/setBody>
-	 *   	 &lt;setHeader headerName="{HAZELCAST_OBJECT_ID}">
-	 *     		&lt;constant>&lt;/constant>
-	 *       &lt;/setHeader>
-	 *       &lt;to uri="{URI}"/>
-	 *     &lt;/doCatch>
-	 *   &lt;/doTry>
+	 *   &lt;process ref="readCorrelationProcessor"/>
 	 * &lt;/route>
 	 * </pre>
 	 * 
 	 * @param builder
 	 * @param nodeId
 	 */
-	private void appendGetCorrelationRoute(StringBuilder builder, String nodeId, PipelineExceptionEvent ex){
-		builder.append(String.format("\t<route id=\"get-correlation-%s\">\n", nodeId));
-		builder.append(String.format("\t\t<from uri=\"direct:get-correlation-%s\"/>\n", nodeId));	
+	private void appendGetCorrelationRoute(StringBuilder builder, String nodeId){		
 		
+		builder.append(String.format("\t<route id=\"get-correlation-%s\">\n", nodeId, nodeId));
+		builder.append(String.format("\t\t<from uri=\"direct:get-correlation-%s\"/>\n", nodeId));
+		
+		// create correlation id
 		this.appendCreateCorrelationRule(builder, nodeId);
+		builder.append("\t\t<process ref=\"readCorrelationProcessor\"/>\n");
 		
-		if(ex != null) {
-			
-			// generate try catch
-			builder.append("\t\t<doTry>\n");			
-			builder.append("\t\t\t<process ref=\"readCorrelationProcessor\"/>\n");
-			
-			// this is a workaround for a camel bug. if there
-			// is no 'to' before the 'doCatch' an error will 
-			// be thrown... TODO - resolve this
-			builder.append("\t\t\t<to uri=\"log:AFTER-CORRELATION\"/>\n");
-			builder.append("\t\t\t<doCatch>\n");
-			builder.append("\t\t\t<exception>com.catify.core.exceptions.CorrelationException</exception>\n");
-			this.appendSimpleBody(builder, String.format("${header.%s}", MessageConstants.TMP_PAYLOAD));
-			this.appendConstantHeader(builder, MessageConstants.TMP_PAYLOAD, "");
-			builder.append(String.format("\t\t\t<to uri=\"%s\"/>\n", ex.getUri()));
-			builder.append("\t\t\t</doCatch>\n");
-			builder.append("\t\t</doTry>\n");
-			
-		} else {
-			// generate correlation hash
-			builder.append("\t\t<process ref=\"readCorrelationProcessor\"/>\n");
-		}
+		this.appendEndRoute(builder);
+	}
+	
+	private void appendGetCorrelationRouteWithExceptionHandler(StringBuilder builder, String nodeId, PipelineExceptionEvent pipelineExceptionEvent) {
+		builder.append(String.format("\t<route id=\"get-correlation-%s\">\n", nodeId, nodeId));
+		builder.append(String.format("\t\t<from uri=\"direct:get-correlation-%s\"/>\n", nodeId));
 		
+		// create correlation id
+		this.appendCreateCorrelationRule(builder, nodeId);
+		builder.append("\t\t<process ref=\"readCorrelationProcessor\"/>\n");
+		
+		// create exception handling
+		builder.append("\t\t<filter>\n");
+		builder.append(String.format("\t\t\t<xpath>$%s = 'yes'</xpath>\n", ReadCorrelationProcessor.CORRELATION_EXCEPTION_HEADER));
+		builder.append(String.format("\t\t\t<to uri=\"seda:pipeline-exception-%s\"/>\n", nodeId));
+		builder.append("\t\t</filter>\n");
+		
+		this.appendEndRoute(builder);
+	}
+	
+	/**
+	 * <pre>
+	 * &lt;route id="pipeline-exception-{NODE_ID}">
+	 * 	&lt;from uri="seda://pipeline-exception-{NODE_ID}"/>
+	 *  &lt;setBody>
+	 *    &lt;simple>${header.catify_tmp_payload}&lt;/simple>
+	 *  &lt;/setBody>
+	 *  &lt;setHeader headerName="{HAZELCAST_OBJECT_ID}">
+	 *    &lt;constant>&lt;/constant>
+	 *  &lt;/setHeader>
+	 *  &lt;to uri="{URI}"/>
+	 * &lt;/route>
+	 * </pre>
+	 * 
+	 * @param builder
+	 * @param nodeId
+	 * @param ex
+	 */
+	private void appendPipelineExceptionRoute(StringBuilder builder, String nodeId, PipelineExceptionEvent ex) {
+		builder.append(String.format("\t<route id=\"pipeline-exception-%s\">\n", nodeId));
+		builder.append(String.format("\t\t<from uri=\"seda:pipeline-exception-%s\"/>\n", nodeId));
+		// TODO --> delete
+		builder.append("\t\t<to uri=\"log:EXCEPTION?showAll=true\"/>\n");
+		this.appendSimpleBody(builder, String.format("${header.%s}", MessageConstants.TMP_PAYLOAD));
+		this.appendConstantHeader(builder, MessageConstants.TMP_PAYLOAD, "");
+		builder.append(String.format("\t\t<to uri=\"%s\"/>\n", ex.getUri()));
 		this.appendEndRoute(builder);
 	}
 	

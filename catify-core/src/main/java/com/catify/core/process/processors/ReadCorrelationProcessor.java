@@ -34,6 +34,8 @@ import com.hazelcast.core.Hazelcast;
  */
 public class ReadCorrelationProcessor extends CorrelationProcessor {
 
+	public static final String CORRELATION_EXCEPTION_HEADER = "CorrelationException"; 
+	
 	@Override
 	public void process(Exchange ex) throws Exception {
 
@@ -45,11 +47,7 @@ public class ReadCorrelationProcessor extends CorrelationProcessor {
 				ex.getOut().getHeader(HazelcastConstants.OBJECT_ID));
 		
 		if(instanceId == null) {
-			// throw exception
-			CorrelationException exception = new CorrelationException(String.format("No correlation found for key '%s'", ex.getOut().getHeader(HazelcastConstants.OBJECT_ID)));
-			
-			//store exception into message
-			ex.setException(exception);
+			ex.getOut().setHeader(CORRELATION_EXCEPTION_HEADER, "yes");
 		} else {
 			// put it into the message
 			ex.getOut().setHeader(MessageConstants.INSTANCE_ID, instanceId);

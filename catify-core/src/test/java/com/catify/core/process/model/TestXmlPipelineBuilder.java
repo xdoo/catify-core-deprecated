@@ -5,9 +5,11 @@ import java.io.InputStream;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.camel.EndpointInject;
+import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.converter.jaxb.JaxbDataFormat;
+import org.apache.camel.model.RouteDefinition;
 import org.apache.camel.model.RoutesDefinition;
 import org.apache.camel.spi.DataFormat;
 import org.apache.camel.test.junit4.CamelSpringTestSupport;
@@ -152,11 +154,10 @@ public class TestXmlPipelineBuilder extends CamelSpringTestSupport {
 	
 	/**
 	 * test if the correlation exception part works.
-	 * 
-	 * @throws InterruptedException
+	 * @throws Exception 
 	 */
 	@Test
-	public void testCorrelationException() throws InterruptedException{
+	public void testCorrelationException() throws Exception{
 		Process process = template.requestBody("direct:xml", this.xmlProcess(), com.catify.core.process.xml.model.Process.class);
 		XmlProcessBuilder processBuilder = (XmlProcessBuilder) applicationContext.getBean("xmlProcessBuilder");
 		
@@ -166,8 +167,67 @@ public class TestXmlPipelineBuilder extends CamelSpringTestSupport {
 		
 		deployer.deployProcess(definition);
 		
+		// deploy error route
+		context.addRoutes(new RouteBuilder() {
+			
+			@Override
+			public void configure() throws Exception {
+				from("seda://deadletter")
+				.to("mock://error");
+			}
+		});
+		
+		
 		out1.expectedMessageCount(1);
 		error.expectedMessageCount(1);
+		
+		//send message to process
+//		System.out.println("--------------------------> sending message to init process");
+		template.sendBody("seda://start" , this.getXml1());
+		
+		//send message to receive node
+		Thread.sleep(3000);
+//		System.out.println("--------------------------> sending message to 'wait_for_payload'");
+		template.sendBody("seda://receive", this.getXml3());
+		
+		assertMockEndpointsSatisfied(10000, TimeUnit.MILLISECONDS);
+	}
+	
+	/**
+	 * test if we can call a subprocess from a correlation exception.
+	 * @throws Exception 
+	 */
+	@Test
+	public void testCorrelationExceptionWithSubprocess() throws Exception{
+		Process p1 = template.requestBody("direct:xml", this.xmlProcess(), com.catify.core.process.xml.model.Process.class);
+		Process p2 = template.requestBody("direct:xml", this.xmlStart2(), com.catify.core.process.xml.model.Process.class);
+		XmlProcessBuilder processBuilder = (XmlProcessBuilder) applicationContext.getBean("xmlProcessBuilder");
+		
+		ProcessDefinition d1 = processBuilder.build(p1);
+		ProcessDefinition d2 = processBuilder.build(p2);
+		
+		ProcessDeployer deployer = new ProcessDeployer(context);
+		
+		deployer.deployProcess(d1);
+		deployer.deployProcess(d2);
+		
+		// deploy error route
+		context.addRoutes(new RouteBuilder() {
+			
+			@Override
+			public void configure() throws Exception {
+				from("seda://deadletter")
+				.removeProperty(Exchange.EXCEPTION_CAUGHT)
+				.to("log:SUBPROCESS?showAll=true")
+				.to("seda://start2");
+				
+			}
+		});
+		
+		
+		out1.expectedMessageCount(1);
+		out2.expectedMessageCount(1);
+		out2.expectedBodiesReceived(this.getXml3());
 		
 		//send message to process
 //		System.out.println("--------------------------> sending message to init process");
@@ -231,9 +291,13 @@ public class TestXmlPipelineBuilder extends CamelSpringTestSupport {
 				.unmarshal(jaxb)
 				.log("${body}");
 				
+
+				
 			}
 		};
 	}
+	
+	
 	
 	/**
 	 * helper to deploy xml routes from a string input.
@@ -292,6 +356,33 @@ public class TestXmlPipelineBuilder extends CamelSpringTestSupport {
 				"</process>";
 	}
 	
+	private String xmlStart2(){
+		return 	"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+				"<process processVersion=\"1.0\" processName=\"process02\" accountName=\"tester\"  xmlns=\"http://www.catify.com/api/1.0\" xmlns:ns=\"http://www.catify.com/api/1.0\" >\n" +
+				"	<start ns:name=\"start\">\n" +
+				"		<inPipeline>\n" +
+				"			<endpoint ns:uri=\"seda://start2\"/>\n" +
+				"			<correlation>\n" +
+				"				<xpath>/foo/x</xpath>\n" +
+				"				<xpath>/foo/bar/z</xpath>\n" +
+				"			</correlation>\n" +
+				"			<variables>\n" +
+				"				<variable ns:name=\"foo\" ns:xpath=\"/\"/>\n" +
+				"			</variables>\n" +
+				"		</inPipeline>\n" +
+				"	</start>\n" +
+				"	<request ns:name=\"send_to_mock\">\n" +
+				"		<outPipeline>\n" +
+				"			<endpoint ns:uri=\"mock://out2\"/>\n" +
+				"			<variables>\n" +
+				"				<variable ns:name=\"foo\" />\n" +
+				"			</variables>\n" +
+				"		</outPipeline>\n" +
+				"	</request>" +
+				"	<end ns:name=\"end\"/>\n" +
+				"</process>";
+	}
+	
 	private String xmlReceive(){
 		return 	"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
 				"<process processVersion=\"1.0\" processName=\"process01\" accountName=\"tester\"  xmlns=\"http://www.catify.com/api/1.0\" xmlns:ns=\"http://www.catify.com/api/1.0\" >\n" +
@@ -322,7 +413,7 @@ public class TestXmlPipelineBuilder extends CamelSpringTestSupport {
 				"	<start ns:name=\"start\"/>\n" +
 				"	<receive ns:name=\"wait_for_payload\">\n" +
 				"		<inPipeline>\n" +
-				"			<pipelineExceptionEvent ns:pipelineExceptionType=\"CorrelationException\" ns:uri=\"mock://error\" ns:attachPayload=\"true\"/>\n" +
+				"			<pipelineExceptionEvent ns:uri=\"seda:deadletter\" ns:attachPayload=\"true\"/>\n" +
 				"			<endpoint ns:uri=\"direct://bar\"/>\n" +
 				"			<correlation>\n" +
 				"				<xpath>/foo/x</xpath>\n" +
@@ -392,7 +483,7 @@ public class TestXmlPipelineBuilder extends CamelSpringTestSupport {
 				"			<end ns:name=\"end_time_out\"/>\n" +
 				"		</timeEvent>\n" +
 				"		<inPipeline>\n" +
-				"			<pipelineExceptionEvent ns:pipelineExceptionType=\"CorrelationException\" ns:uri=\"mock://error\" ns:attachPayload=\"true\"/>\n" +
+				"			<pipelineExceptionEvent ns:uri=\"seda:deadletter\" ns:attachPayload=\"true\"/>\n" +
 				" 			<endpoint ns:uri=\"seda:receive\"/>\n" +
 				"			<correlation>\n" +
 				"				<xpath>/bar/a</xpath>\n" +
