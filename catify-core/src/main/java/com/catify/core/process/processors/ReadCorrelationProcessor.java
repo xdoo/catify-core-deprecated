@@ -21,7 +21,6 @@ import org.apache.camel.component.hazelcast.HazelcastConstants;
 
 import com.catify.core.constants.CacheConstants;
 import com.catify.core.constants.MessageConstants;
-import com.catify.core.exceptions.CorrelationException;
 import com.hazelcast.core.Hazelcast;
 
 /**
