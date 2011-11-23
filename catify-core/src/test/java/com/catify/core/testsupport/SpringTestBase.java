@@ -55,6 +55,13 @@ public class SpringTestBase extends CamelSpringTestSupport {
 				"</foo>";
 	}
 	
+	protected String getNumberXml(){
+		return "<foo>" +
+				"	<a>1</a>" +
+				"	<b>2</b>" +
+				"</foo>";
+	}
+	
 	protected ProcessDefinition deployProcess(String process){
 		
 		ProcessDefinition definition = this.getProcessDefinition(process);
