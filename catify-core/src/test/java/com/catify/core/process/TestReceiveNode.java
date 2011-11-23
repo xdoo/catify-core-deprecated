@@ -176,7 +176,7 @@ public class TestReceiveNode extends SpringTestBase {
 				.to("seda:in");	
 				
 				from("seda:corr_ex")
-				.setHeader(ReadCorrelationProcessor.CORRELATION_EXCEPTION_HEADER, constant(""))
+//				.setHeader(ReadCorrelationProcessor.CORRELATION_EXCEPTION_HEADER, constant(""))
 				.to("log:CORR_EX?showAll=true")
 				.to("seda:init")
 				.to("log:RECALL?showAll=true")

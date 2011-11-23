@@ -137,6 +137,9 @@ public class XmlPipelineBuilder {
 			
 		// add from endpoint clause
 		appendFromEndpoint(builder, endpoint, nodeId, definition);
+		
+		// clean header
+		this.appendConstantHeader(builder, ReadCorrelationProcessor.CORRELATION_EXCEPTION_HEADER, "");
 			
 		// set headers to identify the process
 		this.appendHeaders(builder, definition);
