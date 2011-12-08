@@ -25,7 +25,6 @@ import org.junit.Test;
 
 import com.catify.core.constants.CacheConstants;
 import com.catify.core.process.model.ProcessDefinition;
-import com.catify.core.process.processors.ReadCorrelationProcessor;
 import com.catify.core.testsupport.SpringTestBase;
 import com.hazelcast.core.Hazelcast;
 
@@ -99,8 +98,7 @@ public class TestReceiveNode extends SpringTestBase {
 	 * 
 	 * @throws Exception
 	 */
-	@Test
-	public void testReceiveTimeOut() throws Exception{		
+	@Test public void testReceiveTimeOut() throws Exception{		
 		this.deploy();
 		this.createAdditionalRoutes(6000);
 		
@@ -175,8 +173,7 @@ public class TestReceiveNode extends SpringTestBase {
 				.log("-------------------------------------------> returned message")
 				.to("seda:in");	
 				
-				from("seda:corr_ex")
-//				.setHeader(ReadCorrelationProcessor.CORRELATION_EXCEPTION_HEADER, constant(""))
+				from("hazelcast:seda:corr_ex")
 				.to("log:CORR_EX?showAll=true")
 				.to("seda:init")
 				.to("log:RECALL?showAll=true")
@@ -321,7 +318,7 @@ public class TestReceiveNode extends SpringTestBase {
 		"	</start>\n" +
 		"	<receive ns:name=\"wait_for_payload\">\n" +
 		"		<inPipeline>\n" +
-		"			<pipelineExceptionEvent ns:uri=\"seda:corr_ex\" ns:attachPayload=\"true\"/>\n" +
+		"			<pipelineExceptionEvent ns:uri=\"hazelcast:seda:corr_ex?transferExchange=true\" ns:attachPayload=\"true\"/>\n" +
 		"			<endpoint ns:uri=\"seda:in\"/>\n" +
 		"			<variables>\n" +
 		"				<variable ns:name=\"foo\" ns:xpath=\"/\" />\n" +
