@@ -64,6 +64,10 @@ public class TestJpaPayloadCacheStore extends JpaPersistenceTestHelper {
 		String payload = (String) super.checkLoad(cs);
 		assertEquals(getPayload(1), payload);
 	}
+	
+	@Test public void loadWithNoResult() throws SQLException {
+		super.checkLoadWithNoResult(cs);
+	}
 
 	@Test public void testLoadAll() throws SQLException {
 		super.checkLoadAll(cs);

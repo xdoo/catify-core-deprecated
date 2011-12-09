@@ -16,9 +16,7 @@
  */
 package com.catify.persistence.cache;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import java.lang.reflect.InvocationTargetException;
 import java.sql.DriverManager;
@@ -87,6 +85,16 @@ public class JpaPersistenceTestHelper {
 		
 		assertNotNull(object);
 		return object;
+	}
+	
+	protected void checkLoadWithNoResult(MapLoader<String, Object> loader) throws SQLException {
+		// fill table
+		this.insertRows(this.insertStatements, 5);
+		
+		// there's no key 6 inside the db
+		Object object = loader.load("key_6");
+		
+		assertNull(object);
 	}
 
 	protected void checkLoadAll(MapLoader<String, Object> loader) throws SQLException {

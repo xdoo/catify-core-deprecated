@@ -28,7 +28,7 @@
 	<packaging>bundle</packaging>
 	<version>1.0-SNAPSHOT</version>
 
-	<name>Catify :: MongoDB</name>
+	<name>Catify :: JPA</name>
 	<description>The Persitence layer based on JPA</description>
 
 	<properties>

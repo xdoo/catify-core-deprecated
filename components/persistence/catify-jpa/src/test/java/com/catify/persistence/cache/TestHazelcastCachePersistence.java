@@ -74,6 +74,24 @@ public class TestHazelcastCachePersistence extends JpaPersistenceTestHelper {
 	}
 	
 	/**
+	 * test if we can insert and read very fast messages.
+	 * 
+	 * @throws SQLException
+	 */
+	@Test public void testMassLoadRead() throws SQLException{
+		IMap<String, StateEvent> nc = Hazelcast.getMap(CacheConstants.NODE_CACHE);
+		nc.put("4710", new StateEvent("0a", 3));
+		int x = 500;
+		for (int i = 1; i < x; i++) {
+			nc.put("471"+i, new StateEvent(i+"a", 3));
+			int y = i-1;
+			StateEvent event = nc.get("471"+y);
+			assertNotNull(event);
+		}
+		super.countRow("SELECT count(*) FROM NODECACHE", x);
+	}
+	
+	/**
 	 * test payload cache
 	 * 
 	 * @throws InterruptedException

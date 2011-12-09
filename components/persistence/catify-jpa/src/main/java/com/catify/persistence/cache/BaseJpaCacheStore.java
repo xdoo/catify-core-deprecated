@@ -57,7 +57,19 @@ public abstract class BaseJpaCacheStore implements MapLoader<String, Object>, Ma
 	 * load the object with the given named query and key.
 	 */
 	@Override public Object load(String key) {
-		return this.queryWithKey(NamedQueryLoadByKey, key).getSingleResult();
+		
+		List results = this.queryWithKey(NamedQueryLoadByKey, key).getResultList();
+		
+		if(results.isEmpty()) {
+			return null;
+		} else if (results.size() > 1) {
+			
+			// TODO --> log here
+			
+			return results.get(0);
+		} else {
+			return results.get(0);
+		}
 	}
 
 	/**

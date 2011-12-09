@@ -73,6 +73,10 @@ public class TestJpaNodeCacheStore extends JpaPersistenceTestHelper {
 		assertEquals(event.getInstanceId(), "instance_2");
 		assertEquals(event.getState(), 2);
 	}
+	
+	@Test public void loadWithNoResult() throws SQLException {
+		super.checkLoadWithNoResult(cs);
+	}
 
 	@Test public void testLoadAll() throws SQLException {
 		super.checkLoadAll(cs);

@@ -73,6 +73,10 @@ public class TestJpaTimerCacheStore extends JpaPersistenceTestHelper {
 		assertEquals(event.getTaskId(), "taskid_2");
 		assertEquals(event.getTime(), 1234567890);
 	}
+	
+	@Test public void loadWithNoResult() throws SQLException {
+		super.checkLoadWithNoResult(cs);
+	}
 
 	@Test public void testLoadAll() throws SQLException {
 		super.checkLoadAll(cs);
