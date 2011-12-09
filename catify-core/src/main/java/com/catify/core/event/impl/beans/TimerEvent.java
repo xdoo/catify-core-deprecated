@@ -6,17 +6,28 @@ public class TimerEvent implements Serializable {
 
 	private static final long serialVersionUID = 4233809355282392353L;
 	
+	// the id is needed for persistence
+	private String id;
 	private long time;
 	private String instanceId;
 	private String taskId;
+	
+	public TimerEvent() {}
 	
 	public TimerEvent(long time, String instanceId, String taskId){
 		this.time = time;
 		this.instanceId = instanceId;
 		this.taskId = taskId;
 	}
-	
-	
+		
+	public String getId() {
+		return id;
+	}
+
+	public void setId(String id) {
+		this.id = id;
+	}
+
 	public long getTime() {
 		return time;
 	}
