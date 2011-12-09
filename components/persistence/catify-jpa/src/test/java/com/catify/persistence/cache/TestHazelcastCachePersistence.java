@@ -26,6 +26,7 @@ import org.junit.Test;
 
 import com.catify.core.constants.CacheConstants;
 import com.catify.core.event.impl.beans.StateEvent;
+import com.catify.core.event.impl.beans.TimerEvent;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.IMap;
 
@@ -67,7 +68,6 @@ public class TestHazelcastCachePersistence extends JpaPersistenceTestHelper {
 		
 		// delete
 		nc.remove("4712");
-		// --- sleep ---
 		super.countRow("SELECT count(*) FROM NODECACHE", 2);
 		super.countRow("SELECT count(*) FROM STATEEVENT", 2);
 		
@@ -99,7 +99,6 @@ public class TestHazelcastCachePersistence extends JpaPersistenceTestHelper {
 		
 		// delete
 		pc.remove("4712");
-		// --- sleep ---
 		super.countRow("SELECT count(*) FROM PAYLOADCACHE", 2);
 		
 	}
@@ -130,11 +129,16 @@ public class TestHazelcastCachePersistence extends JpaPersistenceTestHelper {
 		
 		// delete
 		cc.remove("71cc46fd4210e8aa3d9e0ab1761a2792");
-		// --- sleep ---
 		super.countRow("SELECT count(*) FROM CORRELATIONCACHE", 2);
 		
 	}
 	
+	/**
+	 * test correlation rule cache
+	 * 
+	 * @throws InterruptedException
+	 * @throws SQLException
+	 */
 	@Test public void testCorrelationRuleCache() throws InterruptedException, SQLException {
 		IMap<String, String> crc = Hazelcast.getMap(CacheConstants.CORRELATION_RULE_CACHE);
 		
@@ -155,8 +159,38 @@ public class TestHazelcastCachePersistence extends JpaPersistenceTestHelper {
 		
 		// delete
 		crc.remove("71cc46fd4210e8aa3d9e0ab1761a2792");
-		// --- sleep ---
 		super.countRow("SELECT count(*) FROM CORRELATIONRULECACHE", 2);
+		
+	}
+	
+	@Test public void testTimerCache() throws InterruptedException, SQLException {
+		IMap<String, TimerEvent> tc = Hazelcast.getMap(CacheConstants.TIMER_CACHE);
+		
+		// store
+		tc.put("4711", new TimerEvent(12345678, "i1", "t1"));
+		tc.put("4712", new TimerEvent(12345678, "i2", "t2"));
+		tc.put("4713", new TimerEvent(12345678, "i3", "t3"));
+		// --- sleep ---
+		Thread.sleep(250);
+		super.countRow("SELECT count(*) FROM TIMERCACHE", 3);
+		super.countRow("SELECT count(*) FROM TIMEREVENT", 3);
+		
+		// --- sleep --
+		Thread.sleep(1000);
+		
+		// read
+		TimerEvent event = tc.get("4711");
+		assertNotNull(event);
+		assertEquals("i1", event.getInstanceId());
+		assertEquals(12345678, event.getTime());
+		assertEquals("t1", event.getTaskId());
+		super.countRow("SELECT count(*) FROM TIMERCACHE", 3);
+		super.countRow("SELECT count(*) FROM TIMEREVENT", 3);
+		
+		// delete
+		tc.remove("4712");
+		super.countRow("SELECT count(*) FROM TIMERCACHE", 2);
+		super.countRow("SELECT count(*) FROM TIMEREVENT", 2);
 		
 	}
 

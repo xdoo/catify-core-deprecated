@@ -78,4 +78,33 @@
 			</basic>
 		</attributes>
 	</entity>
+	<entity class="com.catify.persistence.beans.TimerCache">
+		<named-query name="timerCache_LoadByKey">
+			<query>SELECT a FROM TimerCache a WHERE a.beanKey = :param</query>
+		</named-query>
+		<named-query name="timerCache_LoadAllKeys">
+			<query>SELECT a.beanKey FROM TimerCache a</query>
+		</named-query>
+		<attributes>
+			<id name="id">
+				<generated-value generator="system-uuid" />
+			</id>
+			<one-to-one name="beanValue">
+				<cascade>
+					<cascade-all />
+				</cascade>
+			</one-to-one>
+			<basic name="beanKey" optional="false" />
+		</attributes>
+	</entity>
+	<entity class="com.catify.core.event.impl.beans.TimerEvent">
+		<attributes>
+			<id name="id">
+				<generated-value generator="system-uuid" />
+			</id>
+			<basic name="instanceId" optional="false" />
+			<basic name="time" optional="false" />
+			<basic name="taskId" optional="false" />
+		</attributes>
+	</entity>
 </entity-mappings>

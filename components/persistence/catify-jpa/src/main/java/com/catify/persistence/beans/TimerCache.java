@@ -16,27 +16,26 @@
  */
 package com.catify.persistence.beans;
 
-import com.catify.core.event.impl.beans.StateEvent;
+import com.catify.core.event.impl.beans.TimerEvent;
 import com.catify.persistence.beans.base.BaseKey;
 
-public class NodeCache extends BaseKey {
+public class TimerCache extends BaseKey {
 
-	private static final long serialVersionUID = 6577762876790912479L;
-	private StateEvent beanValue;
+	private static final long serialVersionUID = -1513824722140463130L;
+	private TimerEvent beanValue;
 	
-	public NodeCache() {}
+	public TimerCache() {}
 	
-	public NodeCache(String key, StateEvent value) {
+	public TimerCache(String key, TimerEvent beanValue) {
 		this.setBeanKey(key);
-		this.setBeanValue(value);
+		this.setBeanValue(beanValue);
 	}
 
-	public StateEvent getBeanValue() {
+	public TimerEvent getBeanValue() {
 		return beanValue;
 	}
 
-	public void setBeanValue(StateEvent beanValue) {
+	public void setBeanValue(TimerEvent beanValue) {
 		this.beanValue = beanValue;
 	}
-	
 }

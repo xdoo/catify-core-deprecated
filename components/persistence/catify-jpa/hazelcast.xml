@@ -116,4 +116,10 @@
 			<write-delay-seconds>0</write-delay-seconds>
 		</map-store>
 	</map>
+	<map name="timer-cache">
+		<map-store enabled="true">
+			<class-name>com.catify.persistence.cache.JpaTimerCacheStore</class-name>
+			<write-delay-seconds>0</write-delay-seconds>
+		</map-store>
+	</map>
 </hazelcast>

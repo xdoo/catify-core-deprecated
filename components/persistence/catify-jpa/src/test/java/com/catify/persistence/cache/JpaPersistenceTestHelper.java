@@ -174,6 +174,8 @@ public class JpaPersistenceTestHelper {
 		st.executeUpdate("DELETE FROM PAYLOADCACHE");
 		st.executeUpdate("DELETE FROM STATEEVENT");
 		st.executeUpdate("DELETE FROM NODECACHE");
+		st.executeUpdate("DELETE FROM TIMEREVENT");
+		st.executeUpdate("DELETE FROM TIMERCACHE");
 	}
 	
 	protected void countRows(int number) throws SQLException {
