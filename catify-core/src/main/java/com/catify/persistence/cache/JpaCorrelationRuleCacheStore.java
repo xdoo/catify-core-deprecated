@@ -19,6 +19,7 @@ package com.catify.persistence.cache;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.apache.camel.CamelContext;
 import org.apache.camel.EndpointInject;
 import org.apache.camel.Produce;
 import org.apache.camel.ProducerTemplate;
@@ -33,8 +34,9 @@ public class JpaCorrelationRuleCacheStore extends BaseJpaCacheStore {
 	@EndpointInject(uri = "seda:jpaCorrelationRuleCacheStore")
 	ProducerTemplate producer;
 	
-	public JpaCorrelationRuleCacheStore() {
+	public JpaCorrelationRuleCacheStore(CamelContext context) {
 		super(LOAD_BY_KEY, LOAD_ALL_KEYS);
+		System.out.println(context.getEndpoint("seda:jpaCorrelationRuleCacheStore").getClass());
 	}
 
 	@Override
@@ -42,6 +44,7 @@ public class JpaCorrelationRuleCacheStore extends BaseJpaCacheStore {
 		
 		if(value instanceof String) {
 			
+			System.out.println("sending over -->" + producer );
 			producer.sendBody(new CorrelationRuleCache(key, (String) value));
 			
 //			try {

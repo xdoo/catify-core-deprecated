@@ -19,6 +19,7 @@ package com.catify.persistence.cache;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.apache.camel.EndpointInject;
 import org.apache.camel.Produce;
 import org.apache.camel.ProducerTemplate;
 
@@ -30,7 +31,7 @@ public class JpaNodeCacheStore extends BaseJpaCacheStore {
 	public static final String LOAD_BY_KEY 		= "nodeCache_LoadByKey";
 	public static final String LOAD_ALL_KEYS 	= "nodeCache_LoadAllKeys";
 
-	@Produce(uri = "seda://jpaNodeCacheStore")
+	@EndpointInject(uri = "seda://jpaNodeCacheStore")
 	ProducerTemplate seda;
 	
 	public JpaNodeCacheStore() {

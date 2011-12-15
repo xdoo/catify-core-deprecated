@@ -116,7 +116,7 @@
 	</bean>
 
 	<!-- hazelcast -->
-	<hz:hazelcast id="instance">
+	<hz:hazelcast id="hz_catify">
 	        <hz:config>
 	            <hz:group name="dev" password="password"/>
 	            <hz:network port="5701" port-auto-increment="true">
@@ -163,7 +163,9 @@
 	<bean id="jpaNodeCacheStore" class="com.catify.persistence.cache.JpaNodeCacheStore"/>
 	<bean id="jpaPayloadCacheStore" class="com.catify.persistence.cache.JpaPayloadCacheStore"/>
 	<bean id="jpaCorrelationCacheStore" class="com.catify.persistence.cache.JpaCorrelationCacheStore"/>
-	<bean id="jpaCorrelationRuleCacheStore" class="com.catify.persistence.cache.JpaCorrelationRuleCacheStore"/>
+	<bean id="jpaCorrelationRuleCacheStore" class="com.catify.persistence.cache.JpaCorrelationRuleCacheStore">
+		<constructor-arg name="context" ref="camelContext"/>
+	</bean>
 	<bean id="jpaTimerCacheStore" class="com.catify.persistence.cache.JpaTimerCacheStore"/>
 
 	<bean id="foo" class="com.catify.persistence.cache.Foo"/>
