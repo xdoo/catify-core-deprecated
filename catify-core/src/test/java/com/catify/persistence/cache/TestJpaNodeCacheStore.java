@@ -62,10 +62,10 @@ public class TestJpaNodeCacheStore extends JpaPersistenceTestHelper {
 	
 	@Test public void testStore() throws SQLException {
 		// test with SQL-statement
-//		super.checkStore(cs, TABLE_NODECACHE, new StateEvent("1", 2));
+		super.checkStore(cs, TABLE_NODECACHE, new StateEvent("1", 2));
 		
 		// test with JPQL-statement
-		super.checkStore(cs, "NodeCache", new StateEvent("1", 2));
+//		super.checkStore(cs, "NodeCache", new StateEvent("1", 2));
 	}
 
 	@Test public void testLoad() throws SQLException {

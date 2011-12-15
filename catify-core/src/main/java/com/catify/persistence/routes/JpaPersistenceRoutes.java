@@ -20,10 +20,10 @@ public class JpaPersistenceRoutes extends RouteBuilder {
 	    .to("jpa://com.catify.persistence.beans.CorrelationCache?persistenceUnit=CatifyJpaPU");
 	    
 	    from("seda:jpaCorrelationRuleCacheStore")
+	    .to("log:CORRELATIONARULECACHE?showAll=true")
     	.to("jpa://com.catify.persistence.beans.CorrelationRuleCache?persistenceUnit=CatifyJpaPU");
 	    
 	    from("seda:jpaNodeCacheStore")
-//	    .to("log:NODECACHE?showAll=true")
 	    .to("jpa://com.catify.persistence.beans.NodeCache?persistenceUnit=CatifyJpaPU");
 	    
 	    from("seda:jpaPayloadCacheStore")

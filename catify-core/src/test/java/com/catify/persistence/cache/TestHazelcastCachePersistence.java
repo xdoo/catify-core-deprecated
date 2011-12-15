@@ -37,6 +37,8 @@ public class TestHazelcastCachePersistence extends JpaPersistenceTestHelper {
 		super();
 	}
 	
+	
+	
 	/**
 	 * test node cache
 	 * 

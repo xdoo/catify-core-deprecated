@@ -82,25 +82,25 @@ public class JpaPersistenceTestHelper extends CamelSpringTestSupport {
 		
 		// wait for DB-update
 		try {
-			Thread.sleep(1000);
+			Thread.sleep(500);
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
 		// check result with SQL-statement
-//		this.countRow(String.format("SELECT count(*) FROM %s WHERE BEANKEY = '4711'", table), 1);
+		this.countRow(String.format("SELECT count(*) FROM %s WHERE BEANKEY = '4711'", table), 1);
 		
 		// check result with JPQL-statement
-		JpaEndpoint endpoint =
-				(JpaEndpoint) context.getEndpoint("jpa:com.catify.persistence.beans.NodeCache");
-				JpaTemplate jpaTemplate = endpoint.getTemplate();
-				
-				List list =
-						jpaTemplate.find(String.format("SELECT x FROM %s x", table));
-						
-				assertEquals(1, list.size());
-				assertIsInstanceOf(NodeCache.class, list.get(0));
+//		JpaEndpoint endpoint =
+//				(JpaEndpoint) context.getEndpoint("jpa:com.catify.persistence.beans.NodeCache");
+//				JpaTemplate jpaTemplate = endpoint.getTemplate();
+//				
+//				List list =
+//						jpaTemplate.find(String.format("SELECT x FROM %s x", table));
+//						
+//				assertEquals(1, list.size());
+//				assertIsInstanceOf(NodeCache.class, list.get(0));
 		
 	}
 

@@ -42,8 +42,8 @@ public class TestJpaPayloadCacheStore extends JpaPersistenceTestHelper {
 	
 	@Before
 	public void setUp() throws Exception {
-		cs = new JpaPayloadCacheStore();
 		super.setUp();
+		cs = applicationContext.getBean(JpaPayloadCacheStore.class);
 	}
 	
 	@Test public void testPayloadJpaCacheStore() throws SQLException {
