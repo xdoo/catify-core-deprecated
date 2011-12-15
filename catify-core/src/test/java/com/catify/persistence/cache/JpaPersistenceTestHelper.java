@@ -66,7 +66,7 @@ public class JpaPersistenceTestHelper extends CamelSpringTestSupport {
 	@After
 	public void tearDown() throws Exception {
 		super.tearDown();
-		this.cleanTables();
+//		this.cleanTables();
 	}
 	
 	protected void checkTable(String name) throws SQLException {		
@@ -80,10 +80,18 @@ public class JpaPersistenceTestHelper extends CamelSpringTestSupport {
 	protected void checkStore(MapStore<String, Object> store, String table, Object value) throws SQLException {
 		store.store("4711", value);
 		
-		// check result
+		// wait for DB-update
+		try {
+			Thread.sleep(1000);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		// check result with SQL-statement
 //		this.countRow(String.format("SELECT count(*) FROM %s WHERE BEANKEY = '4711'", table), 1);
 		
-		
+		// check result with JPQL-statement
 		JpaEndpoint endpoint =
 				(JpaEndpoint) context.getEndpoint("jpa:com.catify.persistence.beans.NodeCache");
 				JpaTemplate jpaTemplate = endpoint.getTemplate();
@@ -93,7 +101,6 @@ public class JpaPersistenceTestHelper extends CamelSpringTestSupport {
 						
 				assertEquals(1, list.size());
 				assertIsInstanceOf(NodeCache.class, list.get(0));
-		
 		
 	}
 
