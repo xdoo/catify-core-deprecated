@@ -19,12 +19,19 @@ package com.catify.persistence.cache;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.apache.camel.EndpointInject;
+import org.apache.camel.Produce;
+import org.apache.camel.ProducerTemplate;
+
 import com.catify.persistence.beans.CorrelationCache;
 
 public class JpaCorrelationCacheStore extends BaseJpaCacheStore {
 
 	public static final String LOAD_BY_KEY 		= "correlationCache_LoadByKey";
 	public static final String LOAD_ALL_KEYS 	= "correlationCache_LoadAllKeys";
+	
+	@EndpointInject(uri = "seda:jpaCorrelationCacheStore")
+	ProducerTemplate producer;
 	
 	public JpaCorrelationCacheStore() {
 		super(LOAD_BY_KEY, LOAD_ALL_KEYS);
@@ -34,14 +41,17 @@ public class JpaCorrelationCacheStore extends BaseJpaCacheStore {
 	public void store(String key, Object value) {
 		
 		if(value instanceof String) {
-			try {
-				tx.begin();
-				em.persist(new CorrelationCache(key, (String) value));
-				tx.commit();
-			} catch ( RuntimeException ex ) {
-				if( tx != null && tx.isActive() ) tx.rollback();
-		        throw ex;
-			}
+			
+			producer.sendBody(new CorrelationCache(key, (String) value));
+			
+//			try {
+//				tx.begin();
+//				em.persist(new CorrelationCache(key, (String) value));
+//				tx.commit();
+//			} catch ( RuntimeException ex ) {
+//				if( tx != null && tx.isActive() ) tx.rollback();
+//		        throw ex;
+//			}
 		} 
 
 	}

@@ -19,6 +19,10 @@ package com.catify.persistence.cache;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.apache.camel.EndpointInject;
+import org.apache.camel.Produce;
+import org.apache.camel.ProducerTemplate;
+
 import com.catify.core.event.impl.beans.TimerEvent;
 import com.catify.persistence.beans.TimerCache;
 
@@ -27,6 +31,9 @@ public class JpaTimerCacheStore extends BaseJpaCacheStore {
 	public static final String LOAD_BY_KEY 		= "timerCache_LoadByKey";
 	public static final String LOAD_ALL_KEYS 	= "timerCache_LoadAllKeys";
 	
+	@EndpointInject(uri = "seda:jpaTimerCacheStore")
+	ProducerTemplate producer;
+	
 	public JpaTimerCacheStore() {
 		super(LOAD_BY_KEY, LOAD_ALL_KEYS);
 	}
@@ -34,14 +41,17 @@ public class JpaTimerCacheStore extends BaseJpaCacheStore {
 	@Override
 	public void store(String key, Object value) {
 		if(value instanceof TimerEvent) {
-			try {
-				tx.begin();
-				em.persist(new TimerCache(key, (TimerEvent) value));
-				tx.commit();
-			} catch ( RuntimeException ex ) {
-				if( tx != null && tx.isActive() ) tx.rollback();
-		        throw ex;
-			}
+			
+			producer.sendBody(new TimerCache(key, (TimerEvent) value));
+			
+//			try {
+//				tx.begin();
+//				em.persist(new TimerCache(key, (TimerEvent) value));
+//				tx.commit();
+//			} catch ( RuntimeException ex ) {
+//				if( tx != null && tx.isActive() ) tx.rollback();
+//		        throw ex;
+//			}
 		} 
 	}
 

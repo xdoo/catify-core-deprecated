@@ -19,6 +19,9 @@ package com.catify.persistence.cache;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.apache.camel.Produce;
+import org.apache.camel.ProducerTemplate;
+
 import com.catify.core.event.impl.beans.StateEvent;
 import com.catify.persistence.beans.NodeCache;
 
@@ -26,24 +29,24 @@ public class JpaNodeCacheStore extends BaseJpaCacheStore {
 
 	public static final String LOAD_BY_KEY 		= "nodeCache_LoadByKey";
 	public static final String LOAD_ALL_KEYS 	= "nodeCache_LoadAllKeys";
-	
 
+	@Produce(uri = "seda://jpaNodeCacheStore")
+	ProducerTemplate seda;
 	
 	public JpaNodeCacheStore() {
 		super(LOAD_BY_KEY, LOAD_ALL_KEYS);
+		
 	}
 
+	public void send (String key) {
+		seda.sendBody(key);
+	}
+	
 	@Override public void store(String key, Object value) {
-		
+				
 		if(value instanceof StateEvent) {
-			try {
-				tx.begin();
-				em.persist(new NodeCache(key, (StateEvent) value));
-				tx.commit();
-			} catch ( RuntimeException ex ) {
-				if( tx != null && tx.isActive() ) tx.rollback();
-		        throw ex;
-			}
+			
+			seda.sendBody(new NodeCache(key, (StateEvent) value));
 		} 
 	}
 	

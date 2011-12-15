@@ -19,12 +19,19 @@ package com.catify.persistence.cache;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.apache.camel.EndpointInject;
+import org.apache.camel.Produce;
+import org.apache.camel.ProducerTemplate;
+
 import com.catify.persistence.beans.PayloadCache;
 
 public class JpaPayloadCacheStore extends BaseJpaCacheStore {
 
 	public static final String LOAD_BY_KEY 		= "payloadCache_LoadByKey";
 	public static final String LOAD_ALL_KEYS 	= "payloadCache_LoadAllKeys";
+	
+	@EndpointInject(uri = "seda:jpaPayloadCacheStore")
+	ProducerTemplate producer;
 	
 	public JpaPayloadCacheStore() {
 		super(LOAD_BY_KEY, LOAD_ALL_KEYS);
@@ -34,14 +41,17 @@ public class JpaPayloadCacheStore extends BaseJpaCacheStore {
 	public void store(String key, Object value) {
 		
 		if(value instanceof String) {
-			try {
-				tx.begin();
-				em.persist(new PayloadCache(key, (String) value));
-				tx.commit();
-			} catch ( RuntimeException ex ) {
-				if( tx != null && tx.isActive() ) tx.rollback();
-		        throw ex;
-			}
+			
+			producer.sendBody(new PayloadCache(key, (String) value));
+			
+//			try {
+//				tx.begin();
+//				em.persist(new PayloadCache(key, (String) value));
+//				tx.commit();
+//			} catch ( RuntimeException ex ) {
+//				if( tx != null && tx.isActive() ) tx.rollback();
+//		        throw ex;
+//			}
 		} 
 
 	}
