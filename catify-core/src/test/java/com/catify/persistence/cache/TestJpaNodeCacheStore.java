@@ -46,7 +46,7 @@ public class TestJpaNodeCacheStore extends JpaPersistenceTestHelper {
 	@Before
 	public void setUp() throws Exception {
 		super.setUp();
-		cs = applicationContext.getBean(JpaNodeCacheStore.class);
+		cs = new JpaNodeCacheStore();
 	}
 	
 

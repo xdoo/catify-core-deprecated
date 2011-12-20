@@ -28,20 +28,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.camel.component.jpa.JpaEndpoint;
-import org.apache.camel.test.junit4.CamelSpringTestSupport;
+import org.apache.camel.test.junit4.CamelTestSupport;
 import org.apache.commons.beanutils.BeanUtils;
 import org.junit.After;
 import org.junit.Before;
-import org.springframework.context.support.AbstractApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
-import org.springframework.orm.jpa.JpaTemplate;
 
-import com.catify.persistence.beans.NodeCache;
 import com.hazelcast.core.MapLoader;
 import com.hazelcast.core.MapStore;
 
-public class JpaPersistenceTestHelper extends CamelSpringTestSupport {
+public class JpaPersistenceTestHelper extends CamelTestSupport {
 
 	protected java.sql.Connection cn;
 	private List<String> insertStatements = new ArrayList<String>();
@@ -50,11 +45,6 @@ public class JpaPersistenceTestHelper extends CamelSpringTestSupport {
 	public JpaPersistenceTestHelper() throws ClassNotFoundException, SQLException {
 		Class.forName( "com.mysql.jdbc.Driver" );
 		cn = DriverManager.getConnection( "jdbc:mysql://172.17.16.65/Hazelcast_Persistenz", "test", "test" );
-	}
-	
-	@Override
-	protected AbstractApplicationContext createApplicationContext() {
-		return new ClassPathXmlApplicationContext("/META-INF/spring/camel-context.xml");
 	}
 	
 	@Before

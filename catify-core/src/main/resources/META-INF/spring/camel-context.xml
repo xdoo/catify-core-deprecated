@@ -87,13 +87,4 @@
 		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
 		<!-- <property name="location" value="classpath:network.properties" /> -->
 	</bean>
-	
-	<!-- persistence beans -->
-	<bean id="jpaNodeCacheStore" class="com.catify.persistence.cache.JpaNodeCacheStore"/>
-	<bean id="jpaPayloadCacheStore" class="com.catify.persistence.cache.JpaPayloadCacheStore"/>
-	<bean id="jpaCorrelationCacheStore" class="com.catify.persistence.cache.JpaCorrelationCacheStore"/>
-	<bean id="jpaCorrelationRuleCacheStore" class="com.catify.persistence.cache.JpaCorrelationRuleCacheStore"/>
-	<bean id="jpaTimerCacheStore" class="com.catify.persistence.cache.JpaTimerCacheStore"/>
-
-
 </beans>
