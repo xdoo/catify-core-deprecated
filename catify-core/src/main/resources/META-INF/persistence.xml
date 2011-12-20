@@ -7,7 +7,7 @@
     <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
     <exclude-unlisted-classes>false</exclude-unlisted-classes>
 		<properties>
-			<property name="eclipselink.jdbc.url" value="jdbc:mysql://172.17.16.65/Hazelcast_Persistenz" />
+			<property name="eclipselink.jdbc.url" value="jdbc:mysql://172.17.16.65/Hazelcast_Persistenz1" />
 			<property name="eclipselink.target-database" value="MySQL"/>
 			<property name="eclipselink.jdbc.driver" value="com.mysql.jdbc.Driver" />
 			<property name="eclipselink.jdbc.user" value="test" />

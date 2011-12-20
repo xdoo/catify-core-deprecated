@@ -19,9 +19,12 @@ package com.catify.persistence.cache;
 import java.util.Iterator;
 import java.util.Map;
 
+import javax.persistence.PersistenceException;
+
+import org.apache.camel.CamelContext;
 import org.apache.camel.EndpointInject;
-import org.apache.camel.Produce;
 import org.apache.camel.ProducerTemplate;
+import org.springframework.transaction.TransactionStatus;
 
 import com.catify.core.event.impl.beans.TimerEvent;
 import com.catify.persistence.beans.TimerCache;
@@ -34,8 +37,8 @@ public class JpaTimerCacheStore extends BaseJpaCacheStore {
 	@EndpointInject(uri = "seda:jpaTimerCacheStore")
 	ProducerTemplate producer;
 	
-	public JpaTimerCacheStore() {
-		super(LOAD_BY_KEY, LOAD_ALL_KEYS);
+	public JpaTimerCacheStore(CamelContext context) {
+		super(context, LOAD_BY_KEY, LOAD_ALL_KEYS);
 	}
 
 	@Override
@@ -44,34 +47,32 @@ public class JpaTimerCacheStore extends BaseJpaCacheStore {
 			
 			producer.sendBody(new TimerCache(key, (TimerEvent) value));
 			
-//			try {
-//				tx.begin();
-//				em.persist(new TimerCache(key, (TimerEvent) value));
-//				tx.commit();
-//			} catch ( RuntimeException ex ) {
-//				if( tx != null && tx.isActive() ) tx.rollback();
-//		        throw ex;
-//			}
 		} 
 	}
 
 	@Override
 	public void storeAll(Map<String, Object> map) {
 		Iterator<String> it = map.keySet().iterator();
-		
+		PersistenceException cause = null;
+		TransactionStatus status = transactionManager.getTransaction(def);
 		try {
-			tx.begin();
-			
 			while (it.hasNext()) {
 				String key = (String) it.next();
-				em.persist(new TimerCache(key, (TimerEvent) map.get(key)));
+				em.merge(new TimerCache(key, (TimerEvent) map.get(key)));
 			}
-			
-			tx.commit();
-		} catch ( RuntimeException ex ) {
-			if( tx != null && tx.isActive() ) tx.rollback();
-	        throw ex;
-		}
+			transactionManager.commit(status);
+		} catch (Exception e) {
+            if (e instanceof PersistenceException) {
+                cause = (PersistenceException) e;
+                transactionManager.rollback(status);
+            } else {
+                cause = new PersistenceException(e);
+            }
+        }
+
+        if (cause != null) {
+                throw cause;
+        }
 
 	}
 	
@@ -85,5 +86,6 @@ public class JpaTimerCacheStore extends BaseJpaCacheStore {
 			return null;
 		}
 	}
+
 
 }

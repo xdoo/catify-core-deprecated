@@ -25,35 +25,53 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.persistence.EntityManager;
-import javax.persistence.EntityTransaction;
-import javax.persistence.Persistence;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.PersistenceException;
 import javax.persistence.Query;
 
-import org.apache.camel.Produce;
-import org.apache.camel.ProducerTemplate;
+import org.apache.camel.CamelContext;
+import org.apache.camel.component.jpa.JpaTemplateTransactionStrategy;
+import org.apache.camel.component.jpa.TransactionStrategy;
+import org.slf4j.LoggerFactory;
+import org.springframework.orm.jpa.JpaCallback;
+import org.springframework.orm.jpa.JpaTemplate;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
+import org.springframework.transaction.support.TransactionCallbackWithoutResult;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import com.hazelcast.core.MapLoader;
 import com.hazelcast.core.MapStore;
 
-public abstract class BaseJpaCacheStore implements MapLoader<String, Object>, MapStore<String, Object>  {
-
+public abstract class BaseJpaCacheStore implements MapLoader<String, Object>, MapStore<String, Object> {
+	
+	// borrowed from camel-jpa
+	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(BaseJpaCacheStore.class);
+    private EntityManagerFactory entityManagerFactory;
+    protected PlatformTransactionManager transactionManager;
+    private JpaTemplate template;
+    protected DefaultTransactionDefinition def = new DefaultTransactionDefinition();
+    
+ // single TransactionTemplate shared amongst all methods in this instance
+    private final TransactionTemplate transactionTemplate;
+	
 	protected EntityManager em;
-	protected EntityTransaction tx;
 	
 	private String NamedQueryLoadByKey;
 	private String NamedQueryLoadAllKeys;
 	
-	public BaseJpaCacheStore(String loadByKey, String LoadAllKeys) {
+	public BaseJpaCacheStore(CamelContext context, String loadByKey, String LoadAllKeys) {
 		
-		// store name queries
-		this.NamedQueryLoadByKey 	= loadByKey;
-		this.NamedQueryLoadAllKeys 	= LoadAllKeys;
+		setupJpa(context, loadByKey, LoadAllKeys);
+		this.createTransactionStrategy();
 		
-		// create entity manager
-		em = Persistence.createEntityManagerFactory( "CatifyJpaPU" ).createEntityManager();
+		this.transactionTemplate = new TransactionTemplate(transactionManager);
 		
-		// create tx manager
-		tx = em.getTransaction();		
+		def.setName("BaseJPATransactionDefinition");
+		def.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRED);
+		
 	}
 	
 	/**
@@ -113,15 +131,48 @@ public abstract class BaseJpaCacheStore implements MapLoader<String, Object>, Ma
 	/**
 	 * removes cascading the cache object.
 	 */
-	@Override public void delete(String key) {		
+	@SuppressWarnings("unchecked")
+	@Override public void delete(String key) {	
+		PersistenceException cause = null;
+		TransactionStatus status = transactionManager.getTransaction(def);
+		
+		EntityManager emp = getEntityManagerFactory().createEntityManager();
+		
 		try {
-			tx.begin();
-			em.remove(this.queryWithKey(NamedQueryLoadByKey, key).getSingleResult());
-			tx.commit();
-		} catch ( RuntimeException ex ) {
-			if( tx != null && tx.isActive() ) tx.rollback();
-	        throw ex;
-		}
+			final Object values = queryWithKey(NamedQueryLoadByKey, key).getSingleResult();
+			
+//			transactionTemplate.execute(new TransactionCallbackWithoutResult() {
+//                
+//	            // the code in this method executes in a transactional context
+//	            public void doInTransactionWithoutResult(TransactionStatus status) {
+//	            	em.remove(values);
+//	            }
+//
+//	        });
+			
+			this.template.execute(new JpaCallback<Object>() {
+	            public Object doInJpa(EntityManager emp) throws PersistenceException {
+	            	em.remove(values);
+	            	return null;
+	            }
+			});
+			
+			
+//			em.remove(this.queryWithKey(NamedQueryLoadByKey, key).getSingleResult());
+		} catch (Exception e) {
+            if (e instanceof PersistenceException) {
+            	transactionManager.rollback(status);
+                cause = (PersistenceException) e;
+            } else {
+                cause = new PersistenceException(e);
+            }
+        }
+		
+//		transactionManager.commit(status);
+
+        if (cause != null) {
+                throw cause;
+        }
 	}
 
 	@Override public void deleteAll(Collection<String> keys) {
@@ -147,6 +198,14 @@ public abstract class BaseJpaCacheStore implements MapLoader<String, Object>, Ma
 		
 		return query;
 	}
+	
+	private Query queryWithKey(String nq, String key, EntityManager emp) {
+		Query query = emp.createNamedQuery( nq );
+		query.setParameter( "param", key );
+		
+		return query;
+	}
+	
 
 	public String getNamedQueryLoadByKey() {
 		return NamedQueryLoadByKey;
@@ -155,4 +214,103 @@ public abstract class BaseJpaCacheStore implements MapLoader<String, Object>, Ma
 	public String getNamedQueryLoadAllKeys() {
 		return NamedQueryLoadAllKeys;
 	}
+	
+    public EntityManagerFactory getEntityManagerFactory() {
+        return entityManagerFactory;
+    }
+
+    public void setEntityManagerFactory(EntityManagerFactory entityManagerFactory) {
+        this.entityManagerFactory = entityManagerFactory;
+        this.template = new JpaTemplate(entityManagerFactory);
+    }
+
+    public PlatformTransactionManager getTransactionManager() {
+        return transactionManager;
+    }
+
+    public void setTransactionManager(PlatformTransactionManager transactionManager) {
+        this.transactionManager = transactionManager;
+    }
+    
+    public JpaTemplate getTemplate() {
+        if (template == null) {
+            template = createTemplate();
+        }
+        return template;
+    }
+
+    public void setTemplate(JpaTemplate template) {
+        this.template = template;
+    }
+    
+    protected JpaTemplate createTemplate() {
+        return new JpaTemplate(getEntityManagerFactory());
+    }
+    
+    protected TransactionStrategy createTransactionStrategy() {
+        return JpaTemplateTransactionStrategy.newInstance(getTransactionManager(), getTemplate());
+    }
+    
+    public void setupJpa(CamelContext context, String loadByKey, String LoadAllKeys){
+    	 // lookup entity manager factory and use it if only one provided
+        if (entityManagerFactory == null) {
+            Map<String, EntityManagerFactory> map = context.getRegistry().lookupByType(EntityManagerFactory.class);
+            if (map != null) {
+                if (map.size() == 1) {
+                    entityManagerFactory = map.values().iterator().next();
+                    LOG.info("Using EntityManagerFactory found in registry with id ["
+                            + map.keySet().iterator().next() + "] " + entityManagerFactory);
+                } else {
+                    LOG.debug("Could not find a single EntityManagerFactory in registry as there was " + map.size() + " instances.");
+                }
+            }
+        } else {
+            LOG.info("Using EntityManagerFactory configured: " + entityManagerFactory);
+        }
+
+        // lookup transaction manager and use it if only one provided
+        if (transactionManager == null) {
+            Map<String, PlatformTransactionManager> map = context.getRegistry().lookupByType(PlatformTransactionManager.class);
+            if (map != null) {
+                if (map.size() == 1) {
+                    transactionManager = map.values().iterator().next();
+                    LOG.info("Using TransactionManager found in registry with id ["
+                            + map.keySet().iterator().next() + "] " + transactionManager);
+                } else {
+                    LOG.debug("Could not find a single TransactionManager in registry as there was " + map.size() + " instances.");
+                }
+            }
+        } else {
+            LOG.info("Using TransactionManager configured on this component: " + transactionManager);
+        }
+
+        // transaction manager could also be hidden in a template
+        if (transactionManager == null) {
+            Map<String, TransactionTemplate> map = context.getRegistry().lookupByType(TransactionTemplate.class);
+            if (map != null) {
+                if (map.size() == 1) {
+                    transactionManager = map.values().iterator().next().getTransactionManager();
+                    LOG.info("##### --> BASEJPACACHESTORE: Using TransactionManager found in registry with id ["
+                            + map.keySet().iterator().next() + "] " + transactionManager);
+                } else {
+                    LOG.debug("##### --> BASEJPACACHESTORE: Could not find a single TransactionTemplate in registry as there was " + map.size() + " instances.");
+                }
+            }
+        }
+
+        // warn about missing configuration
+        if (entityManagerFactory == null) {
+            LOG.warn("No EntityManagerFactory has been configured on this JpaComponent. Each JpaEndpoint will auto create their own EntityManagerFactory.");
+        }
+        if (transactionManager == null) {
+            LOG.warn("No TransactionManager has been configured on this JpaComponent. Each JpaEndpoint will auto create their own JpaTransactionManager.");
+        }
+		
+		// store name queries
+		this.NamedQueryLoadByKey 	= loadByKey;
+		this.NamedQueryLoadAllKeys 	= LoadAllKeys;
+				
+		em = getEntityManagerFactory().createEntityManager();
+    }
+	
 }

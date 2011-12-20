@@ -19,10 +19,12 @@ package com.catify.persistence.cache;
 import java.util.Iterator;
 import java.util.Map;
 
+import javax.persistence.PersistenceException;
+
 import org.apache.camel.CamelContext;
 import org.apache.camel.EndpointInject;
-import org.apache.camel.Produce;
 import org.apache.camel.ProducerTemplate;
+import org.springframework.transaction.TransactionStatus;
 
 import com.catify.persistence.beans.CorrelationRuleCache;
 
@@ -35,7 +37,7 @@ public class JpaCorrelationRuleCacheStore extends BaseJpaCacheStore {
 	ProducerTemplate producer;
 	
 	public JpaCorrelationRuleCacheStore(CamelContext context) {
-		super(LOAD_BY_KEY, LOAD_ALL_KEYS);
+		super(context, LOAD_BY_KEY, LOAD_ALL_KEYS);
 		System.out.println(context.getEndpoint("seda:jpaCorrelationRuleCacheStore").getClass());
 	}
 
@@ -46,15 +48,7 @@ public class JpaCorrelationRuleCacheStore extends BaseJpaCacheStore {
 			
 			System.out.println("sending over -->" + producer );
 			producer.sendBody(new CorrelationRuleCache(key, (String) value));
-			
-//			try {
-//				tx.begin();
-//				em.persist(new CorrelationRuleCache(key, (String) value));
-//				tx.commit();
-//			} catch ( RuntimeException ex ) {
-//				if( tx != null && tx.isActive() ) tx.rollback();
-//		        throw ex;
-//			}
+
 		} 
 
 	}
@@ -62,20 +56,26 @@ public class JpaCorrelationRuleCacheStore extends BaseJpaCacheStore {
 	@Override
 	public void storeAll(Map<String, Object> map) {
 		Iterator<String> it = map.keySet().iterator();
-		
+		PersistenceException cause = null;
+		TransactionStatus status = transactionManager.getTransaction(def);
 		try {
-			tx.begin();
-			
 			while (it.hasNext()) {
 				String key = (String) it.next();
-				em.persist(new CorrelationRuleCache(key, (String) map.get(key)));
+				em.merge(new CorrelationRuleCache(key, (String) map.get(key)));
 			}
-			
-			tx.commit();
-		} catch ( RuntimeException ex ) {
-			if( tx != null && tx.isActive() ) tx.rollback();
-	        throw ex;
-		}
+			transactionManager.commit(status);
+		} catch (Exception e) {
+            if (e instanceof PersistenceException) {
+                cause = (PersistenceException) e;
+                transactionManager.rollback(status);
+            } else {
+                cause = new PersistenceException(e);
+            }
+        }
+
+        if (cause != null) {
+                throw cause;
+        }
 
 	}
 	
@@ -89,5 +89,6 @@ public class JpaCorrelationRuleCacheStore extends BaseJpaCacheStore {
 			return null;
 		}
 	}
+
 
 }

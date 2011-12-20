@@ -19,6 +19,7 @@ package com.catify.persistence.cache;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.SQLException;
 
+import org.apache.camel.CamelContext;
 import org.junit.Before;
 import org.junit.Test;
 

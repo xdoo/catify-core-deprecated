@@ -19,9 +19,12 @@ package com.catify.persistence.cache;
 import java.util.Iterator;
 import java.util.Map;
 
+import javax.persistence.PersistenceException;
+
+import org.apache.camel.CamelContext;
 import org.apache.camel.EndpointInject;
-import org.apache.camel.Produce;
 import org.apache.camel.ProducerTemplate;
+import org.springframework.transaction.TransactionStatus;
 
 import com.catify.core.event.impl.beans.StateEvent;
 import com.catify.persistence.beans.NodeCache;
@@ -34,8 +37,8 @@ public class JpaNodeCacheStore extends BaseJpaCacheStore {
 	@EndpointInject(uri = "seda://jpaNodeCacheStore")
 	ProducerTemplate seda;
 	
-	public JpaNodeCacheStore() {
-		super(LOAD_BY_KEY, LOAD_ALL_KEYS);
+	public JpaNodeCacheStore(CamelContext context) {
+		super(context, LOAD_BY_KEY, LOAD_ALL_KEYS);
 		
 	}
 
@@ -54,20 +57,26 @@ public class JpaNodeCacheStore extends BaseJpaCacheStore {
 	@Override public void storeAll(Map<String, Object> map) {
 		
 		Iterator<String> it = map.keySet().iterator();
-		
+		PersistenceException cause = null;
+		TransactionStatus status = transactionManager.getTransaction(def);
 		try {
-			tx.begin();
-			
 			while (it.hasNext()) {
 				String key = (String) it.next();
-				em.persist(new NodeCache(key, (StateEvent) map.get(key)));
+				em.merge(new NodeCache(key, (StateEvent) map.get(key)));
 			}
-			
-			tx.commit();
-		} catch ( RuntimeException ex ) {
-			if( tx != null && tx.isActive() ) tx.rollback();
-	        throw ex;
-		}	
+			transactionManager.commit(status);
+		} catch (Exception e) {
+            if (e instanceof PersistenceException) {
+                cause = (PersistenceException) e;
+                transactionManager.rollback(status);
+            } else {
+                cause = new PersistenceException(e);
+            }
+        }
+
+        if (cause != null) {
+                throw cause;
+        }
 	}
 	
 	@Override public StateEvent load(String key) {
@@ -80,4 +89,6 @@ public class JpaNodeCacheStore extends BaseJpaCacheStore {
 			return null;
 		}
 	}
+
+
 }

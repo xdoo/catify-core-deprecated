@@ -105,15 +105,18 @@
 		<property name="databasePlatform" value="org.eclipse.persistence.platform.database.MySQLPlatform" />
 		<!--  <property name="database" value="MYSQL" /> -->
 	</bean>
-
+	
 	<bean id="transactionTemplate"
 		class="org.springframework.transaction.support.TransactionTemplate">
+		<property name="isolationLevelName" value="ISOLATION_READ_UNCOMMITTED"/>
+    	<property name="timeout" value="30"/>
 		<property name="transactionManager">
 			<bean class="org.springframework.orm.jpa.JpaTransactionManager">
 				<property name="entityManagerFactory" ref="entityManagerFactory" />
 			</bean>
 		</property>
 	</bean>
+
 
 	<!-- hazelcast -->
 	<hz:hazelcast id="hz_catify">
@@ -135,8 +138,9 @@
 	                    max-size="2"
 	                    eviction-percentage="100"
 	                    eviction-policy="NONE"
-	                    merge-policy="hz.ADD_NEW_ENTRY"/>           
-	            <hz:map name="node-cache">
+	                    merge-policy="hz.ADD_NEW_ENTRY"/>    
+	                           
+	            <hz:map name="nodecache">
 	   					<hz:map-store enabled="true" implementation="jpaNodeCacheStore" 
 	            		write-delay-seconds="0"/>
 				</hz:map>
@@ -160,13 +164,24 @@
 	</hz:hazelcast>
 	
 	<!-- persistence beans -->
-	<bean id="jpaNodeCacheStore" class="com.catify.persistence.cache.JpaNodeCacheStore"/>
-	<bean id="jpaPayloadCacheStore" class="com.catify.persistence.cache.JpaPayloadCacheStore"/>
-	<bean id="jpaCorrelationCacheStore" class="com.catify.persistence.cache.JpaCorrelationCacheStore"/>
+	<bean id="jpaNodeCacheStore" class="com.catify.persistence.cache.JpaNodeCacheStore">
+		<constructor-arg name="context" ref="camelContext"/>
+	</bean>
+	<bean id="jpaPayloadCacheStore" class="com.catify.persistence.cache.JpaPayloadCacheStore">
+		<constructor-arg name="context" ref="camelContext"/>
+	</bean>
+	<bean id="jpaCorrelationCacheStore" class="com.catify.persistence.cache.JpaCorrelationCacheStore">
+		<constructor-arg name="context" ref="camelContext"/>
+	</bean>
 	<bean id="jpaCorrelationRuleCacheStore" class="com.catify.persistence.cache.JpaCorrelationRuleCacheStore">
 		<constructor-arg name="context" ref="camelContext"/>
 	</bean>
-	<bean id="jpaTimerCacheStore" class="com.catify.persistence.cache.JpaTimerCacheStore"/>
+	<bean id="jpaTimerCacheStore" class="com.catify.persistence.cache.JpaTimerCacheStore">
+		<constructor-arg name="context" ref="camelContext"/>
+	</bean>
+
+	<bean id="jpaPersistenceTestHelper" class="com.catify.persistence.cache.JpaPersistenceTestHelper">
+	</bean>
 
 	<bean id="foo" class="com.catify.persistence.cache.Foo"/>
 

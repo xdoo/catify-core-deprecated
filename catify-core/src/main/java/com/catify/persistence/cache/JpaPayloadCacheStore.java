@@ -19,9 +19,12 @@ package com.catify.persistence.cache;
 import java.util.Iterator;
 import java.util.Map;
 
+import javax.persistence.PersistenceException;
+
+import org.apache.camel.CamelContext;
 import org.apache.camel.EndpointInject;
-import org.apache.camel.Produce;
 import org.apache.camel.ProducerTemplate;
+import org.springframework.transaction.TransactionStatus;
 
 import com.catify.persistence.beans.PayloadCache;
 
@@ -33,8 +36,8 @@ public class JpaPayloadCacheStore extends BaseJpaCacheStore {
 	@EndpointInject(uri = "seda:jpaPayloadCacheStore")
 	ProducerTemplate producer;
 	
-	public JpaPayloadCacheStore() {
-		super(LOAD_BY_KEY, LOAD_ALL_KEYS);
+	public JpaPayloadCacheStore(CamelContext context) {
+		super(context, LOAD_BY_KEY, LOAD_ALL_KEYS);
 	}
 
 	@Override
@@ -44,14 +47,6 @@ public class JpaPayloadCacheStore extends BaseJpaCacheStore {
 			
 			producer.sendBody(new PayloadCache(key, (String) value));
 			
-//			try {
-//				tx.begin();
-//				em.persist(new PayloadCache(key, (String) value));
-//				tx.commit();
-//			} catch ( RuntimeException ex ) {
-//				if( tx != null && tx.isActive() ) tx.rollback();
-//		        throw ex;
-//			}
 		} 
 
 	}
@@ -59,20 +54,26 @@ public class JpaPayloadCacheStore extends BaseJpaCacheStore {
 	@Override
 	public void storeAll(Map<String, Object> map) {
 		Iterator<String> it = map.keySet().iterator();
-		
+		PersistenceException cause = null;
+		TransactionStatus status = transactionManager.getTransaction(def);
 		try {
-			tx.begin();
-			
 			while (it.hasNext()) {
 				String key = (String) it.next();
-				em.persist(new PayloadCache(key, (String) map.get(key)));
+				em.merge(new PayloadCache(key, (String) map.get(key)));
 			}
-			
-			tx.commit();
-		} catch ( RuntimeException ex ) {
-			if( tx != null && tx.isActive() ) tx.rollback();
-	        throw ex;
-		}
+			transactionManager.commit(status);
+		} catch (Exception e) {
+            if (e instanceof PersistenceException) {
+                cause = (PersistenceException) e;
+                transactionManager.rollback(status);
+            } else {
+                cause = new PersistenceException(e);
+            }
+        }
+
+        if (cause != null) {
+                throw cause;
+        }
 
 	}
 	
@@ -86,5 +87,8 @@ public class JpaPayloadCacheStore extends BaseJpaCacheStore {
 			return null;
 		}
 	}
+
+
+
 
 }

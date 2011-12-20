@@ -170,7 +170,7 @@ public class TestReceiveNode extends SpringTestBase {
 			public void configure() throws Exception {
 				from("seda:out")
 				.delay(delay)
-				.log("-------------------------------------------> returned message")
+//				.log("-------------------------------------------> returned message")
 				.to("seda:in");	
 				
 				from("hazelcast:seda:corr_ex")

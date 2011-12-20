@@ -28,15 +28,24 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.camel.component.jpa.JpaEndpoint;
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.PersistenceException;
+
 import org.apache.camel.test.junit4.CamelSpringTestSupport;
 import org.apache.commons.beanutils.BeanUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.orm.jpa.JpaCallback;
 import org.springframework.orm.jpa.JpaTemplate;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
+import org.springframework.transaction.support.TransactionTemplate;
 
+import com.catify.core.event.impl.beans.StateEvent;
 import com.catify.persistence.beans.NodeCache;
 import com.hazelcast.core.MapLoader;
 import com.hazelcast.core.MapStore;
@@ -47,10 +56,26 @@ public class JpaPersistenceTestHelper extends CamelSpringTestSupport {
 	private List<String> insertStatements = new ArrayList<String>();
 	private List<String> countStatements = new ArrayList<String>();
 	
+    private EntityManagerFactory entityManagerFactory;
+	protected EntityManager em;
+    protected PlatformTransactionManager transactionManager;
+    private JpaTemplate template;
+    protected DefaultTransactionDefinition def = new DefaultTransactionDefinition();
+	
 	public JpaPersistenceTestHelper() throws ClassNotFoundException, SQLException {
 		Class.forName( "com.mysql.jdbc.Driver" );
-		cn = DriverManager.getConnection( "jdbc:mysql://172.17.16.65/Hazelcast_Persistenz", "test", "test" );
+		cn = DriverManager.getConnection( "jdbc:mysql://172.17.16.65/Hazelcast_Persistenz1", "test", "test" );
+		
 	}
+	
+    public EntityManagerFactory getEntityManagerFactory() {
+        return entityManagerFactory;
+    }
+
+    public void setEntityManagerFactory(EntityManagerFactory entityManagerFactory) {
+        this.entityManagerFactory = entityManagerFactory;
+        this.template = new JpaTemplate(entityManagerFactory);
+    }
 	
 	@Override
 	protected AbstractApplicationContext createApplicationContext() {
@@ -61,6 +86,25 @@ public class JpaPersistenceTestHelper extends CamelSpringTestSupport {
 	public void setUp() throws Exception {
 		super.setUp();
 		this.cleanTables();
+		if (entityManagerFactory == null) {
+            Map<String, EntityManagerFactory> map = context.getRegistry().lookupByType(EntityManagerFactory.class);
+            if (map != null) {
+                if (map.size() == 1) {
+                    entityManagerFactory = map.values().iterator().next();
+                } else {
+                }
+            }
+        } 
+		if (transactionManager == null) {
+            Map<String, TransactionTemplate> map = context.getRegistry().lookupByType(TransactionTemplate.class);
+            if (map != null) {
+                if (map.size() == 1) {
+                    transactionManager = map.values().iterator().next().getTransactionManager();
+                }
+            }
+        }
+		this.template = new JpaTemplate(entityManagerFactory);
+		em = getEntityManagerFactory().createEntityManager();
 	}
 
 	@After
@@ -180,10 +224,56 @@ public class JpaPersistenceTestHelper extends CamelSpringTestSupport {
 		// fill table
 		this.insertRows(this.insertStatements, 5);
 		
+//		final NodeCache ncs1 = new NodeCache("key_1", new StateEvent("1", 2));
+//		final NodeCache ncs2 = new NodeCache("key_2", new StateEvent("1", 2));
+//		final NodeCache ncs3 = new NodeCache("key_3", new StateEvent("1", 2));
+//		final NodeCache ncs4 = new NodeCache("key_4", new StateEvent("1", 2));
+//		final NodeCache ncs5 = new NodeCache("key_5", new StateEvent("1", 2));
+//		
+//		TransactionStatus status = transactionManager.getTransaction(def);
+//		
+//		
+//		em.merge(ncs1);
+//		transactionManager.commit(status);
+//		
+//		try {						
+//			this.template.execute(new JpaCallback() {
+//	            public Object doInJpa(EntityManager em) throws PersistenceException {
+//	            	em.merge(ncs1);
+//	            	em.merge(ncs2);
+//	            	em.merge(ncs3);
+//	            	em.merge(ncs4);
+//	            	em.merge(ncs5);
+////	            	em.flush();
+//	            	em.close();
+//	            	return null;
+//	            }
+//			});
+//
+//		} catch (Exception e) {
+//			System.out.println(e);
+//        }
+				
+		// wait for DB-update
+		try {
+			Thread.sleep(2000);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 		this.countRows(5);
 		this.countRow(String.format("SELECT count(*) FROM %s WHERE BEANKEY = 'key_3'", table), 1);
 		
 		store.delete("key_3");
+		
+		// wait for DB-update
+		try {
+			Thread.sleep(2000);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		
 		this.countRows(4);
 		this.countRow(String.format("SELECT count(*) FROM %s WHERE BEANKEY = 'key_3'", table), 0);
