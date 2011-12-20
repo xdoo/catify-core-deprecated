@@ -16,10 +16,6 @@
  */
 package com.catify.persistence.cache;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
 import java.lang.reflect.InvocationTargetException;
 import java.sql.SQLException;
 
@@ -49,9 +45,10 @@ public class TestJpaNodeCacheStore extends JpaPersistenceTestHelper {
 	
 	@Before
 	public void setUp() throws Exception {
-		cs = new JpaNodeCacheStore();
 		super.setUp();
+		cs = applicationContext.getBean(JpaNodeCacheStore.class);
 	}
+	
 
 	@Test public void testNodeJpaCacheStore() throws SQLException {
 		assertNotNull(cs);
@@ -64,7 +61,11 @@ public class TestJpaNodeCacheStore extends JpaPersistenceTestHelper {
 	}
 	
 	@Test public void testStore() throws SQLException {
+		// test with SQL-statement
 		super.checkStore(cs, TABLE_NODECACHE, new StateEvent("1", 2));
+		
+		// test with JPQL-statement
+//		super.checkStore(cs, "NodeCache", new StateEvent("1", 2));
 	}
 
 	@Test public void testLoad() throws SQLException {

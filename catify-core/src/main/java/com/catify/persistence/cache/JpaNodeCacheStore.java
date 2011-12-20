@@ -38,10 +38,15 @@ public class JpaNodeCacheStore extends BaseJpaCacheStore {
 	
 	public JpaNodeCacheStore() {
 		super(LOAD_BY_KEY, LOAD_ALL_KEYS);
+		
 	}
 
+	public void send (String key) {
+		seda.sendBody(key);
+	}
+	
 	@Override public void store(String key, Object value) {
-		
+				
 		if(value instanceof StateEvent) {
 			EntityManager em = emf.createEntityManager();
 			EntityTransaction tx = em.getTransaction();

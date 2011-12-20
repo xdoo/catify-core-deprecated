@@ -16,8 +16,6 @@
  */
 package com.catify.persistence.cache;
 
-import static org.junit.Assert.*;
-
 import java.lang.reflect.InvocationTargetException;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -30,30 +28,38 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.camel.component.jpa.JpaEndpoint;
+import org.apache.camel.test.junit4.CamelSpringTestSupport;
 import org.apache.commons.beanutils.BeanUtils;
 import org.junit.After;
 import org.junit.Before;
+import org.springframework.context.support.AbstractApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.orm.jpa.JpaTemplate;
 
+import com.catify.persistence.beans.NodeCache;
 import com.hazelcast.core.MapLoader;
 import com.hazelcast.core.MapStore;
 
-public class JpaPersistenceTestHelper {
+public class JpaPersistenceTestHelper extends CamelSpringTestSupport {
 
 	protected java.sql.Connection cn;
-	private List<String> insertStatements;
-	private List<String> countStatements;
+	private List<String> insertStatements = new ArrayList<String>();
+	private List<String> countStatements = new ArrayList<String>();
 	
 	public JpaPersistenceTestHelper() throws ClassNotFoundException, SQLException {
 		Class.forName( "com.mysql.jdbc.Driver" );
 		cn = DriverManager.getConnection( "jdbc:mysql://172.17.16.65/Hazelcast_Persistenz", "test", "test" );
-		
-		// statements
-		this.insertStatements = new ArrayList<String>();
-		this.countStatements = new ArrayList<String>();
+	}
+	
+	@Override
+	protected AbstractApplicationContext createApplicationContext() {
+		return new ClassPathXmlApplicationContext("/META-INF/spring/camel-context.xml");
 	}
 	
 	@Before
 	public void setUp() throws Exception {
+		super.setUp();
 		this.cleanTables();
 	}
 
@@ -73,8 +79,28 @@ public class JpaPersistenceTestHelper {
 	protected void checkStore(MapStore<String, Object> store, String table, Object value) throws SQLException {
 		store.store("4711", value);
 		
-		// check result
+		// wait for DB-update
+		try {
+			Thread.sleep(500);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		// check result with SQL-statement
 		this.countRow(String.format("SELECT count(*) FROM %s WHERE BEANKEY = '4711'", table), 1);
+		
+		// check result with JPQL-statement
+//		JpaEndpoint endpoint =
+//				(JpaEndpoint) context.getEndpoint("jpa:com.catify.persistence.beans.NodeCache");
+//				JpaTemplate jpaTemplate = endpoint.getTemplate();
+//				
+//				List list =
+//						jpaTemplate.find(String.format("SELECT x FROM %s x", table));
+//						
+//				assertEquals(1, list.size());
+//				assertIsInstanceOf(NodeCache.class, list.get(0));
+		
 	}
 
 	protected Object checkLoad(MapLoader<String, Object> loader) throws SQLException {

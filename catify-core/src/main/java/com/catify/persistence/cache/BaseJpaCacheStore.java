@@ -30,6 +30,9 @@ import javax.persistence.EntityTransaction;
 import javax.persistence.Persistence;
 import javax.persistence.Query;
 
+import org.apache.camel.Produce;
+import org.apache.camel.ProducerTemplate;
+
 import com.hazelcast.core.MapLoader;
 import com.hazelcast.core.MapStore;
 

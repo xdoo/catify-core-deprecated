@@ -29,6 +29,9 @@ public class JpaCorrelationCacheStore extends BaseJpaCacheStore {
 	public static final String LOAD_BY_KEY 		= "correlationCache_LoadByKey";
 	public static final String LOAD_ALL_KEYS 	= "correlationCache_LoadAllKeys";
 	
+	@EndpointInject(uri = "seda:jpaCorrelationCacheStore")
+	ProducerTemplate producer;
+	
 	public JpaCorrelationCacheStore() {
 		super(LOAD_BY_KEY, LOAD_ALL_KEYS);
 	}

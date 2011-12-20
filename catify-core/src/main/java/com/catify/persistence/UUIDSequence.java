@@ -48,11 +48,11 @@ public class UUIDSequence extends Sequence implements SessionCustomizer {
 	}
  
 	@Override
-	protected void onConnect() {
+	public void onConnect() {
 	}
  
 	@Override
-	protected void onDisconnect() {
+	public void onDisconnect() {
 	}
  
 	@Override
