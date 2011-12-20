@@ -31,8 +31,19 @@
 	<description>The Core Catify process engine</description>
 
 	<properties>
-		<eclipselink-version>2.0.0</eclipselink-version>
+		<eclipselink-version>2.3.2</eclipselink-version>
+		<mysql-connector-version>5.1.17</mysql-connector-version>
+		<jtds-version>1.2.4</jtds-version>
+		<commons-codec-version>1.5</commons-codec-version>
+		<commons-beanutils-version>1.8.3</commons-beanutils-version>
 	</properties>
+
+	<repositories>
+		<repository>
+			<id>EclipseLink Repo</id>
+			<url>http://www.eclipse.org/downloads/download.php?r=1&amp;nf=1&amp;file=/rt/eclipselink/maven.repo</url>
+		</repository>
+	</repositories>
 
 	<dependencies>
 		<dependency>
@@ -108,7 +119,7 @@
 			<artifactId>org.eclipse.persistence.asm</artifactId>
 			<version>${eclipselink-version}</version>
 		</dependency>
-		
+
 		<!-- data bases -->
 		<dependency>
 			<groupId>mysql</groupId>
