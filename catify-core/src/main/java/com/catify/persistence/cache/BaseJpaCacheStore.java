@@ -35,9 +35,7 @@ import com.hazelcast.core.MapStore;
 
 public abstract class BaseJpaCacheStore implements MapLoader<String, Object>, MapStore<String, Object>  {
 
-//	protected EntityManager em;
 	protected EntityManagerFactory emf;
-//	protected EntityTransaction tx;
 	
 	protected final static String PU = "CatifyJpaPU";
 	
@@ -50,12 +48,8 @@ public abstract class BaseJpaCacheStore implements MapLoader<String, Object>, Ma
 		this.NamedQueryLoadByKey 	= loadByKey;
 		this.NamedQueryLoadAllKeys 	= LoadAllKeys;
 		
-		// create entity manager
-//		em = Persistence.createEntityManagerFactory( "CatifyJpaPU" ).createEntityManager();
+		// create central entity manager factory
 		emf = Persistence.createEntityManagerFactory(PU);
-		
-		// create tx manager
-//		tx = em.getTransaction();
 	}
 	
 	/**
@@ -154,6 +148,15 @@ public abstract class BaseJpaCacheStore implements MapLoader<String, Object>, Ma
 		return query;
 	}
 	
+	/**
+	 * the em is important to delete entities
+	 * in one single em.
+	 * 
+	 * @param nq
+	 * @param key
+	 * @param em
+	 * @return
+	 */
 	private Query queryWithKey(String nq, String key, EntityManager em) {
 		Query query = em.createNamedQuery( nq );
 		query.setParameter( "param", key );
