@@ -29,9 +29,6 @@ public class JpaPayloadCacheStore extends BaseJpaCacheStore {
 	public static final String LOAD_BY_KEY 		= "payloadCache_LoadByKey";
 	public static final String LOAD_ALL_KEYS 	= "payloadCache_LoadAllKeys";
 	
-	@EndpointInject(uri = "seda:jpaPayloadCacheStore")
-	ProducerTemplate producer;
-	
 	public JpaPayloadCacheStore() {
 		super(LOAD_BY_KEY, LOAD_ALL_KEYS);
 	}

@@ -30,9 +30,6 @@ public class JpaTimerCacheStore extends BaseJpaCacheStore {
 	public static final String LOAD_BY_KEY 		= "timerCache_LoadByKey";
 	public static final String LOAD_ALL_KEYS 	= "timerCache_LoadAllKeys";
 	
-	@EndpointInject(uri = "seda:jpaTimerCacheStore")
-	ProducerTemplate producer;
-	
 	public JpaTimerCacheStore() {
 		super(LOAD_BY_KEY, LOAD_ALL_KEYS);
 	}

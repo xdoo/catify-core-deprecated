@@ -32,18 +32,12 @@ public class JpaNodeCacheStore extends BaseJpaCacheStore {
 
 	public static final String LOAD_BY_KEY 		= "nodeCache_LoadByKey";
 	public static final String LOAD_ALL_KEYS 	= "nodeCache_LoadAllKeys";
-
-	@Produce(uri = "seda:foo")
-	ProducerTemplate foo;
 	
 	public JpaNodeCacheStore() {
 		super(LOAD_BY_KEY, LOAD_ALL_KEYS);
 		
 	}
 
-	public void send (String key) {
-		seda.sendBody(key);
-	}
 	
 	@Override public void store(String key, Object value) {
 				
@@ -95,10 +89,4 @@ public class JpaNodeCacheStore extends BaseJpaCacheStore {
 			return null;
 		}
 	}
-
-	public void send(String value){
-		foo.sendBody(value);
-	}
-	
-	
 }

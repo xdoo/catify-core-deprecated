@@ -29,12 +29,8 @@ public class JpaCorrelationRuleCacheStore extends BaseJpaCacheStore {
 	public static final String LOAD_BY_KEY 		= "correlationRuleCache_LoadByKey";
 	public static final String LOAD_ALL_KEYS 	= "correlationRuleCache_LoadAllKeys";
 	
-	@EndpointInject(uri = "seda:jpaCorrelationRuleCacheStore")
-	ProducerTemplate producer;
-	
-	public JpaCorrelationRuleCacheStore(CamelContext context) {
+	public JpaCorrelationRuleCacheStore() {
 		super(LOAD_BY_KEY, LOAD_ALL_KEYS);
-		System.out.println(context.getEndpoint("seda:jpaCorrelationRuleCacheStore").getClass());
 	}
 
 	@Override
