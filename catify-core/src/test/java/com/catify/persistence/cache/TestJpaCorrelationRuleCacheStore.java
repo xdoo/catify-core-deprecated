@@ -34,7 +34,7 @@ public class TestJpaCorrelationRuleCacheStore extends JpaPersistenceTestHelper {
 	public TestJpaCorrelationRuleCacheStore() throws ClassNotFoundException, SQLException {
 		super();
 		
-		super.addInsertStatement("INSERT INTO CORRELATIONRULECACHE VALUES ( '%s', '"+getCorrelationRule()+"', 'key_%s' )");
+		super.addInsertStatement("INSERT INTO CORRELATIONRULECACHE VALUES ( 'key_%s', '"+getCorrelationRule()+"' )");
 		super.addCountSteatement(String.format("SELECT count(*) FROM %s", TABLE_CORRELATIONRULECACHE));
 	}
 	

@@ -40,7 +40,7 @@ public class TestJpaNodeCacheStore extends JpaPersistenceTestHelper {
 		
 		
 		super.addInsertStatement("INSERT INTO STATEEVENT VALUES ( 'id_%s', 2, 'instance_%s' )");
-		super.addInsertStatement("INSERT INTO NODECACHE VALUES ( '%s', 'key_%s', 'id_%s' )");
+		super.addInsertStatement("INSERT INTO NODECACHE VALUES ( 'key_%s', 'id_%s' )");
 		
 		super.addCountSteatement("SELECT count(*) FROM NODECACHE");
 		super.addCountSteatement("SELECT count(*) FROM STATEEVENT");

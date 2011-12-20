@@ -34,7 +34,7 @@ public class TestJpaCorrelationCache extends JpaPersistenceTestHelper {
 	public TestJpaCorrelationCache() throws ClassNotFoundException, SQLException {
 		super();
 		
-		super.addInsertStatement("INSERT INTO CORRELATIONCACHE VALUES ( '%s', '1234567890', 'key_%s' )");
+		super.addInsertStatement("INSERT INTO CORRELATIONCACHE VALUES ( 'key_%s', '1234567890' )");
 		super.addCountSteatement(String.format("SELECT count(*) FROM %s", TABLE_CORRELATIONCACHE));
 	}
 	

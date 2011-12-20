@@ -19,6 +19,9 @@ package com.catify.persistence.cache;
 import java.util.Iterator;
 import java.util.Map;
 
+import javax.persistence.EntityManager;
+import javax.persistence.EntityTransaction;
+
 import com.catify.persistence.beans.PayloadCache;
 
 public class JpaPayloadCacheStore extends BaseJpaCacheStore {
@@ -34,13 +37,17 @@ public class JpaPayloadCacheStore extends BaseJpaCacheStore {
 	public void store(String key, Object value) {
 		
 		if(value instanceof String) {
+			EntityManager em = emf.createEntityManager();
+			EntityTransaction tx = em.getTransaction();
 			try {
 				tx.begin();
-				em.persist(new PayloadCache(key, (String) value));
+				em.merge(new PayloadCache(key, (String) value));
 				tx.commit();
 			} catch ( RuntimeException ex ) {
 				if( tx != null && tx.isActive() ) tx.rollback();
 		        throw ex;
+			} finally {
+				em.close();
 			}
 		} 
 
@@ -49,19 +56,22 @@ public class JpaPayloadCacheStore extends BaseJpaCacheStore {
 	@Override
 	public void storeAll(Map<String, Object> map) {
 		Iterator<String> it = map.keySet().iterator();
-		
+		EntityManager em = emf.createEntityManager();
+		EntityTransaction tx = em.getTransaction();
 		try {
 			tx.begin();
 			
 			while (it.hasNext()) {
 				String key = (String) it.next();
-				em.persist(new PayloadCache(key, (String) map.get(key)));
+				em.merge(new PayloadCache(key, (String) map.get(key)));
 			}
 			
 			tx.commit();
 		} catch ( RuntimeException ex ) {
 			if( tx != null && tx.isActive() ) tx.rollback();
 	        throw ex;
+		} finally {
+			em.close();
 		}
 
 	}

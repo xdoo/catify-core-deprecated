@@ -19,6 +19,9 @@ package com.catify.persistence.cache;
 import java.util.Iterator;
 import java.util.Map;
 
+import javax.persistence.EntityManager;
+import javax.persistence.EntityTransaction;
+
 import com.catify.core.event.impl.beans.TimerEvent;
 import com.catify.persistence.beans.TimerCache;
 
@@ -34,13 +37,17 @@ public class JpaTimerCacheStore extends BaseJpaCacheStore {
 	@Override
 	public void store(String key, Object value) {
 		if(value instanceof TimerEvent) {
+			EntityManager em = emf.createEntityManager();
+			EntityTransaction tx = em.getTransaction();
 			try {
 				tx.begin();
-				em.persist(new TimerCache(key, (TimerEvent) value));
+				em.merge(new TimerCache(key, (TimerEvent) value));
 				tx.commit();
 			} catch ( RuntimeException ex ) {
 				if( tx != null && tx.isActive() ) tx.rollback();
 		        throw ex;
+			} finally {
+				em.close();
 			}
 		} 
 	}
@@ -48,19 +55,22 @@ public class JpaTimerCacheStore extends BaseJpaCacheStore {
 	@Override
 	public void storeAll(Map<String, Object> map) {
 		Iterator<String> it = map.keySet().iterator();
-		
+		EntityManager em = emf.createEntityManager();
+		EntityTransaction tx = em.getTransaction();
 		try {
 			tx.begin();
 			
 			while (it.hasNext()) {
 				String key = (String) it.next();
-				em.persist(new TimerCache(key, (TimerEvent) map.get(key)));
+				em.merge(new TimerCache(key, (TimerEvent) map.get(key)));
 			}
 			
 			tx.commit();
 		} catch ( RuntimeException ex ) {
 			if( tx != null && tx.isActive() ) tx.rollback();
 	        throw ex;
+		} finally {
+			em.close();
 		}
 
 	}

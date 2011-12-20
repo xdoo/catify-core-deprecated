@@ -51,7 +51,7 @@ public class TestHazelcastCachePersistence extends JpaPersistenceTestHelper {
 		nc.put("4712", new StateEvent("1b", 3));
 		nc.put("4713", new StateEvent("1c", 3));
 		// --- sleep ---
-		Thread.sleep(250);
+		Thread.sleep(2000);
 		super.countRow("SELECT count(*) FROM NODECACHE", 3);
 		super.countRow("SELECT count(*) FROM STATEEVENT", 3);
 		
@@ -77,8 +77,9 @@ public class TestHazelcastCachePersistence extends JpaPersistenceTestHelper {
 	 * test if we can insert and read very fast messages.
 	 * 
 	 * @throws SQLException
+	 * @throws InterruptedException 
 	 */
-	@Test public void testMassLoadRead() throws SQLException{
+	@Test public void testMassLoadRead() throws SQLException, InterruptedException{
 		IMap<String, StateEvent> nc = Hazelcast.getMap(CacheConstants.NODE_CACHE);
 		nc.put("4710", new StateEvent("0a", 3));
 		int x = 500;
@@ -88,6 +89,9 @@ public class TestHazelcastCachePersistence extends JpaPersistenceTestHelper {
 			StateEvent event = nc.get("471"+y);
 			assertNotNull(event);
 		}
+		
+		Thread.sleep(2000);
+		
 		super.countRow("SELECT count(*) FROM NODECACHE", x);
 	}
 	

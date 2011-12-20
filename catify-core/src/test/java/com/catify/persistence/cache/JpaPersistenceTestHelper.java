@@ -59,7 +59,7 @@ public class JpaPersistenceTestHelper {
 
 	@After
 	public void tearDown() throws Exception {
-//		this.cleanTables();
+		this.cleanTables();
 	}
 	
 	protected void checkTable(String name) throws SQLException {		

@@ -8,15 +8,13 @@
 			<query>SELECT a.beanKey FROM NodeCache a</query>
 		</named-query>
 		<attributes>
-			<id name="id">
-				<generated-value generator="system-uuid" />
-			</id>
+			<id name="beanKey"/>
 			<one-to-one name="beanValue">
 				<cascade>
 					<cascade-all />
 				</cascade>
 			</one-to-one>
-			<basic name="beanKey" optional="false" />
+			<!-- <basic name="beanKey" optional="false" /> -->
 		</attributes>
 	</entity>
 	<entity class="com.catify.core.event.impl.beans.StateEvent">
@@ -36,10 +34,8 @@
 			<query>SELECT a.beanKey FROM PayloadCache a</query>
 		</named-query>
 		<attributes>
-			<id name="id">
-				<generated-value generator="system-uuid" />
-			</id>
-			<basic name="beanKey" optional="false"/>
+			<id name="beanKey"/>
+			<!-- <basic name="beanKey" optional="false" /> -->
 			<basic name="beanValue" optional="false" >
 				<column column-definition="TEXT"/>
 			</basic>
@@ -53,10 +49,8 @@
 			<query>SELECT a.beanKey FROM CorrelationCache a</query>
 		</named-query>
 		<attributes>
-			<id name="id">
-				<generated-value generator="system-uuid" />
-			</id>
-			<basic name="beanKey" optional="false" />
+			<id name="beanKey"/>
+			<!-- <basic name="beanKey" optional="false" /> -->
 			<basic name="beanValue" optional="false" />
 		</attributes>
 	</entity>
@@ -69,10 +63,8 @@
 			<query>SELECT a.beanKey FROM CorrelationRuleCache a</query>
 		</named-query>
 		<attributes>
-			<id name="id">
-				<generated-value generator="system-uuid" />
-			</id>
-			<basic name="beanKey" optional="false" />
+			<id name="beanKey"/>
+			<!-- <basic name="beanKey" optional="false" /> -->
 			<basic name="beanValue" optional="false" >
 				<column column-definition="TEXT"/>
 			</basic>
@@ -86,15 +78,13 @@
 			<query>SELECT a.beanKey FROM TimerCache a</query>
 		</named-query>
 		<attributes>
-			<id name="id">
-				<generated-value generator="system-uuid" />
-			</id>
+			<id name="beanKey"/>
 			<one-to-one name="beanValue">
 				<cascade>
 					<cascade-all />
 				</cascade>
 			</one-to-one>
-			<basic name="beanKey" optional="false" />
+			<!-- <basic name="beanKey" optional="false" /> -->
 		</attributes>
 	</entity>
 	<entity class="com.catify.core.event.impl.beans.TimerEvent">

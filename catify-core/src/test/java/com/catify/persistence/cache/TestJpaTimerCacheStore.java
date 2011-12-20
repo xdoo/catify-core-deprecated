@@ -39,7 +39,7 @@ public class TestJpaTimerCacheStore extends JpaPersistenceTestHelper {
 		super();
 		
 		super.addInsertStatement("INSERT INTO TIMEREVENT VALUES ( 'id_%s', 'taskid_%s', 1234567890, 'instance_%s' )");
-		super.addInsertStatement("INSERT INTO TIMERCACHE VALUES ( '%s', 'key_%s', 'id_%s' )");
+		super.addInsertStatement("INSERT INTO TIMERCACHE VALUES ( 'key_%s', 'id_%s' )");
 		
 		super.addCountSteatement(String.format("SELECT count(*) FROM %s", TABLE_TIMERCACHE));
 		super.addCountSteatement(String.format("SELECT count(*) FROM %s", TABLE_TIMEREVENT));

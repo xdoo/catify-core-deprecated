@@ -19,6 +19,12 @@ package com.catify.persistence.cache;
 import java.util.Iterator;
 import java.util.Map;
 
+import javax.persistence.EntityManager;
+import javax.persistence.EntityTransaction;
+
+import org.apache.camel.Produce;
+import org.apache.camel.ProducerTemplate;
+
 import com.catify.core.event.impl.beans.StateEvent;
 import com.catify.persistence.beans.NodeCache;
 
@@ -26,8 +32,9 @@ public class JpaNodeCacheStore extends BaseJpaCacheStore {
 
 	public static final String LOAD_BY_KEY 		= "nodeCache_LoadByKey";
 	public static final String LOAD_ALL_KEYS 	= "nodeCache_LoadAllKeys";
-	
 
+	@Produce(uri = "seda:foo")
+	ProducerTemplate foo;
 	
 	public JpaNodeCacheStore() {
 		super(LOAD_BY_KEY, LOAD_ALL_KEYS);
@@ -36,13 +43,17 @@ public class JpaNodeCacheStore extends BaseJpaCacheStore {
 	@Override public void store(String key, Object value) {
 		
 		if(value instanceof StateEvent) {
+			EntityManager em = emf.createEntityManager();
+			EntityTransaction tx = em.getTransaction();
 			try {
 				tx.begin();
-				em.persist(new NodeCache(key, (StateEvent) value));
+				em.merge(new NodeCache(key, (StateEvent) value));
 				tx.commit();
 			} catch ( RuntimeException ex ) {
 				if( tx != null && tx.isActive() ) tx.rollback();
 		        throw ex;
+			} finally{
+				em.close();
 			}
 		} 
 	}
@@ -50,20 +61,23 @@ public class JpaNodeCacheStore extends BaseJpaCacheStore {
 	@Override public void storeAll(Map<String, Object> map) {
 		
 		Iterator<String> it = map.keySet().iterator();
-		
+		EntityManager em = emf.createEntityManager();
+		EntityTransaction tx = em.getTransaction();
 		try {
 			tx.begin();
 			
 			while (it.hasNext()) {
 				String key = (String) it.next();
-				em.persist(new NodeCache(key, (StateEvent) map.get(key)));
+				em.merge(new NodeCache(key, (StateEvent) map.get(key)));
 			}
 			
 			tx.commit();
 		} catch ( RuntimeException ex ) {
 			if( tx != null && tx.isActive() ) tx.rollback();
 	        throw ex;
-		}	
+		} finally {
+			em.close();
+		}
 	}
 	
 	@Override public StateEvent load(String key) {
@@ -76,4 +90,10 @@ public class JpaNodeCacheStore extends BaseJpaCacheStore {
 			return null;
 		}
 	}
+
+	public void send(String value){
+		foo.sendBody(value);
+	}
+	
+	
 }

@@ -22,7 +22,7 @@ public class BaseKey implements Serializable {
 
 	private static final long serialVersionUID = -2600544906423522503L;
 	private String id;
-	private String beanKey;
+	private String beanKey = "default";
 
 	
 	public String getId() {

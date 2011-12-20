@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
 import javax.persistence.Persistence;
 import javax.persistence.Query;
@@ -34,8 +35,11 @@ import com.hazelcast.core.MapStore;
 
 public abstract class BaseJpaCacheStore implements MapLoader<String, Object>, MapStore<String, Object>  {
 
-	protected EntityManager em;
-	protected EntityTransaction tx;
+//	protected EntityManager em;
+	protected EntityManagerFactory emf;
+//	protected EntityTransaction tx;
+	
+	protected final static String PU = "CatifyJpaPU";
 	
 	private String NamedQueryLoadByKey;
 	private String NamedQueryLoadAllKeys;
@@ -47,10 +51,11 @@ public abstract class BaseJpaCacheStore implements MapLoader<String, Object>, Ma
 		this.NamedQueryLoadAllKeys 	= LoadAllKeys;
 		
 		// create entity manager
-		em = Persistence.createEntityManagerFactory( "CatifyJpaPU" ).createEntityManager();
+//		em = Persistence.createEntityManagerFactory( "CatifyJpaPU" ).createEntityManager();
+		emf = Persistence.createEntityManagerFactory(PU);
 		
 		// create tx manager
-		tx = em.getTransaction();
+//		tx = em.getTransaction();
 	}
 	
 	/**
@@ -93,7 +98,7 @@ public abstract class BaseJpaCacheStore implements MapLoader<String, Object>, Ma
 	 */
 	@Override public Set<String> loadAllKeys(){
 		
-		Query query = em.createNamedQuery( this.NamedQueryLoadAllKeys );
+		Query query = emf.createEntityManager().createNamedQuery( this.NamedQueryLoadAllKeys );
 		List resultList = query.getResultList();
 		
 		return new HashSet(resultList);
@@ -110,14 +115,18 @@ public abstract class BaseJpaCacheStore implements MapLoader<String, Object>, Ma
 	/**
 	 * removes cascading the cache object.
 	 */
-	@Override public void delete(String key) {		
+	@Override public void delete(String key) {	
+		EntityManager em = emf.createEntityManager();
+		EntityTransaction tx = em.getTransaction();
 		try {
 			tx.begin();
-			em.remove(this.queryWithKey(NamedQueryLoadByKey, key).getSingleResult());
+			em.remove(this.queryWithKey(NamedQueryLoadByKey, key, em).getSingleResult());
 			tx.commit();
 		} catch ( RuntimeException ex ) {
 			if( tx != null && tx.isActive() ) tx.rollback();
 	        throw ex;
+		} finally {
+			em.close();
 		}
 	}
 
@@ -139,6 +148,13 @@ public abstract class BaseJpaCacheStore implements MapLoader<String, Object>, Ma
 	 * @return
 	 */
 	private Query queryWithKey(String nq, String key) {
+		Query query = emf.createEntityManager().createNamedQuery( nq );
+		query.setParameter( "param", key );
+		
+		return query;
+	}
+	
+	private Query queryWithKey(String nq, String key, EntityManager em) {
 		Query query = em.createNamedQuery( nq );
 		query.setParameter( "param", key );
 		

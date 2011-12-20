@@ -35,7 +35,7 @@ public class TestJpaPayloadCacheStore extends JpaPersistenceTestHelper {
 		
 		super();
 		
-		super.addInsertStatement("INSERT INTO PAYLOADCACHE VALUES ( '%s', '"+getPayload(1)+"', 'key_%s' )");
+		super.addInsertStatement("INSERT INTO PAYLOADCACHE VALUES ( 'key_%s', '"+getPayload(1)+"' )");
 		super.addCountSteatement(String.format("SELECT count(*) FROM %s", TABLE_PAYLOADCACHE));
 		
 	}
