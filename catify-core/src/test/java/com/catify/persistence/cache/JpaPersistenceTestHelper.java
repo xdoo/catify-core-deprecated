@@ -58,7 +58,6 @@ public class JpaPersistenceTestHelper extends CamelSpringTestSupport {
 	
     private EntityManagerFactory entityManagerFactory;
 	protected EntityManager em;
-    protected PlatformTransactionManager transactionManager;
     private JpaTemplate template;
     protected DefaultTransactionDefinition def = new DefaultTransactionDefinition();
 	
@@ -86,25 +85,6 @@ public class JpaPersistenceTestHelper extends CamelSpringTestSupport {
 	public void setUp() throws Exception {
 		super.setUp();
 		this.cleanTables();
-		if (entityManagerFactory == null) {
-            Map<String, EntityManagerFactory> map = context.getRegistry().lookupByType(EntityManagerFactory.class);
-            if (map != null) {
-                if (map.size() == 1) {
-                    entityManagerFactory = map.values().iterator().next();
-                } else {
-                }
-            }
-        } 
-		if (transactionManager == null) {
-            Map<String, TransactionTemplate> map = context.getRegistry().lookupByType(TransactionTemplate.class);
-            if (map != null) {
-                if (map.size() == 1) {
-                    transactionManager = map.values().iterator().next().getTransactionManager();
-                }
-            }
-        }
-		this.template = new JpaTemplate(entityManagerFactory);
-		em = getEntityManagerFactory().createEntityManager();
 	}
 
 	@After
@@ -223,36 +203,6 @@ public class JpaPersistenceTestHelper extends CamelSpringTestSupport {
 	protected void checkDelete(MapStore<String, Object> store, String table) throws SQLException {
 		// fill table
 		this.insertRows(this.insertStatements, 5);
-		
-//		final NodeCache ncs1 = new NodeCache("key_1", new StateEvent("1", 2));
-//		final NodeCache ncs2 = new NodeCache("key_2", new StateEvent("1", 2));
-//		final NodeCache ncs3 = new NodeCache("key_3", new StateEvent("1", 2));
-//		final NodeCache ncs4 = new NodeCache("key_4", new StateEvent("1", 2));
-//		final NodeCache ncs5 = new NodeCache("key_5", new StateEvent("1", 2));
-//		
-//		TransactionStatus status = transactionManager.getTransaction(def);
-//		
-//		
-//		em.merge(ncs1);
-//		transactionManager.commit(status);
-//		
-//		try {						
-//			this.template.execute(new JpaCallback() {
-//	            public Object doInJpa(EntityManager em) throws PersistenceException {
-//	            	em.merge(ncs1);
-//	            	em.merge(ncs2);
-//	            	em.merge(ncs3);
-//	            	em.merge(ncs4);
-//	            	em.merge(ncs5);
-////	            	em.flush();
-//	            	em.close();
-//	            	return null;
-//	            }
-//			});
-//
-//		} catch (Exception e) {
-//			System.out.println(e);
-//        }
 				
 		// wait for DB-update
 		try {

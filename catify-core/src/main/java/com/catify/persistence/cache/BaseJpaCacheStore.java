@@ -33,11 +33,12 @@ import org.apache.camel.CamelContext;
 import org.apache.camel.component.jpa.JpaTemplateTransactionStrategy;
 import org.apache.camel.component.jpa.TransactionStrategy;
 import org.slf4j.LoggerFactory;
-import org.springframework.orm.jpa.JpaCallback;
 import org.springframework.orm.jpa.JpaTemplate;
+import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -45,6 +46,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 import com.hazelcast.core.MapLoader;
 import com.hazelcast.core.MapStore;
 
+@Transactional
 public abstract class BaseJpaCacheStore implements MapLoader<String, Object>, MapStore<String, Object> {
 	
 	// borrowed from camel-jpa
@@ -53,6 +55,8 @@ public abstract class BaseJpaCacheStore implements MapLoader<String, Object>, Ma
     protected PlatformTransactionManager transactionManager;
     private JpaTemplate template;
     protected DefaultTransactionDefinition def = new DefaultTransactionDefinition();
+    
+    protected JpaTransactionManager tm;
     
  // single TransactionTemplate shared amongst all methods in this instance
     private final TransactionTemplate transactionTemplate;
@@ -71,9 +75,14 @@ public abstract class BaseJpaCacheStore implements MapLoader<String, Object>, Ma
 		
 		def.setName("BaseJPATransactionDefinition");
 		def.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRED);
+        
+		tm = new JpaTransactionManager(getEntityManagerFactory());
+        tm.afterPropertiesSet();
 		
 	}
 	
+
+
 	/**
 	 * load the object with the given named query and key.
 	 */
@@ -131,44 +140,42 @@ public abstract class BaseJpaCacheStore implements MapLoader<String, Object>, Ma
 	/**
 	 * removes cascading the cache object.
 	 */
-	@SuppressWarnings("unchecked")
 	@Override public void delete(String key) {	
 		PersistenceException cause = null;
-		TransactionStatus status = transactionManager.getTransaction(def);
+		TransactionStatus status = tm.getTransaction(def);
 		
 		EntityManager emp = getEntityManagerFactory().createEntityManager();
 		
 		try {
 			final Object values = queryWithKey(NamedQueryLoadByKey, key).getSingleResult();
 			
-//			transactionTemplate.execute(new TransactionCallbackWithoutResult() {
-//                
-//	            // the code in this method executes in a transactional context
-//	            public void doInTransactionWithoutResult(TransactionStatus status) {
-//	            	em.remove(values);
-//	            }
-//
-//	        });
-			
-			this.template.execute(new JpaCallback<Object>() {
-	            public Object doInJpa(EntityManager emp) throws PersistenceException {
+			transactionTemplate.execute(new TransactionCallbackWithoutResult() {
+                
+	            // the code in this method executes in a transactional context
+	            public void doInTransactionWithoutResult(TransactionStatus status) {
 	            	em.remove(values);
-	            	return null;
 	            }
-			});
+
+	        });
 			
+//			this.template.execute(new JpaCallback<Object>() {
+//	            public Object doInJpa(EntityManager emp) throws PersistenceException {
+//	            	em.remove(values);
+//	            	return null;
+//	            }
+//			});
 			
 //			em.remove(this.queryWithKey(NamedQueryLoadByKey, key).getSingleResult());
 		} catch (Exception e) {
             if (e instanceof PersistenceException) {
-            	transactionManager.rollback(status);
+            	tm.rollback(status);
                 cause = (PersistenceException) e;
             } else {
                 cause = new PersistenceException(e);
             }
         }
 		
-//		transactionManager.commit(status);
+		tm.commit(status);
 
         if (cause != null) {
                 throw cause;

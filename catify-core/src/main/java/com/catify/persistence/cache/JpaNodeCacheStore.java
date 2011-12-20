@@ -25,6 +25,7 @@ import org.apache.camel.CamelContext;
 import org.apache.camel.EndpointInject;
 import org.apache.camel.ProducerTemplate;
 import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.catify.core.event.impl.beans.StateEvent;
 import com.catify.persistence.beans.NodeCache;
@@ -36,6 +37,8 @@ public class JpaNodeCacheStore extends BaseJpaCacheStore {
 
 	@EndpointInject(uri = "seda://jpaNodeCacheStore")
 	ProducerTemplate seda;
+	
+
 	
 	public JpaNodeCacheStore(CamelContext context) {
 		super(context, LOAD_BY_KEY, LOAD_ALL_KEYS);
@@ -58,17 +61,17 @@ public class JpaNodeCacheStore extends BaseJpaCacheStore {
 		
 		Iterator<String> it = map.keySet().iterator();
 		PersistenceException cause = null;
-		TransactionStatus status = transactionManager.getTransaction(def);
+		TransactionStatus status = tm.getTransaction(def);
 		try {
 			while (it.hasNext()) {
 				String key = (String) it.next();
 				em.merge(new NodeCache(key, (StateEvent) map.get(key)));
 			}
-			transactionManager.commit(status);
+			tm.commit(status);
 		} catch (Exception e) {
             if (e instanceof PersistenceException) {
                 cause = (PersistenceException) e;
-                transactionManager.rollback(status);
+                tm.rollback(status);
             } else {
                 cause = new PersistenceException(e);
             }

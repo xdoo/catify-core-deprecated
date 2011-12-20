@@ -21,11 +21,13 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
 	xmlns:camel="http://camel.apache.org/schema/spring"
 	xmlns:hz="http://www.hazelcast.com/schema/config"
+	xmlns:tx="http://www.springframework.org/schema/tx"
 	xsi:schemaLocation="
        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
        http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd
        http://www.hazelcast.com/schema/config
-       http://www.hazelcast.com/schema/config/hazelcast-spring.xsd">
+       http://www.hazelcast.com/schema/config/hazelcast-spring.xsd
+       http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.0.xsd">
 	
 	<!-- catify -->
 	<bean id="xmlPipelineBuilder" class="com.catify.core.process.xml.XmlPipelineBuilder">
@@ -106,17 +108,24 @@
 		<!--  <property name="database" value="MYSQL" /> -->
 	</bean>
 	
+ 
 	<bean id="transactionTemplate"
 		class="org.springframework.transaction.support.TransactionTemplate">
 		<property name="isolationLevelName" value="ISOLATION_READ_UNCOMMITTED"/>
     	<property name="timeout" value="30"/>
-		<property name="transactionManager">
-			<bean class="org.springframework.orm.jpa.JpaTransactionManager">
-				<property name="entityManagerFactory" ref="entityManagerFactory" />
-			</bean>
-		</property>
+    	<property name="transactionManager" ref="transactionManager" />
 	</bean>
 
+	
+
+		<bean id="transactionManager" class="org.springframework.orm.jpa.JpaTransactionManager">
+				<property name="entityManagerFactory" ref="entityManagerFactory" />
+		</bean>
+
+	
+<!-- enable the configuration of transactional behavior based on annotations 
+  <tx:annotation-driven transaction-manager="transactionManager" proxy-target-class="true"/>
+-->
 
 	<!-- hazelcast -->
 	<hz:hazelcast id="hz_catify">
@@ -178,9 +187,6 @@
 	</bean>
 	<bean id="jpaTimerCacheStore" class="com.catify.persistence.cache.JpaTimerCacheStore">
 		<constructor-arg name="context" ref="camelContext"/>
-	</bean>
-
-	<bean id="jpaPersistenceTestHelper" class="com.catify.persistence.cache.JpaPersistenceTestHelper">
 	</bean>
 
 	<bean id="foo" class="com.catify.persistence.cache.Foo"/>

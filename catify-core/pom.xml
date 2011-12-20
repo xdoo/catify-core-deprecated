@@ -52,6 +52,12 @@
 			<version>${apache-camel-version}</version>
 		</dependency>
 
+    <!-- AOP dependency -->
+    <dependency>
+    	<groupId>cglib</groupId>
+	<artifactId>cglib</artifactId>
+	<version>2.2.2</version>
+    </dependency>
 
 		<dependency>
 			<groupId>org.apache.camel</groupId>
@@ -98,7 +104,7 @@
 		<dependency>
 			<groupId>com.hazelcast</groupId>
 			<artifactId>hazelcast-spring</artifactId>
-			<version>1.9.3</version>
+			<version>1.9.3.4</version>
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.persistence</groupId>

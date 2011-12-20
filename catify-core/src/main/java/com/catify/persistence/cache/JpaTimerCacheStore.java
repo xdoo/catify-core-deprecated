@@ -25,9 +25,11 @@ import org.apache.camel.CamelContext;
 import org.apache.camel.EndpointInject;
 import org.apache.camel.ProducerTemplate;
 import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.catify.core.event.impl.beans.TimerEvent;
 import com.catify.persistence.beans.TimerCache;
+
 
 public class JpaTimerCacheStore extends BaseJpaCacheStore {
 
@@ -54,17 +56,17 @@ public class JpaTimerCacheStore extends BaseJpaCacheStore {
 	public void storeAll(Map<String, Object> map) {
 		Iterator<String> it = map.keySet().iterator();
 		PersistenceException cause = null;
-		TransactionStatus status = transactionManager.getTransaction(def);
+		TransactionStatus status = tm.getTransaction(def);
 		try {
 			while (it.hasNext()) {
 				String key = (String) it.next();
 				em.merge(new TimerCache(key, (TimerEvent) map.get(key)));
 			}
-			transactionManager.commit(status);
+			tm.commit(status);
 		} catch (Exception e) {
             if (e instanceof PersistenceException) {
                 cause = (PersistenceException) e;
-                transactionManager.rollback(status);
+                tm.rollback(status);
             } else {
                 cause = new PersistenceException(e);
             }
