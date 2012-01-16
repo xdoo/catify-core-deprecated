@@ -54,6 +54,7 @@
 	<bean id="eventRoutes" class="com.catify.core.routes.EventRoutes" />
 	<bean id="configurationRoutes" class="com.catify.core.routes.ConfigurationRoutes" />
 	<bean id="startupRoutes" class="com.catify.core.routes.StartupRoutes" />
+	<bean id="monitoringRoutes" class="com.catify.core.routes.MonitoringRoutes" />
 	<bean id="jpaPersistenceRoutes" class="com.catify.persistence.routes.JpaPersistenceRoutes" />	
 
 	<!-- processors -->
@@ -95,5 +96,7 @@
 	<bean id="jpaCorrelationRuleCacheStore" class="com.catify.persistence.cache.JpaCorrelationRuleCacheStore"/>
 	<bean id="jpaTimerCacheStore" class="com.catify.persistence.cache.JpaTimerCacheStore"/>
 
+	<!-- monitor beans -->
+	<bean id="hazelcastMonitor" class="com.catify.core.monitor.HazelcastMonitor"/>
 
 </beans>
