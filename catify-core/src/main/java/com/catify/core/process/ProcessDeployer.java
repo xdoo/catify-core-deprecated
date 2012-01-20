@@ -36,7 +36,7 @@ public class ProcessDeployer {
 	private CamelContext context;
 
 	static final Logger LOG = LoggerFactory.getLogger(ProcessDeployer.class);
-	static final LoggingLevel LEVEL = LoggingLevel.INFO;
+	static final LoggingLevel LEVEL = LoggingLevel.OFF;
 
 	public ProcessDeployer(CamelContext context) {
 		this.context = context;

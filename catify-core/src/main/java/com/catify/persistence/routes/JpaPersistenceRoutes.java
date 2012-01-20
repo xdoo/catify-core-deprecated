@@ -12,7 +12,7 @@ import com.catify.core.process.ProcessDeployer;
 public class JpaPersistenceRoutes extends RouteBuilder {
 
 	static final Logger LOG = LoggerFactory.getLogger(ProcessDeployer.class);
-	static final LoggingLevel INFO = LoggingLevel.INFO;
+	static final LoggingLevel WARN = LoggingLevel.WARN;
 	
 	@Override
 	public void configure() throws Exception {		
@@ -20,7 +20,7 @@ public class JpaPersistenceRoutes extends RouteBuilder {
 	    .to("jpa://com.catify.persistence.beans.CorrelationCache?persistenceUnit=CatifyJpaPU");
 	    
 	    from("seda:jpaCorrelationRuleCacheStore")
-	    .to("log:CORRELATIONARULECACHE?showAll=true")
+//	    .to("log:CORRELATIONARULECACHE?showAll=true")
     	.to("jpa://com.catify.persistence.beans.CorrelationRuleCache?persistenceUnit=CatifyJpaPU");
 	    
 	    from("seda:jpaNodeCacheStore")

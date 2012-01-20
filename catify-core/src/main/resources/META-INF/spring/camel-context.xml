@@ -39,13 +39,14 @@
 	<bean id="globalConfiguration" class="com.catify.core.configuration.GlobalConfiguration"/>
 	
 	<!-- camel -->
-	<camel:camelContext id="camelContext" trace="true">
+	<camel:camelContext id="camelContext" trace="false">
 		<camel:routeBuilder ref="processRoutes" />
 		<camel:routeBuilder ref="pipelineRoutes" />
 		<camel:routeBuilder ref="eventRoutes" />
 		<camel:routeBuilder ref="configurationRoutes" />
 		<camel:routeBuilder ref="startupRoutes" />
 		<camel:routeBuilder ref="jpaPersistenceRoutes" />
+		<camel:routeBuilder ref="monitoringRoutes" />
 	</camel:camelContext>
 
 	<!-- routes -->
@@ -55,6 +56,7 @@
 	<bean id="configurationRoutes" class="com.catify.core.routes.ConfigurationRoutes" />
 	<bean id="startupRoutes" class="com.catify.core.routes.StartupRoutes" />
 	<bean id="jpaPersistenceRoutes" class="com.catify.persistence.routes.JpaPersistenceRoutes" />	
+	<bean id="monitoringRoutes" class="com.catify.core.routes.MonitoringRoutes" />
 
 	<!-- processors -->
 	<bean id="serializeableHeadersProcessor" class="com.catify.core.process.processors.SerializableHeadersProcessor"/>
@@ -71,6 +73,7 @@
 	<bean id="writeCorrelationProcessor" class="com.catify.core.process.processors.WriteCorrelationProcessor"/>
 	<bean id="readCorrelationProcessor" class="com.catify.core.process.processors.ReadCorrelationProcessor"/>
 	<bean id="xpathProcessor" class="com.catify.core.process.processors.XPathProcessor"/>
+	<bean id="hazelcastMonitor" class="com.catify.core.monitor.HazelcastMonitor"/>
 	
 	<!-- routers -->
 	<!-- <bean id="decisionRouter" class="com.catify.core.process.routers.impl.ReceiveRouter"/> -->

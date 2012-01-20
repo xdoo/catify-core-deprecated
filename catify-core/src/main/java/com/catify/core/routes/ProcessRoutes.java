@@ -103,7 +103,7 @@ public class ProcessRoutes extends RouteBuilder {
 		.routeId("checkForNoState")
 		.to("direct:getStateForInstance")
 		.setBody(simple("${body.size}"))
-		.to("log://STATE?showAll=true")
+//		.to("log://STATE?showAll=true")
 		.choice()
 			.when(body().isGreaterThan(0))
 				.setBody(constant(false))
