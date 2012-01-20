@@ -23,7 +23,7 @@
 	xsi:schemaLocation="
        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
        http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd">
-	
+
 	<!-- catify -->
 	<bean id="xmlPipelineBuilder" class="com.catify.core.process.xml.XmlPipelineBuilder">
 		<constructor-arg name="config" ref="globalConfiguration"/>
@@ -33,11 +33,11 @@
 		<constructor-arg name="pipelineBuilder" ref="xmlPipelineBuilder"/>
 	</bean>
 	<bean id="correlationRuleBuilder" class="com.catify.core.process.xml.CorrelationRuleBuilder"/>
-	
-	
+
+
 	<!-- configuration -->
 	<bean id="globalConfiguration" class="com.catify.core.configuration.GlobalConfiguration"/>
-	
+
 	<!-- camel -->
 	<camel:camelContext id="camelContext" trace="false">
 		<camel:routeBuilder ref="processRoutes" />
@@ -77,7 +77,7 @@
 	
 	<!-- routers -->
 	<!-- <bean id="decisionRouter" class="com.catify.core.process.routers.impl.ReceiveRouter"/> -->
-	
+
 	<!-- events -->
 	<!-- TODO replace the implementation by property replacement -->
 	<bean id="timerEventService" class="com.catify.core.event.impl.HazelcastTimerEventService" />
@@ -90,4 +90,15 @@
 		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
 		<!-- <property name="location" value="classpath:network.properties" /> -->
 	</bean>
+	
+	<!-- persistence beans -->
+	<bean id="jpaNodeCacheStore" class="com.catify.persistence.cache.JpaNodeCacheStore"/>
+	<bean id="jpaPayloadCacheStore" class="com.catify.persistence.cache.JpaPayloadCacheStore"/>
+	<bean id="jpaCorrelationCacheStore" class="com.catify.persistence.cache.JpaCorrelationCacheStore"/>
+	<bean id="jpaCorrelationRuleCacheStore" class="com.catify.persistence.cache.JpaCorrelationRuleCacheStore"/>
+	<bean id="jpaTimerCacheStore" class="com.catify.persistence.cache.JpaTimerCacheStore"/>
+
+	<!-- monitor beans -->
+	<bean id="hazelcastMonitor" class="com.catify.core.monitor.HazelcastMonitor"/>
+
 </beans>
