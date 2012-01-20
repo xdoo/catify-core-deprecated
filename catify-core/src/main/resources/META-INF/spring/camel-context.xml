@@ -73,7 +73,6 @@
 	<bean id="writeCorrelationProcessor" class="com.catify.core.process.processors.WriteCorrelationProcessor"/>
 	<bean id="readCorrelationProcessor" class="com.catify.core.process.processors.ReadCorrelationProcessor"/>
 	<bean id="xpathProcessor" class="com.catify.core.process.processors.XPathProcessor"/>
-	<bean id="hazelcastMonitor" class="com.catify.core.monitor.HazelcastMonitor"/>
 	
 	<!-- routers -->
 	<!-- <bean id="decisionRouter" class="com.catify.core.process.routers.impl.ReceiveRouter"/> -->
