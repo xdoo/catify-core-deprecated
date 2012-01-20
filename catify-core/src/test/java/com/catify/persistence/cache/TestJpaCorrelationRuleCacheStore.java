@@ -41,7 +41,7 @@ public class TestJpaCorrelationRuleCacheStore extends JpaPersistenceTestHelper {
 	@Before
 	public void setUp() throws Exception {
 		super.setUp();
-		cs = applicationContext.getBean(JpaCorrelationRuleCacheStore.class);
+		cs = new JpaCorrelationRuleCacheStore();
 	}
 	
 	@Test public void testPayloadJpaCacheStore() throws SQLException {

@@ -32,6 +32,7 @@
 
 	<properties>
 		<eclipselink-version>2.3.2</eclipselink-version>
+		<eclipselink-javax-persistence-version>2.0.3</eclipselink-javax-persistence-version>
 		<mysql-connector-version>5.1.17</mysql-connector-version>
 		<jtds-version>1.2.4</jtds-version>
 		<commons-codec-version>1.5</commons-codec-version>
@@ -97,7 +98,7 @@
 		<dependency>
 			<groupId>org.eclipse.persistence</groupId>
 			<artifactId>javax.persistence</artifactId>
-			<version>${eclipselink-version}</version>
+			<version>${eclipselink-javax-persistence-version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.persistence</groupId>

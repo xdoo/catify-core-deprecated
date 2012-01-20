@@ -49,7 +49,7 @@ public class TestJpaTimerCacheStore extends JpaPersistenceTestHelper {
 	@Before
 	public void setUp() throws Exception {
 		super.setUp();
-		cs = applicationContext.getBean(JpaTimerCacheStore.class);
+		cs = new JpaTimerCacheStore();
 	}
 
 	@Test public void testJpaTimerCacheStore() throws SQLException {
