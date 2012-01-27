@@ -54,7 +54,7 @@ public class TestEventRoutes extends CamelSpringTestSupport {
 	public void testUnRegister(){
 		assertNotNull(context.getRoute("delete-timer-event"));
 		
-		this.insertEvent(1000, "123", "4711");
+		this.insertEvent(1000, "123", "4711", "catify", "myprocess", "1.0", "foo");
 		assertEquals(1, this.timerCache.size());		
 		template.sendBody("direct:unregister", "foo");
 		assertEquals(0, this.timerCache.size());
@@ -64,8 +64,8 @@ public class TestEventRoutes extends CamelSpringTestSupport {
 	public void testTimer(){
 		assertNotNull(context.getRoute("fire-timer-event"));
 		
-		this.insertEvent(100, "123", "4711");
-		Exchange exchange = consumer.receive("hazelcast:seda:event_4711", 5000);
+		this.insertEvent(100, "123", "4711", "catify", "myprocess", "1.0", "foo");
+		Exchange exchange = consumer.receive("activemq:queue:event.catify.myprocess.1.0.foo", 5000);
 		assertNotNull(exchange);
 		assertEquals("event_4711", exchange.getIn().getHeader(MessageConstants.TASK_ID));
 	}
@@ -77,9 +77,13 @@ public class TestEventRoutes extends CamelSpringTestSupport {
 		List<String> list = new ArrayList<String>();
 		list.add("123");
 		list.add("4711");
+		list.add("catify");
+		list.add("myprocess");
+		list.add("1.0");
+		list.add("foo");
 		
 		template.sendBody("direct:createEventMessage", list);
-		Exchange exchange = consumer.receive("hazelcast:seda:event_4711", 5000);
+		Exchange exchange = consumer.receive("activemq:queue:event.catify.myprocess.1.0.foo", 5000);
 		assertNotNull(exchange);
 		assertEquals("event_4711", exchange.getIn().getHeader(MessageConstants.TASK_ID));
 	}
@@ -108,14 +112,18 @@ public class TestEventRoutes extends CamelSpringTestSupport {
 				
 				from("direct:setHeaders")
 				.setHeader(MessageConstants.INSTANCE_ID, constant( "123"))
-				.setHeader(MessageConstants.TASK_ID, constant("4711"));
+				.setHeader(MessageConstants.TASK_ID, constant("4711"))
+				.setHeader(MessageConstants.ACCOUNT_NAME, constant("catify"))
+				.setHeader(MessageConstants.PROCESS_NAME, constant("myprocess"))
+				.setHeader(MessageConstants.PROCESS_VERSION, constant("1.0"))
+				.setHeader(MessageConstants.TASK_NAME, constant("foo"));
 				
 			}
 		};
 	}
 	
-	private void insertEvent(long time, String iid, String nid){
-		this.timerCache.put(Long.toString(time), new TimerEvent(time, iid, nid));
+	private void insertEvent(long time, String iid, String nid, String acc, String pro, String ver, String nna){
+		this.timerCache.put(Long.toString(time), new TimerEvent(time, iid, nid, acc, pro, ver, nna));
 	}
 
 }

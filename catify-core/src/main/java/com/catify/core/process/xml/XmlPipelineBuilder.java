@@ -79,7 +79,7 @@ public class XmlPipelineBuilder {
 		appendFromEndpoint(builder, endpoint, definition.getProcessId(), definition);
 			
 		//set headers
-		this.appendHeaders(builder, definition);
+		this.appendHeaders(builder, definition, definition.getStartNodeId());
 					
 			
 		//generate instance id
@@ -153,7 +153,7 @@ public class XmlPipelineBuilder {
 		this.appendConstantHeader(builder, ReadCorrelationProcessor.CORRELATION_EXCEPTION_HEADER, "");
 			
 		// set headers to identify the process
-		this.appendHeaders(builder, definition);
+		this.appendHeaders(builder, definition, nodeId);
 		
 		// add task id to the message header
 		this.appendConstantHeader(builder, MessageConstants.TASK_ID, nodeId);
@@ -288,11 +288,12 @@ public class XmlPipelineBuilder {
 	 * @param builder
 	 * @param definition
 	 */
-	private void appendHeaders(StringBuilder builder, ProcessDefinition definition){
+	private void appendHeaders(StringBuilder builder, ProcessDefinition definition, String nodeId){
 		appendConstantHeader(builder, MessageConstants.ACCOUNT_NAME, definition.getAccountName());
 		appendConstantHeader(builder, MessageConstants.PROCESS_NAME, definition.getProcessName());
 		appendConstantHeader(builder, MessageConstants.PROCESS_VERSION, definition.getProcessVersion());
 		appendConstantHeader(builder, MessageConstants.PROCESS_ID, definition.getProcessId());
+		appendConstantHeader(builder, MessageConstants.TASK_NAME, definition.getNode(nodeId).getNodeName());
 	}
 	
 	private void appendMarshaler(StringBuilder builder, String type){

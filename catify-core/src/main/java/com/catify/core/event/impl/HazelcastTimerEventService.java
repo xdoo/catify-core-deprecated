@@ -25,9 +25,13 @@ public class HazelcastTimerEventService implements TimerEventService {
 	@Override
 	public void register(	@Header(EventConstants.EVENT_TIME) long eventTime,
 							@Header(MessageConstants.INSTANCE_ID) String instanceId,
-							@Header(MessageConstants.TASK_ID) String taskId) {
+							@Header(MessageConstants.TASK_ID) String taskId,
+							@Header(MessageConstants.ACCOUNT_NAME) String account,
+							@Header(MessageConstants.PROCESS_NAME) String process,
+							@Header(MessageConstants.PROCESS_VERSION) String version,
+							@Header(MessageConstants.TASK_NAME) String nodename) {
 		long time  = new Date().getTime() + eventTime;
-		this.cache.put(ProcessHelper.createTaskInstanceId(instanceId, taskId), new TimerEvent(time, instanceId, taskId));
+		this.cache.put(ProcessHelper.createTaskInstanceId(instanceId, taskId), new TimerEvent(time, instanceId, taskId, account, process, version, nodename));
 	}
 
 	@Override
@@ -55,6 +59,10 @@ public class HazelcastTimerEventService implements TimerEventService {
 		
 		result.add(event.getInstanceId()); 	//index 0
 		result.add(event.getTaskId());		//index 1
+		result.add(event.getAccount());		//index 2
+		result.add(event.getProcess());		//index 3
+		result.add(event.getVersion());		//index 4
+		result.add(event.getNodename());	//index 5
 		
 		return result;
 	}

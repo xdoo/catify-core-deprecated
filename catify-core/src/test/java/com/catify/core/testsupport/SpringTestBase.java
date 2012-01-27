@@ -33,6 +33,7 @@ public class SpringTestBase extends CamelSpringTestSupport {
 		headers.put(MessageConstants.PROCESS_VERSION, "1.0");
 		headers.put(MessageConstants.TASK_ID, "start");
 		headers.put(MessageConstants.PROCESS_ID, def.getProcessId());
+		headers.put(MessageConstants.TASK_NAME, "start");
 		
 		return headers;
 	}

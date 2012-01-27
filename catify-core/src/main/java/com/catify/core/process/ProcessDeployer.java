@@ -335,7 +335,7 @@ public class ProcessDeployer {
 		final String process = definition.getProcessName();
 		final String version = definition.getProcessVersion();
 		final String nodename = definition.getNode(nodeId).getNodeName();
-
+		
 		return new RouteBuilder() {
 
 			@Override
@@ -348,7 +348,8 @@ public class ProcessDeployer {
 				// one initializes the timer. the second one
 				// runs after the expected timer event has
 				// been fired.
-				fromF("seda:node-%s?concurrentConsumers=5", nodeId) // TODO
+				fromF(NEXT, account, process
+						, version, nodename)
 						.routeId(String.format("node-%s", nodeId))
 						.onCompletion()
 							.to("direct://waiting")
@@ -362,6 +363,7 @@ public class ProcessDeployer {
 										definition.getProcessVersion(),
 										MessageConstants.INSTANCE_ID))
 						.setHeader(MessageConstants.TASK_ID, constant(nodeId))
+						.setHeader(MessageConstants.TASK_NAME, constant(nodename))
 						// ...set state...
 						.to("direct:working")
 						//destroy state from previous node
@@ -406,7 +408,7 @@ public class ProcessDeployer {
 										definition.getProcessName(),
 										definition.getProcessVersion(),
 										MessageConstants.INSTANCE_ID))
-						.toF(NEXT, account, process, version, definition.getNode(definition.getTransitionsFromNode(nodeId).get(0)).getNodeId() );
+						.toF(NEXT, account, process, version, definition.getNode(definition.getTransitionsFromNode(nodeId).get(0)).getNodeName() );
 
 			}
 		};
