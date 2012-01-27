@@ -263,11 +263,12 @@ public class ProcessDeployer {
 			public void configure() throws Exception {
 				
 				// active:mq:in.{processname}.{processversion}
-				fromF("%sin.%s.%s.%s",
+				fromF("%sin.%s.%s.%s.%s",
 								QUEUE,
 								account,
 								process,
-								version)
+								version,
+								nodename)
 						.transacted()
 						.routeId(
 								String.format("process-%s",
@@ -837,7 +838,7 @@ public class ProcessDeployer {
 				// 2. there is no current state at all -->
 				// the set state to 'wait' and wait for
 				// the initialization from the process
-				fromF("%sin.%s.%s.%s.%s", QUEUE, account, process, version, nodeId)
+				fromF("%sin.%s.%s.%s.%s", QUEUE, account, process, version, nodename)
 						.transacted()
 						.routeId(String.format("aqnode-%s", nodeId))
 						.onCompletion()

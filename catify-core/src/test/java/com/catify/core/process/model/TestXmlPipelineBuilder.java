@@ -149,7 +149,7 @@ public class TestXmlPipelineBuilder extends CamelSpringTestSupport {
 //		System.out.println("--------------------------> sending message to 'wait_for_payload'");
 		template.sendBody("seda://receive", this.getXml2());
 		
-		assertMockEndpointsSatisfied(10000, TimeUnit.MILLISECONDS);
+		assertMockEndpointsSatisfied(100000, TimeUnit.MILLISECONDS);
 	}
 	
 	/**

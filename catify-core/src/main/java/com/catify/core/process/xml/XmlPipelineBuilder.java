@@ -19,6 +19,7 @@ package com.catify.core.process.xml;
 import java.util.Iterator;
 
 import org.apache.camel.component.hazelcast.HazelcastConstants;
+import org.restlet.engine.http.connector.Acceptor;
 
 import com.catify.core.configuration.GlobalConfiguration;
 import com.catify.core.constants.CacheConstants;
@@ -59,6 +60,11 @@ public class XmlPipelineBuilder {
 		StringBuilder builder = new StringBuilder();
 		this.additionalRoutes = new StringBuilder();
 		
+		final String account = definition.getAccountName();
+		final String process = definition.getProcessName();
+		final String version = definition.getProcessVersion();
+		final String nodename = definition.getNode(definition.getStartNodeId()).getNodeName();
+		
 		//open xml route
 		openRoutes(builder);
 		
@@ -94,7 +100,7 @@ public class XmlPipelineBuilder {
 		this.appendSavePayload(builder, definition.getProcessId(), in.getVariables());
 			
 		//send message to queue
-		this.appendToQueue(builder, definition.getProcessId()); // process & node id are equal in case of a start node
+		this.appendToQueue(builder, definition.getProcessId(), account, process, version, nodename); // process & node id are equal in case of a start node
 			
 		this.appendMulticastEnd(builder);
 			
@@ -107,7 +113,7 @@ public class XmlPipelineBuilder {
 		closeRoutes(builder);
 		
 		//FIXME
-//		System.out.println(builder.toString());
+		System.out.println(builder.toString());
 		
 		return builder.toString();
 	}
@@ -189,7 +195,7 @@ public class XmlPipelineBuilder {
 		this.appendSavePayload(builder, nodeId, in.getVariables());
 			
 		//send message to queue
-		this.appendToQueue(builder, nodeId);
+		this.appendToQueue(builder, nodeId, account, process, version, nodename);
 			
 		//end route
 		this.appendEndRoute(builder);
@@ -200,12 +206,12 @@ public class XmlPipelineBuilder {
 		this.closeRoutes(builder);
 		
 		//FIXME
-//		System.out.println(builder.toString());
+		System.out.println(builder.toString());
 		
 		return builder.toString();
 	}
 
-	public String buildOutPipeline(OutPipeline out, String nodeId){
+	public String buildOutPipeline(OutPipeline out, String nodeId, ProcessDefinition definition){
 		
 		//++++++++++++++++++++++++++++
 		// TODO --> correlation
@@ -215,13 +221,18 @@ public class XmlPipelineBuilder {
 		StringBuilder builder = new StringBuilder();
 		this.additionalRoutes = new StringBuilder();
 		
+		final String account = definition.getAccountName();
+		final String process = definition.getProcessName();
+		final String version = definition.getProcessVersion();
+		final String nodename = definition.getNode(nodeId).getNodeName();
+		
 		//open xml route
 		openRoutes(builder);
 		
 		builder.append(String.format("\t<route id=\"out-pipeline-%s\">\n", nodeId));
 		
 		//get message from queue
-		this.appendGetMessageFromQueue(builder, nodeId);
+		this.appendGetMessageFromQueue(builder, account, process, version, nodename);
 		
 		//get payload from cache
 		if(out.getVariables() != null){
@@ -557,11 +568,11 @@ public class XmlPipelineBuilder {
 	 * @param builder
 	 * @param nodeId
 	 */
-	private void appendToQueue(StringBuilder builder, String nodeId){
+	private void appendToQueue(StringBuilder builder, String nodeId, String account, String process, String version, String nodename){
 		builder.append(String.format("\t\t<to uri=\"direct:send-to-queue-%s\"/>\n", nodeId));
 		
 		//create route
-		appendToQueueRoute(this.additionalRoutes, nodeId);
+		appendToQueueRoute(this.additionalRoutes, nodeId, account, process, version, nodename);
 	}
 	
 	/**
@@ -574,14 +585,14 @@ public class XmlPipelineBuilder {
 	 *     &lt;constant>&lt;/constant>
 	 *   &lt;/setBody>
 	 *   &lt;process ref="serializeableHeadersProcessor"/>
-	 *   &lt;inOnly uri="hazelcast:seda:in_{NODE_ID}?transferExchange=true"/>
+	 *   &lt;inOnly uri="activemq:queue:in.{ACCOUNT}.{PROCESS}.{VERSION}.{NODENAME}"/>
 	 * &lt;/route>
 	 * </pre>
 	 * 
 	 * @param builder
 	 * @param nodeId
 	 */
-	private void appendToQueueRoute(StringBuilder builder, String nodeId){
+	private void appendToQueueRoute(StringBuilder builder, String nodeId, String account, String process, String version, String nodename){
 		builder.append(String.format("\t<route id=\"send-to-queue-%s\">\n", nodeId));
 		builder.append(String.format("\t\t<from uri=\"direct:send-to-queue-%s\"/>\n", nodeId));
 		
@@ -593,7 +604,7 @@ public class XmlPipelineBuilder {
 		
 		//send message to queue
 		// TODO --> active mq here
-		builder.append(String.format("\t\t<inOnly uri=\"hazelcast:%sin_%s?transferExchange=true\"/>\n", HazelcastConstants.SEDA_PREFIX, nodeId));
+		builder.append(String.format("\t\t<inOnly uri=\"activemq:queue:in.%s.%s.%s.%s\"/>\n", account, process, version, nodename));
 		
 		this.appendEndRoute(builder);
 	}
@@ -648,10 +659,9 @@ public class XmlPipelineBuilder {
 		
 	}
 	
-	private void appendGetMessageFromQueue(StringBuilder builder, String nodeId){
+	private void appendGetMessageFromQueue(StringBuilder builder, String account, String process, String version, String nodename){
 		
-		// TODO --> add activemq here
-		builder.append(String.format("\t\t<from uri=\"hazelcast:%sout_%s\"/>\n", HazelcastConstants.SEDA_PREFIX, nodeId));
+		builder.append(String.format("\t\t<from uri=\"activemq:queue:out.%s.%s.%s.%s\"/>\n", account, process, version, nodename));
 	}
 	
 	/**
