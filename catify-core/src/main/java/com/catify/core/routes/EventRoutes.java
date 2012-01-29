@@ -21,7 +21,6 @@ public class EventRoutes extends RouteBuilder {
 		from("activemq:queue:set-timer-event")
 		.transacted()
 		.routeId("set-timer-event")
-		.to("log:SETTIMEREVENT2?showAll=true")
 		.beanRef("timerEventService", "register");
 		
 		//delete timer event

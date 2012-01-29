@@ -19,7 +19,6 @@ package com.catify.core.process.xml;
 import java.util.Iterator;
 
 import org.apache.camel.component.hazelcast.HazelcastConstants;
-import org.restlet.engine.http.connector.Acceptor;
 
 import com.catify.core.configuration.GlobalConfiguration;
 import com.catify.core.constants.CacheConstants;
@@ -81,6 +80,9 @@ public class XmlPipelineBuilder {
 		//set headers
 		this.appendHeaders(builder, definition, definition.getStartNodeId());
 					
+		//set logger 
+		//TODO set logging level
+		builder.append("\t\t<to uri=\"log:START_PIPELINE?showAll=true\"/>\n");
 			
 		//generate instance id
 		builder.append(String.format("%s<process ref=\"initProcessProcessor\"/>\n", tab));
@@ -158,6 +160,10 @@ public class XmlPipelineBuilder {
 		// add task id to the message header
 		this.appendConstantHeader(builder, MessageConstants.TASK_ID, nodeId);
 		
+		//set logger 
+		//TODO set logging level
+		builder.append("\t\t<to uri=\"log:IN_PIPELINE_HEADERS?showAll=true\"/>\n");
+		
 		// store payload inside header
 		// -----
 		// we have to do this, because we need the
@@ -193,9 +199,17 @@ public class XmlPipelineBuilder {
 		
 		//save payload
 		this.appendSavePayload(builder, nodeId, in.getVariables());
+		
+		//set logger 
+		//TODO set logging level
+		builder.append("\t\t<to uri=\"log:IN_PIPELINE_PAYLOAD_SAVED?showAll=true\"/>\n");
 			
 		//send message to queue
 		this.appendToQueue(builder, nodeId, account, process, version, nodename);
+		
+		//set logger 
+		//TODO set logging level
+		builder.append("\t\t<to uri=\"log:IN_PIPELINE_SEND_MESSAGE_TO_QUEUE?showAll=true\"/>\n");
 			
 		//end route
 		this.appendEndRoute(builder);
@@ -253,6 +267,10 @@ public class XmlPipelineBuilder {
 			// if we have no variables we must send a message to the destination
 			builder.append(String.format("\t\t<to uri=\"%s\"/>\n", out.getEndpoint().getUri()));
 		}
+		
+		//set logger 
+		//TODO set logging level
+		builder.append("\t<to uri=\"log:OUT_PIPELINE?showAll=true\"/>\n");
 		
 		this.appendEndRoute(builder);
 		
@@ -424,7 +442,7 @@ public class XmlPipelineBuilder {
 	private void appendPipelineExceptionRoute(StringBuilder builder, String nodeId, String account, String process, String version, String nodename, PipelineExceptionEvent ex) {
 		builder.append(String.format("\t<route id=\"pipeline-exception-%s\">\n", nodeId));
 		builder.append(String.format("\t\t<from uri=\"activemq:queue:pipeline.exception.%s.%s.%s.%s\"/>\n", account, process, version, nodename));
-		builder.append("<transacted/>");
+		builder.append("\t\t<transacted/>\n");
 		// TODO --> delete
 		builder.append("\t\t<to uri=\"log:EXCEPTION?showAll=true\"/>\n");
 		this.appendSimpleBody(builder, String.format("${header.%s}", MessageConstants.TMP_PAYLOAD));

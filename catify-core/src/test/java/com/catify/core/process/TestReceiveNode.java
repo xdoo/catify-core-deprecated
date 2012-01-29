@@ -24,7 +24,9 @@ import org.apache.camel.component.mock.MockEndpoint;
 import org.junit.Test;
 
 import com.catify.core.constants.CacheConstants;
+import com.catify.core.constants.MessageConstants;
 import com.catify.core.process.model.ProcessDefinition;
+import com.catify.core.process.processors.ReadCorrelationProcessor;
 import com.catify.core.testsupport.SpringTestBase;
 import com.hazelcast.core.Hazelcast;
 
@@ -144,6 +146,11 @@ public class TestReceiveNode extends SpringTestBase {
 		assertMockEndpointsSatisfied(10, TimeUnit.SECONDS);
 	}
 	
+	/**
+	 * 
+	 * 
+	 * @throws Exception
+	 */
 	@Test public void testCorrelationExceptionWithReCall() throws Exception {
 		super.deployProcess(this.processReCallProcessAfterCorrelationException());
 		this.createAdditionalRoutes(1000);
@@ -173,8 +180,9 @@ public class TestReceiveNode extends SpringTestBase {
 				.log("-------------------------------------------> returned message")
 				.to("seda:in");	
 				
-				from("hazelcast:seda:corr_ex")
+				from("activemq:queue:corr_ex")
 				.to("log:CORR_EX?showAll=true")
+				.setHeader(ReadCorrelationProcessor.CORRELATION_EXCEPTION_HEADER, constant(""))
 				.to("seda:init")
 				.to("log:RECALL?showAll=true")
 				.delay(delay)
@@ -318,7 +326,7 @@ public class TestReceiveNode extends SpringTestBase {
 		"	</start>\n" +
 		"	<receive ns:name=\"wait_for_payload\">\n" +
 		"		<inPipeline>\n" +
-		"			<pipelineExceptionEvent ns:uri=\"hazelcast:seda:corr_ex?transferExchange=true\" ns:attachPayload=\"true\"/>\n" +
+		"			<pipelineExceptionEvent ns:uri=\"activemq:queue:corr_ex?transferExchange=true\" ns:attachPayload=\"true\"/>\n" +
 		"			<endpoint ns:uri=\"seda:in\"/>\n" +
 		"			<variables>\n" +
 		"				<variable ns:name=\"foo\" ns:xpath=\"/\" />\n" +
