@@ -200,7 +200,6 @@ public class XmlProcessBuilder {
 
 	private String addSleepNode(Sleep node) {
 		node.setId(this.addNodeWithCurrent(new SleepNode(this.definition.getProcessId(), node.getName(), node.getTimeEvent().getTime())));
-		
 		return node.getId();
 	}
 

@@ -32,8 +32,6 @@ public class HazelcastTimerEventService implements TimerEventService {
 							@Header(MessageConstants.TASK_NAME) String nodename) {
 		long time  = new Date().getTime() + eventTime;
 		TimerEvent event = new TimerEvent(time, instanceId, taskId, account, process, version, nodename);
-		//TODO delete
-		System.out.println(String.format("register timer event for --> %s", event.toString()));
 		this.cache.put(ProcessHelper.createTaskInstanceId(instanceId, taskId), event);
 	}
 
@@ -48,14 +46,9 @@ public class HazelcastTimerEventService implements TimerEventService {
 	public List<List<String>> fire(@Header(Exchange.TIMER_FIRED_TIME) Date dateTime) {
 		List<List<String>> result = new ArrayList<List<String>>();
 		
-		System.out.println("FIRE ------------------------------------> ");
-		
 		Iterator<TimerEvent> it = this.cache.values(new SqlPredicate(String.format("time <= %s", dateTime.getTime()))).iterator();
 		while (it.hasNext()) {
 			TimerEvent event = it.next();
-			
-			//TODO delete
-			System.out.println(event.toString());
 			result.add(this.marshal(event));
 			this.cache.remove(ProcessHelper.createTaskInstanceId(event.getInstanceId(), event.getTaskId()));
 		}

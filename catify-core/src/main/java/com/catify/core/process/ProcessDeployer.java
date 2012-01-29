@@ -39,7 +39,7 @@ public class ProcessDeployer {
 	private final static String NEXT = "activemq:queue:node.%s.%s.%s.%s";
 
 	static final Logger LOG = LoggerFactory.getLogger(ProcessDeployer.class);
-	static final LoggingLevel LEVEL = LoggingLevel.OFF;
+	static final LoggingLevel LEVEL = LoggingLevel.INFO;
 
 	public ProcessDeployer(CamelContext context) {
 		this.context = context;
@@ -374,7 +374,14 @@ public class ProcessDeployer {
 						.processRef("taskInstanceIdProcessor")
 						// set timer
 						.setHeader(EventConstants.EVENT_TIME, constant(time))
-						.to("log:SETTIMEREVENT?showAll=true")
+						.log(LEVEL,
+								String.format("SLEEP NODE '%s'", definition
+										.getNode(nodeId).getNodeName()),
+								String.format(
+										"set timer event by sending message to queue 'activemq:queue:set-timer-event'.   process name --> '%s' | process version --> '%s' | instanceId --> ${header.%s}",
+										definition.getProcessName(),
+										definition.getProcessVersion(),
+										MessageConstants.INSTANCE_ID))
 						.to("activemq:queue:set-timer-event");
 				
 				// ----------------------------------------
@@ -395,6 +402,7 @@ public class ProcessDeployer {
 										definition.getProcessVersion(),
 										MessageConstants.INSTANCE_ID))
 						.setHeader(MessageConstants.TASK_ID, constant(nodeId))
+						.setHeader(MessageConstants.TASK_NAME, constant(nodename))
 						// ...set state...
 						.to("direct:working")
 						// create a task instance id...
@@ -404,11 +412,13 @@ public class ProcessDeployer {
 								String.format("SLEEP NODE '%s'", definition
 										.getNode(nodeId).getNodeName()),
 								String.format(
-										"signaling next node: sending message to 'seda:node-%s'.   process name --> '%s' | process version --> '%s' | instanceId --> ${header.%s}",
-										definition.getTransitionsFromNode(
-												nodeId).get(0),
-										definition.getProcessName(),
-										definition.getProcessVersion(),
+										"signaling next node: sending message to 'activemq:queue:node-%s.%s.%s.%s'.   node name --> '%s' | node id --> '%s' | instanceId --> ${header.%s}",
+										account,
+										process,
+										version,
+										definition.getNode(definition.getTransitionsFromNode(nodeId).get(0)).getNodeName(),
+										nodename,
+										nodeId,
 										MessageConstants.INSTANCE_ID))
 						.toF(NEXT, account, process, version, definition.getNode(definition.getTransitionsFromNode(nodeId).get(0)).getNodeName() );
 			}
@@ -436,6 +446,7 @@ public class ProcessDeployer {
 							.to("direct://done")
 						.end()
 						.setHeader(MessageConstants.TASK_ID, constant(nodeId))
+						.setHeader(MessageConstants.TASK_NAME, constant(nodename))
 						// ...set state...
 						.to("direct:working")
 						//destroy state from previous node
@@ -480,6 +491,7 @@ public class ProcessDeployer {
 							.to("direct://done")
 						.end()
 						.setHeader(MessageConstants.TASK_ID, constant(nodeId))
+						.setHeader(MessageConstants.TASK_NAME, constant(nodename))
 						// ...set state...
 						.to("direct://working")
 						//destroy state from previous node
@@ -539,6 +551,7 @@ public class ProcessDeployer {
 						// cleanse body
 						.setBody(constant(null))
 						.setHeader(MessageConstants.TASK_ID, constant(nodeId))
+						.setHeader(MessageConstants.TASK_NAME, constant(nodename))
 						// ...put it into the cache...
 						.to("direct://working")
 						//destroy state from previous node
@@ -568,6 +581,7 @@ public class ProcessDeployer {
 						.transacted()
 						.routeId(String.format("node-%s", nodeId))
 						.setHeader(MessageConstants.TASK_ID, constant(nodeId))
+						.setHeader(MessageConstants.TASK_NAME, constant(nodename))
 						// create a task instance id...
 						.processRef("taskInstanceIdProcessor")
 						// ...put it into the cache...
@@ -615,6 +629,7 @@ public class ProcessDeployer {
 						.transacted()
 						.routeId(String.format("node-%s", nodeId))
 						.setHeader(MessageConstants.TASK_ID, constant(nodeId))
+						.setHeader(MessageConstants.TASK_NAME, constant(nodename))
 						// create a task instance id...
 						.processRef("taskInstanceIdProcessor")
 						// ...set the awaited hits...
@@ -716,6 +731,7 @@ public class ProcessDeployer {
 						.transacted()
 						.routeId(String.format("check-node-%s", nodeId))
 						.setHeader(MessageConstants.TASK_ID, constant(nodeId))
+						.setHeader(MessageConstants.TASK_NAME, constant(nodename))
 						// create a task instance id...
 						.to("direct:getState")
 						.setBody(simple("${body.state}"))
@@ -762,10 +778,13 @@ public class ProcessDeployer {
 								String.format("REQUEST NODE '%s'", definition
 										.getNode(nodeId).getNodeName()),
 								String.format(
-										"sending message to 'hazelcast:%sout_%s'.   process name --> '%s' | process version --> '%s' | instanceId --> ${header.%s}",
-										HazelcastConstants.SEDA_PREFIX, 
-										nodeId, definition.getProcessName(),
-										definition.getProcessVersion(),
+										"sending message to 'activemq:queue:out.%s.%s.%s.%s'. node name --> '%s' | node id --> '%s' | instanceId --> ${header.%s}",
+										account,
+										process,
+										version,
+										nodename,
+										nodename,
+										nodeId,
 										MessageConstants.INSTANCE_ID))
 						
 						.toF("%sout.%s.%s.%s.%s", QUEUE, account, process, version, nodename)
@@ -774,11 +793,13 @@ public class ProcessDeployer {
 								String.format("REQUEST NODE '%s'", definition
 										.getNode(nodeId).getNodeName()),
 								String.format(
-										"signaling next node: sending message to 'seda:node-%s'.   process name --> '%s' | process version --> '%s' | instanceId --> ${header.%s}",
-										definition.getTransitionsFromNode(
-												nodeId).get(0),
-										definition.getProcessName(),
-										definition.getProcessVersion(),
+										"signaling next node: sending message to 'activemq:queue:node-%s.%s.%s.%s'.   node name --> '%s' | node id --> '%s' | instanceId --> ${header.%s}",
+										account,
+										process,
+										version,
+										definition.getNode(definition.getTransitionsFromNode(nodeId).get(0)).getNodeName(),
+										nodename,
+										nodeId,
 										MessageConstants.INSTANCE_ID))
 						.toF(NEXT, account, process, version, definition.getNode(definition.getTransitionsFromNode(nodeId).get(0)).getNodeName());
 			}
@@ -826,6 +847,7 @@ public class ProcessDeployer {
 										version,
 										MessageConstants.INSTANCE_ID))
 						.setHeader(MessageConstants.TASK_ID, constant(nodeId))
+						.setHeader(MessageConstants.TASK_NAME, constant(nodename))
 						.to("direct://working")
 						//destroy state from previous node
 						.setHeader(HazelcastConstants.OBJECT_ID, simple(String.format("${header.%s}-%s", MessageConstants.INSTANCE_ID, previousTaskId)))
@@ -945,8 +967,8 @@ public class ProcessDeployer {
 										definition.getProcessName(),
 										definition.getProcessVersion(),
 										MessageConstants.INSTANCE_ID))
-						.setHeader(MessageConstants.TASK_ID,
-								constant(parentNodeId))
+						.setHeader(MessageConstants.TASK_ID,constant(parentNodeId))
+						.setHeader(MessageConstants.TASK_NAME, constant(nodename))
 						// create a task instance id...
 						.processRef("taskInstanceIdProcessor")
 						// ...goto first node after the event node...
@@ -954,10 +976,13 @@ public class ProcessDeployer {
 								String.format("RECEIVE NODE '%s'", definition
 										.getNode(parentNodeId).getNodeName()),
 								String.format(
-										"sending message to 'seda:node-%s'.   process name --> '%s' | process version --> '%s' | instanceId --> ${header.%s}",
+										"sending message to 'activemq:queue:node-%s.%s.%s.%s'.   node name --> '%s' | node id --> '%s' | instanceId --> ${header.%s}",
+										account,
+										process,
+										version,
+										nodename,
+										nodename, // is this correct?
 										nodeId,
-										definition.getProcessName(),
-										definition.getProcessVersion(),
 										MessageConstants.INSTANCE_ID))
 						.toF(NEXT, account, process, version, nodename);
 
@@ -986,6 +1011,7 @@ public class ProcessDeployer {
 							.to("seda://destroy")
 						.end()
 						.setHeader(MessageConstants.TASK_ID, constant(nodeId))
+						.setHeader(MessageConstants.TASK_NAME, constant(nodename))
 						// ...put it into the cache...
 						.to("direct:working")
 						//destroy state from previous node

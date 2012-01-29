@@ -15,6 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.catify.core.constants.PipelineConstants;
+import com.catify.core.constants.ProcessConstants;
 import com.catify.core.process.ProcessHelper;
 import com.catify.core.process.nodes.Node;
 import com.catify.core.process.xml.model.PipelineExceptionEvent;
@@ -280,5 +281,105 @@ public class ProcessDefinition implements Serializable {
 
 	public void setStartNodeId(String startNodeId) {
 		this.startNodeId = startNodeId;
+	}
+	
+	@Override
+	public String toString() {
+		
+		StringBuilder builder = new StringBuilder();
+		
+		builder.append("-----------------------------------------------------\n");
+		builder.append(String.format("list of nodes for process %s (%s)\n", this.getProcessName(), this.getProcessVersion()));
+		builder.append("-----------------------------------------------------\n\n");
+		
+		Iterator<String> it = this.getNodes().keySet().iterator();
+		
+		while (it.hasNext()) {
+			String id = (String) it.next();
+			
+			Node node = this.getNode(id);
+			
+			builder.append(String.format("id --> %s \t type --> %s (%s) \t name --> %s  \n", id, this.mapNodeType(node.getNodeType()), node.getNodeType(), node.getNodeName()));
+			
+			List<String> transitionsToNode = this.getTransitionsToNode(id);
+			if(transitionsToNode != null) {
+				builder.append("\tincoming transitions:\n");
+				Iterator<String> transitionsToNodeIt = transitionsToNode.iterator();
+				while (transitionsToNodeIt.hasNext()) {
+					String itnid = (String) transitionsToNodeIt.next();
+					Node itnode = this.getNode(itnid);
+					builder.append(String.format("\t id --> %s \t type --> %s (%s) \t name --> %s  \n", itnid, this.mapNodeType(itnode.getNodeType()), itnode.getNodeType(), itnode.getNodeName()));	
+				}
+				builder.append("\n");
+			}
+			
+			
+			
+			List<String> transitionsFromNode = this.getTransitionsFromNode(id);			
+			if(transitionsFromNode != null) {
+				builder.append("\toutgoing transitions:\n");
+				Iterator<String> transitionsFromNodeIt = transitionsFromNode.iterator();
+				while (transitionsFromNodeIt.hasNext()) {
+					String otnid = (String) transitionsFromNodeIt.next();
+					Node otnode = this.getNode(otnid);
+					builder.append(String.format("\t id --> %s \t type --> %s (%s) \t name --> %s  \n", otnid, this.mapNodeType( otnode.getNodeType()), otnode.getNodeType(), otnode.getNodeName()));
+				}
+				builder.append("\n");
+			}
+			
+			builder.append("---------\n\n");
+			
+		}
+		
+		return builder.toString();
+	}
+	
+	/**
+	 * maps the node type number to a type name
+	 * 
+	 * @param type
+	 * @return
+	 */
+	public String mapNodeType(int type) {
+		
+		switch (type) {
+		case ProcessConstants.START:
+			return "start";
+			
+		case ProcessConstants.REQUEST:
+			return "request";
+		
+		case ProcessConstants.RECEIVE:
+			return "receive";
+		
+		case ProcessConstants.REPLY:
+			return "reply";
+		
+		case ProcessConstants.FORK:
+			return "fork";
+			
+		case ProcessConstants.DECISION:
+			return "decision";
+			
+		case ProcessConstants.LINE:
+			return "line";
+			
+		case ProcessConstants.LINEEND:
+			return "lineend";
+			
+		case ProcessConstants.SLEEP:
+			return "sleep";
+			
+		case ProcessConstants.TIMEREVENT:
+			return "timer event";
+			
+		case ProcessConstants.EXCEPTIONEVENT:
+			return "exception event";
+			
+		case ProcessConstants.END:
+			return "end";
+		
+		}
+		return "no nodetype found";
 	}
 }
