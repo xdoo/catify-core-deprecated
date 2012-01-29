@@ -6,7 +6,7 @@ import com.catify.core.process.nodes.Node;
 public class EndNode extends Node {
 
 	public EndNode(String processId, String taskName) {
-		super(processId, taskName);
+		super(processId, taskName, "end");
 	}
 	
 	private static final long serialVersionUID = 5692221297300800629L;

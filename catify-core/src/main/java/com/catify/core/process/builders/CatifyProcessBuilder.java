@@ -20,7 +20,7 @@ public class CatifyProcessBuilder extends MainProcessBuilder {
 	}
 	
 	public MainProcessBuilder start(String accountName, String processName, String processVersion){
-		return this.start(accountName, processName, processVersion, this.createNodeName());
+		return this.start(accountName, processName, processVersion, this.createNodeName("start"));
 	}
 	
 }

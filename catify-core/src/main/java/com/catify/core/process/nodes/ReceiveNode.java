@@ -5,13 +5,13 @@ import com.catify.core.constants.ProcessConstants;
 public class ReceiveNode extends Node{
 	
 	public ReceiveNode(String processId, String nodeName, long timeout) {
-		super(processId, nodeName);
+		super(processId, nodeName, "receive");
 		
 		this.timeout = timeout;
 	}
 	
 	public ReceiveNode(String processId, String nodeName) {
-		super(processId, nodeName);
+		super(processId, nodeName, "receive");
 		
 	}
 

@@ -5,7 +5,7 @@ import com.catify.core.constants.ProcessConstants;
 public class SleepNode extends Node {
 
 	public SleepNode(String processId, String nodeName, long time) {
-		super(processId, nodeName);
+		super(processId, nodeName, "sleep");
 		
 		this.time = time;
 	}

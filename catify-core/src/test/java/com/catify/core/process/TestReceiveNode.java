@@ -108,7 +108,7 @@ public class TestReceiveNode extends SpringTestBase {
 		//send message 
 		template.sendBody("seda:init_process", super.getXml());
 		
-		assertMockEndpointsSatisfied(100, TimeUnit.SECONDS);
+		assertMockEndpointsSatisfied(15, TimeUnit.SECONDS);
 		
 	}
 	

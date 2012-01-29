@@ -350,6 +350,7 @@ public class ProcessDeployer {
 				// been fired.
 				fromF(NEXT, account, process
 						, version, nodename)
+						.transacted()
 						.routeId(String.format("node-%s", nodeId))
 						.onCompletion()
 							.to("direct://waiting")
@@ -373,8 +374,9 @@ public class ProcessDeployer {
 						.processRef("taskInstanceIdProcessor")
 						// set timer
 						.setHeader(EventConstants.EVENT_TIME, constant(time))
-						.to("direct:set-timer-event");
-
+						.to("log:SETTIMEREVENT?showAll=true")
+						.to("activemq:queue:set-timer-event");
+				
 				// ----------------------------------------
 				// second part
 				// ----------------------------------------
@@ -409,7 +411,6 @@ public class ProcessDeployer {
 										definition.getProcessVersion(),
 										MessageConstants.INSTANCE_ID))
 						.toF(NEXT, account, process, version, definition.getNode(definition.getTransitionsFromNode(nodeId).get(0)).getNodeName() );
-
 			}
 		};
 	}
@@ -898,7 +899,7 @@ public class ProcessDeployer {
 						// set timer
 						.setHeader(EventConstants.EVENT_TIME,
 								constant(node.getTimeout()))
-						.to("direct:set-timer-event")
+						.to("activemq:queue:set-timer-event")
 						// set header for router
 						.setHeader(ReceiveRouter.WAIT, constant("wait"));
 
@@ -931,6 +932,7 @@ public class ProcessDeployer {
 						.onCompletion()
 							.to("direct://done")
 						.end()
+						.to("log:EVENT-FROM-NODE?showAll=true")
 						.to("direct://working")
 						//destroy state from previous node
 						.setHeader(HazelcastConstants.OBJECT_ID, simple(String.format("${header.%s}-%s", MessageConstants.INSTANCE_ID, previousTaskId)))

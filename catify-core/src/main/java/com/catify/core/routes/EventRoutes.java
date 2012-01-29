@@ -18,8 +18,10 @@ public class EventRoutes extends RouteBuilder {
 		
 		//set timer event
 		//-----
-		from("direct:set-timer-event")
+		from("activemq:queue:set-timer-event")
+		.transacted()
 		.routeId("set-timer-event")
+		.to("log:SETTIMEREVENT2?showAll=true")
 		.beanRef("timerEventService", "register");
 		
 		//delete timer event
@@ -38,7 +40,7 @@ public class EventRoutes extends RouteBuilder {
 		
 		//create event message
 		//-----
-		from("seda:create-timer-event-message?concurrentConsumers=5")
+		from("seda:create-timer-event-message")
 		.routeId("create-timer-event-message")
 		.setHeader(MessageConstants.INSTANCE_ID, simple("${body[0]}"))
 		.setHeader(MessageConstants.TASK_ID, simple("event_${body[1]}"))

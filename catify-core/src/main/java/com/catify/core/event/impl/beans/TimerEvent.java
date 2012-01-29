@@ -94,4 +94,9 @@ public class TimerEvent implements Serializable {
 		this.nodename = nodename;
 	}
 	
+	@Override
+	public String toString(){
+		return String.format("TimerEvent (%s): account --> %s | process --> %s | version --> %s | nodename --> %s | instanceid --> %s | nodeid --> %s | time --> %s", 
+				id, account, process, version, nodename, instanceId, taskId, time);
+	}
 }

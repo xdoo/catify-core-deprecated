@@ -66,7 +66,7 @@ public class MainProcessBuilder extends BaseProcessBuilder {
 	 * @return
 	 */
 	public MainProcessBuilder end(){
-		return this.end(this.createNodeName());
+		return this.end(this.createNodeName("end"));
 	}
 	
 	/**
@@ -138,7 +138,7 @@ public class MainProcessBuilder extends BaseProcessBuilder {
 	public MainProcessBuilder endline(){
 		
 		//create node
-		currentNode = processDefinition.addNodeFrom(new LineEndNode(processId, this.addToNodeNames(this.createNodeName())), this.currentNode);
+		currentNode = processDefinition.addNodeFrom(new LineEndNode(processId, this.addToNodeNames(this.createNodeName("lineend"))), this.currentNode);
 		
 		//set current node to line end
 		this.processBuilder.setCurrentNode(currentNode);
@@ -156,7 +156,7 @@ public class MainProcessBuilder extends BaseProcessBuilder {
 	}
 	
 	public MainProcessBuilder sleep(long time){
-		return this.sleep(this.createNodeName(), time);
+		return this.sleep(this.createNodeName("sleep"), time);
 	}
 	
 	

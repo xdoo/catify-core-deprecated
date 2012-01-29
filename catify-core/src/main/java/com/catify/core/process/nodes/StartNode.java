@@ -7,7 +7,7 @@ public class StartNode extends Node {
 
 
 	public StartNode(String processId, String nodeName) {
-		super(processId, nodeName);
+		super(processId, nodeName, "start");
 	}
 
 	private static final long serialVersionUID = -1231792093855525644L;

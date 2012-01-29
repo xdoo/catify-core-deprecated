@@ -10,11 +10,11 @@ public class MergeNode extends Node {
 	private int awaitedHits = -1;
 
 	public MergeNode(String processId, String nodeName) {
-		super(processId, nodeName);
+		super(processId, nodeName, "merge");
 	}
 	
 	public MergeNode(String processId, String nodeName, int awaitedHits) {
-		super(processId, nodeName);
+		super(processId, nodeName, "merge");
 		this.awaitedHits = awaitedHits;
 	}
 
