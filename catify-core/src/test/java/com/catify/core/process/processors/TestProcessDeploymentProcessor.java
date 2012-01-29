@@ -97,7 +97,7 @@ public class TestProcessDeploymentProcessor extends CamelSpringTestSupport {
 		//send message
 		template.sendBody("direct:send", "foo");
 		
-		Exchange ex = consumer.receive("hazelcast:seda:out_316e7035b7b2a5e5a3d0095cd4136902", 10000);
+		Exchange ex = consumer.receive("activemq:queue:out.tester.process03.1.0.bam_step_01", 10000);
 		
 		assertNotNull(ex);
 		
@@ -128,7 +128,7 @@ public class TestProcessDeploymentProcessor extends CamelSpringTestSupport {
 				.setHeader(MessageConstants.PROCESS_VERSION, constant("1.0"))
 				.process(new ProcessIdProcessor())
 				.log(LoggingLevel.INFO, "sending message to 'hazelcast:seda:in_260f210446b2d99f24c2e748ebbead61'")
-				.to("hazelcast:seda:in_260f210446b2d99f24c2e748ebbead61");
+				.to("activemq:queue:in.tester.process03.1.0.start");
 				
 				
 			}
