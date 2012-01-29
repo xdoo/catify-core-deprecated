@@ -47,7 +47,7 @@
 	</repositories>
 
 	<dependencies>
-	
+		<!-- active mq -->
 		<dependency>
 			<groupId>org.apache.activemq</groupId>
 			<artifactId>activemq-core</artifactId>
@@ -59,16 +59,23 @@
 			<version>5.5.0</version>
 		</dependency>
 		<dependency>
+			<groupId>org.apache.xbean</groupId>
+			<artifactId>xbean-spring</artifactId>
+			<version>3.5</version>
+		</dependency>
+
+		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
 			<version>1.6.4</version>
 		</dependency>
-	
+
 		<dependency>
 			<groupId>org.apache.camel</groupId>
 			<artifactId>camel-jpa</artifactId>
 			<version>${apache-camel-version}</version>
 		</dependency>
+
 
 		<dependency>
 			<groupId>org.apache.camel</groupId>
@@ -158,8 +165,8 @@
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
-	
-		<build>
+
+	<build>
 		<defaultGoal>install</defaultGoal>
 		<plugins>
 			<plugin>
@@ -354,5 +361,5 @@
 			</plugins>
 		</pluginManagement>
 	</build>
-	
+
 </project>

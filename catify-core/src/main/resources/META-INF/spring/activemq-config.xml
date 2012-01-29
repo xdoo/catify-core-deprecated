@@ -15,17 +15,25 @@
     limitations under the License.
 -->
 <!-- START SNIPPET: example -->
-<beans
-  xmlns="http://www.springframework.org/schema/beans"
-  xmlns:amq="http://activemq.apache.org/schema/core"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
-  http://activemq.apache.org/schema/core http://activemq.apache.org/schema/core/activemq-core.xsd">
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:amq="http://activemq.apache.org/schema/core"
+       xsi:schemaLocation="
+       http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd
+       http://activemq.apache.org/schema/core http://activemq.apache.org/schema/core/activemq-core.xsd">
+
+    <!-- Allows us to use system properties as variables in this configuration file -->
+	<!-- 	<bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <property name="locations">
+            <value>file://credentials.properties</value>
+        </property>      
+    </bean> -->
 
     <!-- 
         The <broker> element is used to configure the ActiveMQ broker. 
     -->
-    <broker xmlns="http://activemq.apache.org/schema/core" brokerName="internal" dataDirectory="/data" destroyApplicationContextOnStop="true">
+    <broker xmlns="http://activemq.apache.org/schema/core" brokerName="internal" dataDirectory="activemq/data" destroyApplicationContextOnStop="true">
  
         <!--
 			For better performances use VM cursor and small memory limit.
@@ -81,7 +89,7 @@
             http://activemq.apache.org/persistence.html 
         -->
         <persistenceAdapter>
-            <kahaDB directory="/data/kahadb"/>
+            <kahaDB directory="activemq/data/kahadb"/>
         </persistenceAdapter>
         
         
@@ -98,10 +106,10 @@
                     <memoryUsage limit="20 mb"/>
                 </memoryUsage>
                 <storeUsage>
-                    <storeUsage limit="1 gb"/>
+                    <storeUsage limit="20 gb"/>
                 </storeUsage>
                 <tempUsage>
-                    <tempUsage limit="100 mb"/>
+                    <tempUsage limit="10 gb"/>
                 </tempUsage>
             </systemUsage>
         </systemUsage>
@@ -113,8 +121,8 @@
             http://activemq.apache.org/configuring-transports.html 
         -->
         <transportConnectors>
-            <transportConnector name="openwire" uri="tcp://0.0.0.0:61616"/>
-            <transportConnector name="openwire" uri="vm://0.0.0.0:61616"/>
+            <transportConnector name="openwire_tcp" uri="tcp://0.0.0.0:61616"/>
+            <transportConnector name="openwire_vm" uri="vm://0.0.0.0:61616"/>
         </transportConnectors>
 
     </broker>
@@ -124,7 +132,7 @@
         
         Take a look at ${ACTIVEMQ_HOME}/conf/jetty.xml for more details 
     -->
-    <!-- <import resource="jetty.xml"/> -->
+   <!--  <import resource="jetty.xml"/> -->
     
 </beans>
 <!-- END SNIPPET: example -->

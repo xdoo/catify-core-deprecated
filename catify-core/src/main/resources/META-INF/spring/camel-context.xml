@@ -1,56 +1,55 @@
 <?xml version="1.0" encoding="UTF-8"?>
-	<!--
-		Licensed to the Apache Software Foundation (ASF) under one or more
-		contributor license agreements. See the NOTICE file distributed with
-		this work for additional information regarding copyright ownership.
-		The ASF licenses this file to You under the Apache License, Version
-		2.0 (the "License"); you may not use this file except in compliance
-		with the License. You may obtain a copy of the License at
+<!-- Licensed to the Apache Software Foundation (ASF) under one or more contributor 
+	license agreements. See the NOTICE file distributed with this work for additional 
+	information regarding copyright ownership. The ASF licenses this file to 
+	You under the Apache License, Version 2.0 (the "License"); you may not use 
+	this file except in compliance with the License. You may obtain a copy of 
+	the License at http://www.apache.org/licenses/LICENSE-2.0 Unless required 
+	by applicable law or agreed to in writing, software distributed under the 
+	License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS 
+	OF ANY KIND, either express or implied. See the License for the specific 
+	language governing permissions and limitations under the License. -->
 
-		http://www.apache.org/licenses/LICENSE-2.0 Unless required by
-		applicable law or agreed to in writing, software distributed under the
-		License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
-		CONDITIONS OF ANY KIND, either express or implied. See the License for
-		the specific language governing permissions and limitations under the
-		License.
-	-->
-
-	<!-- Configures the Camel Context-->
+<!-- Configures the Camel Context -->
 
 <beans xmlns="http://www.springframework.org/schema/beans"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:amq="http://activemq.apache.org/schema/core"
 	xmlns:camel="http://camel.apache.org/schema/spring"
 	xsi:schemaLocation="
        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
-       http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd">
-       
-    <!--  <import resource="activemq-config.xml"/> -->
-    
-    <!-- ActiveMQ -->
-    <bean id="activemq" class="org.apache.activemq.camel.component.ActiveMQComponent">
-		<property name="transacted" value="true"/>
-		<property name="transactionManager" ref="txManager"/>
+       http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd
+       http://activemq.apache.org/schema/core http://activemq.apache.org/schema/core/activemq-core.xsd">
+
+	<!-- This creates an embedded ActiveMQ Broker -->
+	<import resource="activemq-config.xml" />
+
+	<!-- Lets connect the Camel ActiveMQ component to the embedded broker. See 
+		http://camel.apache.org/activemq.html for more information. -->
+	<bean id="activemq" class="org.apache.activemq.camel.component.ActiveMQComponent">
+		<property name="brokerURL" value="failover:vm://internal:61616" />
 	</bean>
-    <bean id="txManager" class="org.springframework.jms.connection.JmsTransactionManager">
-    	<property name="connectionFactory" ref="jmsConnectionFactory"/>
+
+	<bean id="txManager"
+		class="org.springframework.jms.connection.JmsTransactionManager">
+		<property name="connectionFactory" ref="jmsConnectionFactory" />
 	</bean>
-    <bean id="jmsConnectionFactory" class="org.apache.activemq.ActiveMQConnectionFactory">
-		<property name="brokerURL" value="tcp://localhost:61616"/>
+	<bean id="jmsConnectionFactory" class="org.apache.activemq.ActiveMQConnectionFactory">
+		<property name="brokerURL" value="vm://internal:61616" />
 	</bean>
 
 	<!-- catify -->
 	<bean id="xmlPipelineBuilder" class="com.catify.core.process.xml.XmlPipelineBuilder">
-		<constructor-arg name="config" ref="globalConfiguration"/>
-		<constructor-arg name="correlationRuleBuilder" ref="correlationRuleBuilder"/>
+		<constructor-arg name="config" ref="globalConfiguration" />
+		<constructor-arg name="correlationRuleBuilder" ref="correlationRuleBuilder" />
 	</bean>
 	<bean id="xmlProcessBuilder" class="com.catify.core.process.xml.XmlProcessBuilder">
-		<constructor-arg name="pipelineBuilder" ref="xmlPipelineBuilder"/>
+		<constructor-arg name="pipelineBuilder" ref="xmlPipelineBuilder" />
 	</bean>
-	<bean id="correlationRuleBuilder" class="com.catify.core.process.xml.CorrelationRuleBuilder"/>
+	<bean id="correlationRuleBuilder" class="com.catify.core.process.xml.CorrelationRuleBuilder" />
 
 
 	<!-- configuration -->
-	<bean id="globalConfiguration" class="com.catify.core.configuration.GlobalConfiguration"/>
+	<bean id="globalConfiguration" class="com.catify.core.configuration.GlobalConfiguration" />
 
 	<!-- camel -->
 	<camel:camelContext id="camelContext" trace="false">
@@ -69,25 +68,25 @@
 	<bean id="eventRoutes" class="com.catify.core.routes.EventRoutes" />
 	<bean id="configurationRoutes" class="com.catify.core.routes.ConfigurationRoutes" />
 	<bean id="startupRoutes" class="com.catify.core.routes.StartupRoutes" />
-	<bean id="jpaPersistenceRoutes" class="com.catify.persistence.routes.JpaPersistenceRoutes" />	
+	<bean id="jpaPersistenceRoutes" class="com.catify.persistence.routes.JpaPersistenceRoutes" />
 	<bean id="monitoringRoutes" class="com.catify.core.routes.MonitoringRoutes" />
 
 	<!-- processors -->
-	<bean id="serializeableHeadersProcessor" class="com.catify.core.process.processors.SerializableHeadersProcessor"/>
-	<bean id="initProcessProcessor" class="com.catify.core.process.processors.InitProcessProcessor"/>
-	<bean id="pipelineDeploymentProcessor" class="com.catify.core.process.processors.PipelineDeploymentProcessor"/>
-	<bean id="processDeploymentProcessor" class="com.catify.core.process.processors.ProcessDeploymentProcessor"/>
-	<bean id="processIdProcessor" class="com.catify.core.process.processors.ProcessIdProcessor"/>
-	<bean id="taskIdProcessor" class="com.catify.core.process.processors.TaskIdProcessor"/>
+	<bean id="serializeableHeadersProcessor" class="com.catify.core.process.processors.SerializableHeadersProcessor" />
+	<bean id="initProcessProcessor" class="com.catify.core.process.processors.InitProcessProcessor" />
+	<bean id="pipelineDeploymentProcessor" class="com.catify.core.process.processors.PipelineDeploymentProcessor" />
+	<bean id="processDeploymentProcessor" class="com.catify.core.process.processors.ProcessDeploymentProcessor" />
+	<bean id="processIdProcessor" class="com.catify.core.process.processors.ProcessIdProcessor" />
+	<bean id="taskIdProcessor" class="com.catify.core.process.processors.TaskIdProcessor" />
 	<bean id="processRegistrationProcessor" class="com.catify.core.process.processors.ProcessRegistrationProcessor">
-		<constructor-arg name="processBuilder" ref="xmlProcessBuilder"/>
+		<constructor-arg name="processBuilder" ref="xmlProcessBuilder" />
 	</bean>
-	<bean id="taskInstanceIdProcessor" class="com.catify.core.process.processors.TaskInstanceIdProcessor"/>
-	<bean id="transformDecisionPayloadProcessor" class="com.catify.core.process.processors.TransformDecisionPayloadProcessor"/>
-	<bean id="writeCorrelationProcessor" class="com.catify.core.process.processors.WriteCorrelationProcessor"/>
-	<bean id="readCorrelationProcessor" class="com.catify.core.process.processors.ReadCorrelationProcessor"/>
-	<bean id="xpathProcessor" class="com.catify.core.process.processors.XPathProcessor"/>
-	
+	<bean id="taskInstanceIdProcessor" class="com.catify.core.process.processors.TaskInstanceIdProcessor" />
+	<bean id="transformDecisionPayloadProcessor" class="com.catify.core.process.processors.TransformDecisionPayloadProcessor" />
+	<bean id="writeCorrelationProcessor" class="com.catify.core.process.processors.WriteCorrelationProcessor" />
+	<bean id="readCorrelationProcessor" class="com.catify.core.process.processors.ReadCorrelationProcessor" />
+	<bean id="xpathProcessor" class="com.catify.core.process.processors.XPathProcessor" />
+
 	<!-- routers -->
 	<!-- <bean id="decisionRouter" class="com.catify.core.process.routers.impl.ReceiveRouter"/> -->
 
@@ -99,19 +98,19 @@
 	<bean id="transformerFactory" class="org.apache.xalan.xsltc.trax.TransformerFactoryImpl" />
 
 	<!-- properties -->
-	<bean id="propertyPlaceholder"
-		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
-		<!-- <property name="location" value="classpath:network.properties" /> -->
-	</bean>
-	
+	<!-- 	<bean id="propertyPlaceholder" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="location" value="classpath:network.properties" />
+	</bean> -->
+
 	<!-- persistence beans -->
-	<bean id="jpaNodeCacheStore" class="com.catify.persistence.cache.JpaNodeCacheStore"/>
-	<bean id="jpaPayloadCacheStore" class="com.catify.persistence.cache.JpaPayloadCacheStore"/>
-	<bean id="jpaCorrelationCacheStore" class="com.catify.persistence.cache.JpaCorrelationCacheStore"/>
-	<bean id="jpaCorrelationRuleCacheStore" class="com.catify.persistence.cache.JpaCorrelationRuleCacheStore"/>
-	<bean id="jpaTimerCacheStore" class="com.catify.persistence.cache.JpaTimerCacheStore"/>
+	<bean id="jpaNodeCacheStore" class="com.catify.persistence.cache.JpaNodeCacheStore" />
+	<bean id="jpaPayloadCacheStore" class="com.catify.persistence.cache.JpaPayloadCacheStore" />
+	<bean id="jpaCorrelationCacheStore" class="com.catify.persistence.cache.JpaCorrelationCacheStore" />
+	<bean id="jpaCorrelationRuleCacheStore"
+		class="com.catify.persistence.cache.JpaCorrelationRuleCacheStore" />
+	<bean id="jpaTimerCacheStore" class="com.catify.persistence.cache.JpaTimerCacheStore" />
 
 	<!-- monitor beans -->
-	<bean id="hazelcastMonitor" class="com.catify.core.monitor.HazelcastMonitor"/>
+	<bean id="hazelcastMonitor" class="com.catify.core.monitor.HazelcastMonitor" />
 
 </beans>
