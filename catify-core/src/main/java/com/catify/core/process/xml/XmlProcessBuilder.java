@@ -246,7 +246,7 @@ public class XmlProcessBuilder {
 		//build pipeline if available
 		OutPipeline pipeline = node.getOutPipeline();
 		if(pipeline != null){
-			definition.addOutPipeline(this.pipelineBuilder.buildOutPipeline(pipeline, node.getId()));
+			definition.addOutPipeline(this.pipelineBuilder.buildOutPipeline(pipeline, node.getId(), definition));
 		}
 		
 		return node.getId();

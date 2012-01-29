@@ -3,6 +3,8 @@ package com.catify.core.process.nodes;
 import java.io.Serializable;
 import java.util.UUID;
 
+import org.apache.commons.codec.digest.DigestUtils;
+
 import com.catify.core.process.ProcessHelper;
 
 public abstract class Node implements Serializable {
@@ -11,7 +13,7 @@ public abstract class Node implements Serializable {
 	protected String nodeId;
 	protected String nodeName;
 
-	public Node(String processId, String nodeName){
+	public Node(String processId, String nodeName, String type){
 		
 		//generate a unique identifier for the task
 		this.nodeId = ProcessHelper.createTaskId(processId, nodeName);
@@ -20,7 +22,9 @@ public abstract class Node implements Serializable {
 		if(nodeName == null) {
 			
 			//if no node name has been set, simply generate one...
-			this.nodeName = UUID.randomUUID().toString();
+			this.nodeName = String.format("%s.%s", type, DigestUtils.md5Hex(UUID.randomUUID().toString()));
+			
+			System.out.println("nodename --> " + this.getNodeName());
 		} else {
 			
 			//...otherwise use the one that has been set.

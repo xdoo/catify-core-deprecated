@@ -19,6 +19,7 @@ package com.catify.core.process.xml;
 import java.util.Iterator;
 
 import org.apache.camel.component.hazelcast.HazelcastConstants;
+import org.restlet.engine.http.connector.Acceptor;
 
 import com.catify.core.configuration.GlobalConfiguration;
 import com.catify.core.constants.CacheConstants;
@@ -59,6 +60,11 @@ public class XmlPipelineBuilder {
 		StringBuilder builder = new StringBuilder();
 		this.additionalRoutes = new StringBuilder();
 		
+		final String account = definition.getAccountName();
+		final String process = definition.getProcessName();
+		final String version = definition.getProcessVersion();
+		final String nodename = definition.getNode(definition.getStartNodeId()).getNodeName();
+		
 		//open xml route
 		openRoutes(builder);
 		
@@ -73,7 +79,7 @@ public class XmlPipelineBuilder {
 		appendFromEndpoint(builder, endpoint, definition.getProcessId(), definition);
 			
 		//set headers
-		this.appendHeaders(builder, definition);
+		this.appendHeaders(builder, definition, definition.getStartNodeId());
 					
 			
 		//generate instance id
@@ -94,7 +100,7 @@ public class XmlPipelineBuilder {
 		this.appendSavePayload(builder, definition.getProcessId(), in.getVariables());
 			
 		//send message to queue
-		this.appendToQueue(builder, definition.getProcessId()); // process & node id are equal in case of a start node
+		this.appendToQueue(builder, definition.getProcessId(), account, process, version, nodename); // process & node id are equal in case of a start node
 			
 		this.appendMulticastEnd(builder);
 			
@@ -107,7 +113,7 @@ public class XmlPipelineBuilder {
 		closeRoutes(builder);
 		
 		//FIXME
-//		System.out.println(builder.toString());
+		System.out.println(builder.toString());
 		
 		return builder.toString();
 	}
@@ -126,6 +132,11 @@ public class XmlPipelineBuilder {
 		StringBuilder builder = new StringBuilder();
 		this.additionalRoutes = new StringBuilder();
 		
+		final String account = definition.getAccountName();
+		final String process = definition.getProcessName();
+		final String version = definition.getProcessVersion();
+		final String nodename = definition.getNode(nodeId).getNodeName();
+		
 		// open xml route
 		openRoutes(builder);
 		
@@ -142,7 +153,7 @@ public class XmlPipelineBuilder {
 		this.appendConstantHeader(builder, ReadCorrelationProcessor.CORRELATION_EXCEPTION_HEADER, "");
 			
 		// set headers to identify the process
-		this.appendHeaders(builder, definition);
+		this.appendHeaders(builder, definition, nodeId);
 		
 		// add task id to the message header
 		this.appendConstantHeader(builder, MessageConstants.TASK_ID, nodeId);
@@ -164,9 +175,9 @@ public class XmlPipelineBuilder {
 				// we have to deploy the error handler separate
 				// (this is a camel issue)
 				if(in.getPipelineExceptionEvent() != null){	
-					this.appendGetCorrelationRouteWithExceptionHandler(this.additionalRoutes, nodeId, in.getPipelineExceptionEvent());
+					this.appendGetCorrelationRouteWithExceptionHandler(this.additionalRoutes, nodeId, account, process, version, nodename, in.getPipelineExceptionEvent());
 					// append error handler route
-					this.appendPipelineExceptionRoute(this.additionalRoutes, nodeId, in.getPipelineExceptionEvent());
+					this.appendPipelineExceptionRoute(this.additionalRoutes, nodeId, account, process, version, nodename, in.getPipelineExceptionEvent());
 				} else {
 					this.appendGetCorrelationRoute(this.additionalRoutes, nodeId);
 				}
@@ -184,7 +195,7 @@ public class XmlPipelineBuilder {
 		this.appendSavePayload(builder, nodeId, in.getVariables());
 			
 		//send message to queue
-		this.appendToQueue(builder, nodeId);
+		this.appendToQueue(builder, nodeId, account, process, version, nodename);
 			
 		//end route
 		this.appendEndRoute(builder);
@@ -195,12 +206,12 @@ public class XmlPipelineBuilder {
 		this.closeRoutes(builder);
 		
 		//FIXME
-//		System.out.println(builder.toString());
+		System.out.println(builder.toString());
 		
 		return builder.toString();
 	}
 
-	public String buildOutPipeline(OutPipeline out, String nodeId){
+	public String buildOutPipeline(OutPipeline out, String nodeId, ProcessDefinition definition){
 		
 		//++++++++++++++++++++++++++++
 		// TODO --> correlation
@@ -210,13 +221,18 @@ public class XmlPipelineBuilder {
 		StringBuilder builder = new StringBuilder();
 		this.additionalRoutes = new StringBuilder();
 		
+		final String account = definition.getAccountName();
+		final String process = definition.getProcessName();
+		final String version = definition.getProcessVersion();
+		final String nodename = definition.getNode(nodeId).getNodeName();
+		
 		//open xml route
 		openRoutes(builder);
 		
 		builder.append(String.format("\t<route id=\"out-pipeline-%s\">\n", nodeId));
 		
 		//get message from queue
-		this.appendGetMessageFromQueue(builder, nodeId);
+		this.appendGetMessageFromQueue(builder, account, process, version, nodename);
 		
 		//get payload from cache
 		if(out.getVariables() != null){
@@ -272,11 +288,12 @@ public class XmlPipelineBuilder {
 	 * @param builder
 	 * @param definition
 	 */
-	private void appendHeaders(StringBuilder builder, ProcessDefinition definition){
+	private void appendHeaders(StringBuilder builder, ProcessDefinition definition, String nodeId){
 		appendConstantHeader(builder, MessageConstants.ACCOUNT_NAME, definition.getAccountName());
 		appendConstantHeader(builder, MessageConstants.PROCESS_NAME, definition.getProcessName());
 		appendConstantHeader(builder, MessageConstants.PROCESS_VERSION, definition.getProcessVersion());
 		appendConstantHeader(builder, MessageConstants.PROCESS_ID, definition.getProcessId());
+		appendConstantHeader(builder, MessageConstants.TASK_NAME, definition.getNode(nodeId).getNodeName());
 	}
 	
 	private void appendMarshaler(StringBuilder builder, String type){
@@ -358,7 +375,7 @@ public class XmlPipelineBuilder {
 	 * @param nodeId
 	 */
 	private void appendGetCorrelationRoute(StringBuilder builder, String nodeId){		
-		
+
 		builder.append(String.format("\t<route id=\"get-correlation-%s\">\n", nodeId, nodeId));
 		builder.append(String.format("\t\t<from uri=\"direct:get-correlation-%s\"/>\n", nodeId));
 		
@@ -369,7 +386,7 @@ public class XmlPipelineBuilder {
 		this.appendEndRoute(builder);
 	}
 	
-	private void appendGetCorrelationRouteWithExceptionHandler(StringBuilder builder, String nodeId, PipelineExceptionEvent pipelineExceptionEvent) {
+	private void appendGetCorrelationRouteWithExceptionHandler(StringBuilder builder, String nodeId, String account, String process, String version, String nodename, PipelineExceptionEvent pipelineExceptionEvent) {
 		builder.append(String.format("\t<route id=\"get-correlation-%s\">\n", nodeId, nodeId));
 		builder.append(String.format("\t\t<from uri=\"direct:get-correlation-%s\"/>\n", nodeId));
 		
@@ -380,7 +397,7 @@ public class XmlPipelineBuilder {
 		// create exception handling
 		builder.append("\t\t<filter>\n");
 		builder.append(String.format("\t\t\t<xpath>$%s = 'yes'</xpath>\n", ReadCorrelationProcessor.CORRELATION_EXCEPTION_HEADER));
-		builder.append(String.format("\t\t\t<to uri=\"seda:pipeline-exception-%s\"/>\n", nodeId));
+		builder.append(String.format("\t\t\t<to uri=\"activemq:queue:pipeline.exception.%s.%s.%s.%s\"/>\n", account, process, version, nodename));
 		builder.append("\t\t</filter>\n");
 		
 		this.appendEndRoute(builder);
@@ -404,9 +421,10 @@ public class XmlPipelineBuilder {
 	 * @param nodeId
 	 * @param ex
 	 */
-	private void appendPipelineExceptionRoute(StringBuilder builder, String nodeId, PipelineExceptionEvent ex) {
+	private void appendPipelineExceptionRoute(StringBuilder builder, String nodeId, String account, String process, String version, String nodename, PipelineExceptionEvent ex) {
 		builder.append(String.format("\t<route id=\"pipeline-exception-%s\">\n", nodeId));
-		builder.append(String.format("\t\t<from uri=\"seda:pipeline-exception-%s\"/>\n", nodeId));
+		builder.append(String.format("\t\t<from uri=\"activemq:queue:pipeline.exception.%s.%s.%s.%s\"/>\n", account, process, version, nodename));
+		builder.append("<transacted/>");
 		// TODO --> delete
 		builder.append("\t\t<to uri=\"log:EXCEPTION?showAll=true\"/>\n");
 		this.appendSimpleBody(builder, String.format("${header.%s}", MessageConstants.TMP_PAYLOAD));
@@ -551,11 +569,11 @@ public class XmlPipelineBuilder {
 	 * @param builder
 	 * @param nodeId
 	 */
-	private void appendToQueue(StringBuilder builder, String nodeId){
+	private void appendToQueue(StringBuilder builder, String nodeId, String account, String process, String version, String nodename){
 		builder.append(String.format("\t\t<to uri=\"direct:send-to-queue-%s\"/>\n", nodeId));
 		
 		//create route
-		appendToQueueRoute(this.additionalRoutes, nodeId);
+		appendToQueueRoute(this.additionalRoutes, nodeId, account, process, version, nodename);
 	}
 	
 	/**
@@ -568,14 +586,14 @@ public class XmlPipelineBuilder {
 	 *     &lt;constant>&lt;/constant>
 	 *   &lt;/setBody>
 	 *   &lt;process ref="serializeableHeadersProcessor"/>
-	 *   &lt;inOnly uri="hazelcast:seda:in_{NODE_ID}?transferExchange=true"/>
+	 *   &lt;inOnly uri="activemq:queue:in.{ACCOUNT}.{PROCESS}.{VERSION}.{NODENAME}"/>
 	 * &lt;/route>
 	 * </pre>
 	 * 
 	 * @param builder
 	 * @param nodeId
 	 */
-	private void appendToQueueRoute(StringBuilder builder, String nodeId){
+	private void appendToQueueRoute(StringBuilder builder, String nodeId, String account, String process, String version, String nodename){
 		builder.append(String.format("\t<route id=\"send-to-queue-%s\">\n", nodeId));
 		builder.append(String.format("\t\t<from uri=\"direct:send-to-queue-%s\"/>\n", nodeId));
 		
@@ -586,7 +604,8 @@ public class XmlPipelineBuilder {
 		builder.append("\t\t<process ref=\"serializeableHeadersProcessor\"/>\n");
 		
 		//send message to queue
-		builder.append(String.format("\t\t<inOnly uri=\"hazelcast:%sin_%s?transferExchange=true\"/>\n", HazelcastConstants.SEDA_PREFIX, nodeId));
+		// TODO --> active mq here
+		builder.append(String.format("\t\t<inOnly uri=\"activemq:queue:in.%s.%s.%s.%s\"/>\n", account, process, version, nodename));
 		
 		this.appendEndRoute(builder);
 	}
@@ -641,8 +660,9 @@ public class XmlPipelineBuilder {
 		
 	}
 	
-	private void appendGetMessageFromQueue(StringBuilder builder, String nodeId){
-		builder.append(String.format("\t\t<from uri=\"hazelcast:%sout_%s\"/>\n", HazelcastConstants.SEDA_PREFIX, nodeId));
+	private void appendGetMessageFromQueue(StringBuilder builder, String account, String process, String version, String nodename){
+		
+		builder.append(String.format("\t\t<from uri=\"activemq:queue:out.%s.%s.%s.%s\"/>\n", account, process, version, nodename));
 	}
 	
 	/**

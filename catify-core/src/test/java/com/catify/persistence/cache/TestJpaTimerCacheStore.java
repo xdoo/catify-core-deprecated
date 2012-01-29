@@ -63,7 +63,7 @@ public class TestJpaTimerCacheStore extends JpaPersistenceTestHelper {
 	}
 	
 	@Test public void testStore() throws SQLException {
-		super.checkStore(cs, TABLE_TIMERCACHE, new TimerEvent(1234567, "i1", "t1"));
+		super.checkStore(cs, TABLE_TIMERCACHE, new TimerEvent(1234567, "i1", "t1", "catify", "myprocess", "1.0", "foo"));
 	}
 
 	@Test public void testLoad() throws SQLException {
@@ -87,7 +87,7 @@ public class TestJpaTimerCacheStore extends JpaPersistenceTestHelper {
 	}
 
 	@Test public void testStoreAll() throws SQLException, IllegalAccessException, InstantiationException, InvocationTargetException, NoSuchMethodException {
-		super.checkStoreAll(cs, new TimerEvent(1234567, "i1", "t1"));
+		super.checkStoreAll(cs, new TimerEvent(1234567, "i1", "t1", "catify", "myprocess", "1.0", "foo"));
 	}
 
 	@Test public void testDelete() throws SQLException {

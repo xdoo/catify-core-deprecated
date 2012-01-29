@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -119,8 +120,11 @@ public class BaseProcessBuilder {
 	 * 
 	 * @return
 	 */
-	protected String createNodeName(){
-		return UUID.randomUUID().toString();
+	protected String createNodeName(String type){
+		String id = new String(DigestUtils.md5(UUID.randomUUID().toString()));
+		// TODO delete
+		System.out.println(String.format("%s.%s", type, id));
+		return String.format("%s.%s", type, id);
 	}
 	
 	public ProcessDefinition getProcessDefinition() {

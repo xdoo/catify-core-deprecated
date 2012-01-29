@@ -5,7 +5,7 @@ import com.catify.core.process.nodes.Node;
 public abstract class ServiceNode extends Node {
 	
 	public ServiceNode(String processId, String nodeName, String serviceId) {
-		super(processId, nodeName);
+		super(processId, nodeName, "service");
 		this.serviceId = serviceId;
 	}
 

@@ -7,7 +7,7 @@ public class TimerEventNode extends Node {
 	private static final long serialVersionUID = -6563527383313830658L;
 
 	public TimerEventNode(String processId, String nodeName) {
-		super(processId, nodeName);
+		super(processId, nodeName, "timer.event");
 	}
 
 	@Override

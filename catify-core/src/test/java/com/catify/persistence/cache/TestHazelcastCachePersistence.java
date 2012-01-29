@@ -191,9 +191,9 @@ public class TestHazelcastCachePersistence extends JpaPersistenceTestHelper {
 		IMap<String, TimerEvent> tc = Hazelcast.getMap(CacheConstants.TIMER_CACHE);
 		
 		// store
-		tc.put("4711", new TimerEvent(12345678, "i1", "t1"));
-		tc.put("4712", new TimerEvent(12345678, "i2", "t2"));
-		tc.put("4713", new TimerEvent(12345678, "i3", "t3"));
+		tc.put("4711", new TimerEvent(12345678, "i1", "t1", "catify", "process", "1.0", "foo"));
+		tc.put("4712", new TimerEvent(12345678, "i2", "t2", "catify", "process", "1.0", "bar"));
+		tc.put("4713", new TimerEvent(12345678, "i3", "t3", "catify", "process", "1.0", "foobar"));
 		// --- sleep ---
 		Thread.sleep(250);
 		super.countRow("SELECT count(*) FROM TIMERCACHE", 3);

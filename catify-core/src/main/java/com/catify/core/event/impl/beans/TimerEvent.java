@@ -11,13 +11,21 @@ public class TimerEvent implements Serializable {
 	private long time;
 	private String instanceId;
 	private String taskId;
+	private String account;
+	private String process;
+	private String version;
+	private String nodename;
 	
 	public TimerEvent() {}
 	
-	public TimerEvent(long time, String instanceId, String taskId){
+	public TimerEvent(long time, String instanceId, String taskId, String account, String process, String version, String nodename){
 		this.time = time;
 		this.instanceId = instanceId;
 		this.taskId = taskId;
+		this.account = account;
+		this.process = process;
+		this.version = version;
+		this.nodename = nodename;
 	}
 		
 	public String getId() {
@@ -53,6 +61,42 @@ public class TimerEvent implements Serializable {
 	public void setTaskId(String taskId) {
 		this.taskId = taskId;
 	}
+
+	public String getAccount() {
+		return account;
+	}
+
+	public void setAccount(String account) {
+		this.account = account;
+	}
+
+	public String getProcess() {
+		return process;
+	}
+
+	public void setProcess(String process) {
+		this.process = process;
+	}
+
+	public String getVersion() {
+		return version;
+	}
+
+	public void setVersion(String version) {
+		this.version = version;
+	}
+
+	public String getNodename() {
+		return nodename;
+	}
+
+	public void setNodename(String nodename) {
+		this.nodename = nodename;
+	}
 	
-	
+	@Override
+	public String toString(){
+		return String.format("TimerEvent (%s): account --> %s | process --> %s | version --> %s | nodename --> %s | instanceid --> %s | nodeid --> %s | time --> %s", 
+				id, account, process, version, nodename, instanceId, taskId, time);
+	}
 }

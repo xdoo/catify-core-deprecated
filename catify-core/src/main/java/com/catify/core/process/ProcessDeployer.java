@@ -34,6 +34,9 @@ import com.hazelcast.core.IMap;
 public class ProcessDeployer {
 
 	private CamelContext context;
+	
+	private final static String QUEUE = "activemq:queue:";
+	private final static String NEXT = "activemq:queue:node.%s.%s.%s.%s";
 
 	static final Logger LOG = LoggerFactory.getLogger(ProcessDeployer.class);
 	static final LoggingLevel LEVEL = LoggingLevel.OFF;
@@ -235,8 +238,8 @@ public class ProcessDeployer {
 		Iterator<String> it = definition.getTransitionsFromNode(nodeId)
 				.iterator();
 		while (it.hasNext()) {
-			result.add(context.getEndpoint(String.format("seda:node-%s",
-					it.next())));
+			result.add(context.getEndpoint(String.format(NEXT, definition.getAccountName(), definition.getProcessName(), definition.getProcessVersion(), definition.getNode(it.next()).getNodeName()
+					)));
 		}
 
 		return result;
@@ -249,14 +252,24 @@ public class ProcessDeployer {
 		LOG.info(String.format("creating start for PROCESS '%s' with id '%s'.",
 				definition.getProcessName(), definition.getProcessId()));
 		
+		final String account = definition.getAccountName();
+		final String process = definition.getProcessName();
+		final String version = definition.getProcessVersion();
+		final String nodename = definition.getNode(definition.getStartNodeId()).getNodeName();
+		
 		return new RouteBuilder() {
 
 			@Override
 			public void configure() throws Exception {
-
-				fromF("hazelcast:%sin_%s",
-								HazelcastConstants.SEDA_PREFIX,
-								definition.getProcessId())
+				
+				// active:mq:in.{processname}.{processversion}
+				fromF("%sin.%s.%s.%s.%s",
+								QUEUE,
+								account,
+								process,
+								version,
+								nodename)
+						.transacted()
 						.routeId(
 								String.format("process-%s",
 										definition.getProcessId()))
@@ -268,8 +281,7 @@ public class ProcessDeployer {
 										definition.getProcessName(),
 										definition.getProcessVersion(),
 										MessageConstants.INSTANCE_ID))
-						.toF("seda:node-%s",
-								definition.getStartNodeId());
+						.toF(NEXT, account, process, version, nodename);
 
 			}
 		};
@@ -277,12 +289,17 @@ public class ProcessDeployer {
 
 	private RouteBuilder createStartNode(final ProcessDefinition definition) {
 		
+		final String account = definition.getAccountName();
+		final String process = definition.getProcessName();
+		final String version = definition.getProcessVersion();
+		final String nodename = definition.getNode(definition.getStartNodeId()).getNodeName();
+		
 		return new RouteBuilder() {
 
 			@Override
 			public void configure() throws Exception {
-				fromF("seda:node-%s?concurrentConsumers=5",
-								definition.getStartNodeId())
+				fromF(NEXT, account, process, version, nodename)
+						.transacted()
 						.routeId(
 								String.format("node-%s",
 										definition.getStartNodeId()))
@@ -303,9 +320,7 @@ public class ProcessDeployer {
 						// create a task instance id...
 						.processRef("taskInstanceIdProcessor")
 						// ...goto next node...
-						.toF("seda:node-%s",
-								definition.getTransitionsFromNode(
-								definition.getStartNodeId()).get(0));
+						.toF(NEXT,account, process, version, definition.getNode(definition.getTransitionsFromNode(definition.getStartNodeId()).get(0)).getNodeName());
 			}
 		};
 	}
@@ -315,7 +330,12 @@ public class ProcessDeployer {
 
 		final long time = ((SleepNode) definition.getNode(nodeId)).getTime();
 		final String previousTaskId = definition.getTransitionsToNode(nodeId).get(0);
-
+		
+		final String account = definition.getAccountName();
+		final String process = definition.getProcessName();
+		final String version = definition.getProcessVersion();
+		final String nodename = definition.getNode(nodeId).getNodeName();
+		
 		return new RouteBuilder() {
 
 			@Override
@@ -328,7 +348,9 @@ public class ProcessDeployer {
 				// one initializes the timer. the second one
 				// runs after the expected timer event has
 				// been fired.
-				fromF("seda:node-%s?concurrentConsumers=5", nodeId)
+				fromF(NEXT, account, process
+						, version, nodename)
+						.transacted()
 						.routeId(String.format("node-%s", nodeId))
 						.onCompletion()
 							.to("direct://waiting")
@@ -342,6 +364,7 @@ public class ProcessDeployer {
 										definition.getProcessVersion(),
 										MessageConstants.INSTANCE_ID))
 						.setHeader(MessageConstants.TASK_ID, constant(nodeId))
+						.setHeader(MessageConstants.TASK_NAME, constant(nodename))
 						// ...set state...
 						.to("direct:working")
 						//destroy state from previous node
@@ -351,12 +374,14 @@ public class ProcessDeployer {
 						.processRef("taskInstanceIdProcessor")
 						// set timer
 						.setHeader(EventConstants.EVENT_TIME, constant(time))
-						.to("direct:set-timer-event");
-
+						.to("log:SETTIMEREVENT?showAll=true")
+						.to("activemq:queue:set-timer-event");
+				
 				// ----------------------------------------
 				// second part
 				// ----------------------------------------
-				fromF("hazelcast:%sevent_%s", HazelcastConstants.SEDA_PREFIX, nodeId)
+				fromF("%sevent.%s.%s.%s.%s", QUEUE, account, process, version, nodename)
+						.transacted()
 						.routeId(String.format("waekup-%s", nodeId))
 						.onCompletion()
 							.to("direct://done")
@@ -385,9 +410,7 @@ public class ProcessDeployer {
 										definition.getProcessName(),
 										definition.getProcessVersion(),
 										MessageConstants.INSTANCE_ID))
-						.toF("seda:node-%s", definition
-								.getTransitionsFromNode(nodeId).get(0));
-
+						.toF(NEXT, account, process, version, definition.getNode(definition.getTransitionsFromNode(nodeId).get(0)).getNodeName() );
 			}
 		};
 	}
@@ -397,11 +420,17 @@ public class ProcessDeployer {
 		
 		final String previousTaskId = definition.getTransitionsToNode(nodeId).get(0);
 		
+		final String account = definition.getAccountName();
+		final String process = definition.getProcessName();
+		final String version = definition.getProcessVersion();
+		final String nodename = definition.getNode(nodeId).getNodeName();
+		
 		return new RouteBuilder() {
 
 			@Override
 			public void configure() throws Exception {
-				fromF("seda:node-%s", nodeId)
+				fromF(NEXT, account, process, version, nodename)
+						.transacted()
 						.routeId(String.format("node-%s", nodeId))
 						.onCompletion()
 							.to("direct://done")
@@ -427,6 +456,11 @@ public class ProcessDeployer {
 		
 		final String previousTaskId = definition.getTransitionsToNode(nodeId).get(0);
 		
+		final String account = definition.getAccountName();
+		final String process = definition.getProcessName();
+		final String version = definition.getProcessVersion();
+		final String nodename = definition.getNode(nodeId).getNodeName();
+		
 		return new RouteBuilder() {
 
 			@Override
@@ -439,7 +473,8 @@ public class ProcessDeployer {
 				// never higher than '1' because the implementation
 				// is NOT thread safe. you will get unexpected results.
 				//
-				fromF("seda:node-%s?concurrentConsumers=1", nodeId)
+				fromF(NEXT, account, process, version, nodename)
+						.transacted()
 						.routeId(String.format("node-%s", nodeId))
 						.onCompletion()
 							.to("direct://done")
@@ -485,12 +520,18 @@ public class ProcessDeployer {
 		// parallel lines. so we have n deletions on the same state. 
 		// but this should not an issue at all...
 		final String previousTaskId = definition.getTransitionsToNode(nodeId).get(0);
+		
+		final String account = definition.getAccountName();
+		final String process = definition.getProcessName();
+		final String version = definition.getProcessVersion();
+		final String nodename = definition.getNode(nodeId).getNodeName();
 
 		return new RouteBuilder() {
 
 			@Override
 			public void configure() throws Exception {
-				fromF("seda:node-%s?concurrentConsumers=5", nodeId)
+				fromF(NEXT, account, process, version, nodename)
+						.transacted()
 						.routeId(String.format("node-%s", nodeId))
 						.onCompletion()
 							.to("direct://done")
@@ -504,7 +545,7 @@ public class ProcessDeployer {
 						.setHeader(HazelcastConstants.OBJECT_ID, simple(String.format("${header.%s}-%s", MessageConstants.INSTANCE_ID, previousTaskId)))
 						.to("direct://destroy_with_given_id")
 						// ...call next node...
-						.toF("seda:node-%s", definition.getTransitionsFromNode(nodeId).get(0));
+						.toF(NEXT, account, process, version, definition.getNode(definition.getTransitionsFromNode(nodeId).get(0)).getNodeName());
 			}
 		};
 	}
@@ -514,11 +555,17 @@ public class ProcessDeployer {
 		
 		final String previousTaskId = definition.getTransitionsToNode(nodeId).get(0);
 		
+		final String account = definition.getAccountName();
+		final String process = definition.getProcessName();
+		final String version = definition.getProcessVersion();
+		final String nodename = definition.getNode(nodeId).getNodeName();
+		
 		return new RouteBuilder() {
 
 			@Override
 			public void configure() throws Exception {
-				fromF("seda:node-%s?concurrentConsumers=5", nodeId)
+				fromF(NEXT, account, process, version, nodename)
+						.transacted()
 						.routeId(String.format("node-%s", nodeId))
 						.setHeader(MessageConstants.TASK_ID, constant(nodeId))
 						// create a task instance id...
@@ -544,7 +591,7 @@ public class ProcessDeployer {
 			}
 			
 			private String getTransition(){
-				return String.format("seda:node-%s", definition.getTransitionsFromNode(nodeId).get(0));
+				return String.format(NEXT, account, process, version, definition.getNode(definition.getTransitionsFromNode(nodeId).get(0)).getNodeName());
 			}
 		};
 	}
@@ -555,12 +602,17 @@ public class ProcessDeployer {
 		// a merge is the end of n lines. so a merge node
 		// has to destroy n states...
 		
+		final String account = definition.getAccountName();
+		final String process = definition.getProcessName();
+		final String version = definition.getProcessVersion();
+		final String nodename = definition.getNode(nodeId).getNodeName();
 		
 		return new RouteBuilder() {
 
 			@Override
 			public void configure() throws Exception {
-				fromF("seda:node-%s", nodeId)
+				fromF(NEXT, account, process, version, nodename)
+						.transacted()
 						.routeId(String.format("node-%s", nodeId))
 						.setHeader(MessageConstants.TASK_ID, constant(nodeId))
 						// create a task instance id...
@@ -587,8 +639,7 @@ public class ProcessDeployer {
 				fromF("direct:cleannode-%s", nodeId)
 						.routeId(String.format("cleannode-%s", nodeId))
 						// goto next node...
-						.toF("seda:node-%s", definition
-								.getTransitionsFromNode(nodeId).get(0))
+						.toF(NEXT, account, process, version, definition.getNode(definition.getTransitionsFromNode(nodeId).get(0)).getNodeName() )
 						// ...remove own state.
 						.to("direct:destroy");
 
@@ -652,12 +703,17 @@ public class ProcessDeployer {
 		
 		final String previousTaskId = definition.getTransitionsToNode(nodeId).get(0);
 		
+		final String account = definition.getAccountName();
+		final String process = definition.getProcessName();
+		final String version = definition.getProcessVersion();
+		final String nodename = definition.getNode(nodeId).getNodeName();
+		
 		return new RouteBuilder() {
 
 			@Override
 			public void configure() throws Exception {
-				from(String.format("seda:node-%s?concurrentConsumers=5",
-								nodeId))
+				from(String.format(NEXT, account, process, version, nodename))
+						.transacted()
 						.routeId(String.format("check-node-%s", nodeId))
 						.setHeader(MessageConstants.TASK_ID, constant(nodeId))
 						// create a task instance id...
@@ -711,8 +767,8 @@ public class ProcessDeployer {
 										nodeId, definition.getProcessName(),
 										definition.getProcessVersion(),
 										MessageConstants.INSTANCE_ID))
-//						.setBody(constant("x"))
-						.toF("hazelcast:%sout_%s?transferExchange=true", HazelcastConstants.SEDA_PREFIX, nodeId)
+						
+						.toF("%sout.%s.%s.%s.%s", QUEUE, account, process, version, nodename)
 						// ...goto next node...
 						.log(LEVEL,
 								String.format("REQUEST NODE '%s'", definition
@@ -724,8 +780,7 @@ public class ProcessDeployer {
 										definition.getProcessName(),
 										definition.getProcessVersion(),
 										MessageConstants.INSTANCE_ID))
-						.toF("seda:node-%s", definition
-								.getTransitionsFromNode(nodeId).get(0));
+						.toF(NEXT, account, process, version, definition.getNode(definition.getTransitionsFromNode(nodeId).get(0)).getNodeName());
 			}
 		};
 	}
@@ -735,6 +790,11 @@ public class ProcessDeployer {
 
 		// get node for timeout
 		final ReceiveNode node = (ReceiveNode) definition.getNode(nodeId);
+		
+		final String account = definition.getAccountName();
+		final String process = definition.getProcessName();
+		final String version = definition.getProcessVersion();
+		final String nodename = definition.getNode(nodeId).getNodeName();
 		
 		final String previousTaskId = definition.getTransitionsToNode(nodeId).get(0);
 
@@ -751,7 +811,8 @@ public class ProcessDeployer {
 				// then take the message and 'go!'
 				// 2. no message has been arrived yet -->
 				// then set state to wait...
-				fromF("seda:node-%s?concurrentConsumers=5",nodeId)
+				fromF(NEXT ,account, process, version, nodename)
+						.transacted()
 						.routeId(String.format("node-%s", nodeId))
 						.onCompletion()
 							.to("direct://waiting")
@@ -761,8 +822,8 @@ public class ProcessDeployer {
 										.getNode(nodeId).getNodeName()),
 								String.format(
 										"received message (from seda).   process name --> '%s' | process version --> '%s' | instanceId --> ${header.%s}",
-										definition.getProcessName(),
-										definition.getProcessVersion(),
+										process,
+										version,
 										MessageConstants.INSTANCE_ID))
 						.setHeader(MessageConstants.TASK_ID, constant(nodeId))
 						.to("direct://working")
@@ -780,7 +841,8 @@ public class ProcessDeployer {
 				// 2. there is no current state at all -->
 				// the set state to 'wait' and wait for
 				// the initialization from the process
-				fromF("hazelcast:%sin_%s", HazelcastConstants.SEDA_PREFIX, nodeId)
+				fromF("%sin.%s.%s.%s.%s", QUEUE, account, process, version, nodename)
+						.transacted()
 						.routeId(String.format("aqnode-%s", nodeId))
 						.onCompletion()
 							.to("direct://working")
@@ -812,11 +874,11 @@ public class ProcessDeployer {
 										"received go. going to node '%s' (id: %s).   process name --> '%s' | process version --> '%s' | instanceId --> ${header.%s}",
 										definition.getNode(defaultTransition).getNodeName(),
 										defaultTransition,
-										definition.getProcessName(),
-										definition.getProcessVersion(),
+										process,
+										version,
 										MessageConstants.INSTANCE_ID))
 						// goto next node...
-						.toF("seda:node-%s", defaultTransition);
+						.toF(NEXT, account, process, version, definition.getNode(defaultTransition).getNodeName());
 
 				// wait! case
 				// --------------
@@ -837,7 +899,7 @@ public class ProcessDeployer {
 						// set timer
 						.setHeader(EventConstants.EVENT_TIME,
 								constant(node.getTimeout()))
-						.to("direct:set-timer-event")
+						.to("activemq:queue:set-timer-event")
 						// set header for router
 						.setHeader(ReceiveRouter.WAIT, constant("wait"));
 
@@ -852,6 +914,11 @@ public class ProcessDeployer {
 		
 		final String previousTaskId = definition.getTransitionsToNode(nodeId).get(0);
 		
+		final String account = definition.getAccountName();
+		final String process = definition.getProcessName();
+		final String version = definition.getProcessVersion();
+		final String nodename = definition.getNode(nodeId).getNodeName();
+		
 		return new RouteBuilder() {
 
 			@Override
@@ -860,11 +927,12 @@ public class ProcessDeployer {
 				// ----------------------------------------
 				// time out event node
 				// ----------------------------------------
-				fromF("hazelcast:%sevent_%s", HazelcastConstants.SEDA_PREFIX, parentNodeId)
+				fromF("%sevent.%s.%s.%s.%s", QUEUE, account, process, version, definition.getNode(parentNodeId).getNodeName())
 						.routeId(String.format("event-%s", parentNodeId))
 						.onCompletion()
 							.to("direct://done")
 						.end()
+						.to("log:EVENT-FROM-NODE?showAll=true")
 						.to("direct://working")
 						//destroy state from previous node
 						.setHeader(HazelcastConstants.OBJECT_ID, simple(String.format("${header.%s}-%s", MessageConstants.INSTANCE_ID, previousTaskId)))
@@ -891,7 +959,7 @@ public class ProcessDeployer {
 										definition.getProcessName(),
 										definition.getProcessVersion(),
 										MessageConstants.INSTANCE_ID))
-						.toF("seda:node-%s", nodeId);
+						.toF(NEXT, account, process, version, nodename);
 
 			}
 		};
@@ -902,11 +970,17 @@ public class ProcessDeployer {
 		
 		final String previousTaskId = definition.getTransitionsToNode(nodeId).get(0);
 		
+		final String account = definition.getAccountName();
+		final String process = definition.getProcessName();
+		final String version = definition.getProcessVersion();
+		final String nodename = definition.getNode(nodeId).getNodeName();
+		
 		return new RouteBuilder() {
 
 			@Override
 			public void configure() throws Exception {
-				fromF("seda:node-%s?concurrentConsumers=5", nodeId)
+				fromF(NEXT, account, process, version, nodename)
+				   		.transacted()
 						.routeId(String.format("node-%s", nodeId))
 						.onCompletion()
 							.to("seda://destroy")

@@ -8,7 +8,7 @@ public class LineNode extends Node {
 	private static final long serialVersionUID = -95469388426047426L;
 
 	public LineNode(String processId, String nodeName) {
-		super(processId, nodeName);
+		super(processId, nodeName, "line");
 	}
 
 	@Override

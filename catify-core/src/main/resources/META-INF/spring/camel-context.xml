@@ -23,6 +23,20 @@
 	xsi:schemaLocation="
        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
        http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd">
+       
+    <!--  <import resource="activemq-config.xml"/> -->
+    
+    <!-- ActiveMQ -->
+    <bean id="activemq" class="org.apache.activemq.camel.component.ActiveMQComponent">
+		<property name="transacted" value="true"/>
+		<property name="transactionManager" ref="txManager"/>
+	</bean>
+    <bean id="txManager" class="org.springframework.jms.connection.JmsTransactionManager">
+    	<property name="connectionFactory" ref="jmsConnectionFactory"/>
+	</bean>
+    <bean id="jmsConnectionFactory" class="org.apache.activemq.ActiveMQConnectionFactory">
+		<property name="brokerURL" value="tcp://localhost:61616"/>
+	</bean>
 
 	<!-- catify -->
 	<bean id="xmlPipelineBuilder" class="com.catify.core.process.xml.XmlPipelineBuilder">

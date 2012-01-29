@@ -11,7 +11,7 @@ import com.catify.core.testsupport.SpringTestBase;
 public class TestWaitNode extends SpringTestBase {
 	
 	@Test
-	public void testSleepNode(){
+	public void testSleepNode() throws InterruptedException{
 
 		ProcessDefinition definition = super.deployProcess(this.getProcess01());
 		
@@ -24,6 +24,7 @@ public class TestWaitNode extends SpringTestBase {
 		assertNull(ex1);
 		
 		Exchange ex2 = consumer.receive("seda:out", 5000);
+//		Thread.sleep(60*1000);
 		assertNotNull(ex2);
 	}
 	
@@ -54,7 +55,7 @@ public class TestWaitNode extends SpringTestBase {
 				"			<endpoint ns:uri=\"seda:init_process\"/>\n" +
 				"		</inPipeline>\n" +
 				"	</start>\n" +
-				"	<sleep>\n" +
+				"	<sleep name=\"sleep\">\n" +
 				"		<timeEvent ns:time=\"1000\">\n" +
 				"			<end/>\n" +
 				"		</timeEvent>\n" +
