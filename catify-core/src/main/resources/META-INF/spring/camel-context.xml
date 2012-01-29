@@ -86,6 +86,7 @@
 	<bean id="writeCorrelationProcessor" class="com.catify.core.process.processors.WriteCorrelationProcessor" />
 	<bean id="readCorrelationProcessor" class="com.catify.core.process.processors.ReadCorrelationProcessor" />
 	<bean id="xpathProcessor" class="com.catify.core.process.processors.XPathProcessor" />
+	<bean id="emptyCacheProcessor" class="com.catify.core.process.processors.EmptyCacheProcessor" />
 
 	<!-- routers -->
 	<!-- <bean id="decisionRouter" class="com.catify.core.process.routers.impl.ReceiveRouter"/> -->

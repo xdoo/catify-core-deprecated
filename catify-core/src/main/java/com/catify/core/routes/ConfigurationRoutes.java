@@ -115,6 +115,13 @@ public class ConfigurationRoutes extends RouteBuilder {
 		.setHeader(HazelcastConstants.OBJECT_ID, header("nodeid"))
         .setHeader(HazelcastConstants.OPERATION, constant(HazelcastConstants.GET_OPERATION))
         .toF("hazelcast:%s%s", HazelcastConstants.MAP_PREFIX, CacheConstants.CORRELATION_RULE_CACHE);
+		
+		//---------------------------------------------
+		// caches
+		//---------------------------------------------
+		from("restlet:http://localhost:9080/catify/empty_all_caches?restletMethod=post")
+		.routeId("clean_all_caches")
+		.processRef("emptyCacheProcessor");
 
 	}
 

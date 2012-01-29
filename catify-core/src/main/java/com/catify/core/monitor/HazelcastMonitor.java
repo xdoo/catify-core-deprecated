@@ -3,6 +3,7 @@ package com.catify.core.monitor;
 import java.util.Iterator;
 
 import org.apache.camel.Handler;
+import org.apache.xml.utils.ListingErrorHandler;
 
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.IMap;
@@ -13,7 +14,7 @@ import com.hazelcast.core.Member;
 public class HazelcastMonitor {
 
     @Handler
-    public void listInstances() {
+    public static void listInstances() {
 
         StringBuilder builder = new StringBuilder();
 
