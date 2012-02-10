@@ -745,8 +745,9 @@ public class ProcessDeployer {
 								.toF("direct:node-%s", nodeId)
 							.otherwise()
 								.log(LEVEL,
-								String.format("REQUEST NODE '%s'", definition
-										.getNode(nodeId).getNodeName()),
+								String.format("REQUEST NODE '%s' (%s)", definition
+										.getNode(nodeId).getNodeName(),
+										nodeId),
 								String.format(
 										"received message, but state is 'DONE' - doing nothing.   process name --> '%s' | process version --> '%s' | instanceId --> ${header.%s}",
 										definition.getProcessName(),

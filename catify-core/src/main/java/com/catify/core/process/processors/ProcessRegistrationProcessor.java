@@ -33,7 +33,9 @@ public class ProcessRegistrationProcessor extends BaseProcessor {
 		this.cache.put(definition.getProcessId(), definition);
 		
 		if(this.cache.containsKey(definition.getProcessId())){
-			LOG.info(String.format("process added to process cache --> name = %s | version = %s | account = %s", definition.getProcessName(), definition.getProcessVersion(), definition.getAccountName()));
+			LOG.info(String.format("process %s added to process cache --> name = %s | version = %s | account = %s", definition.getProcessId(), definition.getProcessName(), definition.getProcessVersion(), definition.getAccountName()));
+		} else {
+			LOG.error(String.format("Could not add process definition with id %s to process cache.", definition.getProcessId()));
 		}
 		
 		super.copyBodyAndHeaders(ex);

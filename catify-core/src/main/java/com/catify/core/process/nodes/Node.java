@@ -23,8 +23,6 @@ public abstract class Node implements Serializable {
 			
 			//if no node name has been set, simply generate one...
 			this.nodeName = String.format("%s.%s", type, DigestUtils.md5Hex(UUID.randomUUID().toString()));
-			
-			System.out.println("nodename --> " + this.getNodeName());
 		} else {
 			
 			//...otherwise use the one that has been set.
@@ -39,9 +37,7 @@ public abstract class Node implements Serializable {
 	public String getNodeName() {
 		return nodeName;
 	}
-	
-	
-	
+
 	public abstract int getNodeType();
 	
 }

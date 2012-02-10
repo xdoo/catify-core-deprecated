@@ -12,11 +12,14 @@ import org.apache.camel.test.junit4.CamelSpringTestSupport;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
+import com.catify.core.constants.CacheConstants;
 import com.catify.core.constants.MessageConstants;
 import com.catify.core.process.ProcessDeployer;
 import com.catify.core.process.model.ProcessDefinition;
 import com.catify.core.process.xml.XmlProcessBuilder;
 import com.catify.core.process.xml.model.Process;
+import com.hazelcast.core.Hazelcast;
+import com.hazelcast.core.IMap;
 
 public class SpringTestBase extends CamelSpringTestSupport {
 	
@@ -50,9 +53,13 @@ public class SpringTestBase extends CamelSpringTestSupport {
 	}
 	
 	protected String getXml(){
+		return this.getXml("a", "b");
+	}
+	
+	protected String getXml(String a, String b){
 		return "<foo>" +
-				"	<a>a</a>" +
-				"	<b>b</b>" +
+				"	<a>"+a+"</a>" +
+				"	<b>"+b+"</b>" +
 				"</foo>";
 	}
 	
@@ -65,10 +72,27 @@ public class SpringTestBase extends CamelSpringTestSupport {
 	
 	protected ProcessDefinition deployProcess(String process){
 		
-		ProcessDefinition definition = this.getProcessDefinition(process);
+		// marschal xml
+		Process p = template.requestBody("direct:xml2process", process, com.catify.core.process.xml.model.Process.class);
 		
-		ProcessDeployer deployer = new ProcessDeployer(context);
-		deployer.deployProcess(definition);
+		// register process
+		template.sendBody("direct://deploy.process", p);
+		
+//		ProcessDefinition definition = this.getProcessDefinition(process);
+//		
+//		ProcessDeployer deployer = new ProcessDeployer(context);
+//		deployer.deployProcess(definition);
+		
+		// get definition
+		IMap<String, ProcessDefinition> map = Hazelcast.getMap(CacheConstants.PROCESS_CACHE);
+		ProcessDefinition definition = map.get(p.getProcessId());
+		
+		try {
+			Thread.sleep(3000);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		
 		return definition;
 	}
@@ -98,6 +122,9 @@ public class SpringTestBase extends CamelSpringTestSupport {
 				.routeId("marshal")
 				.unmarshal(jaxb)
 				.log("${body}");
+				
+				from("direct://deploy.process")
+				.processRef("processRegistrationProcessor");
 				
 			}
 		};

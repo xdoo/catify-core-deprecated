@@ -20,6 +20,7 @@ public class CheckMergeRouter {
 						@Header(MessageConstants.AWAITED_HITS) int awaitedHits,
 						@Header(MessageConstants.TASK_ID) String taskId,
 						@Header(MessageConstants.INSTANCE_ID) String instanceId,
+						@Header(MessageConstants.PROCESS_NAME) String processName,
 						@Header(MessageConstants.PRECEDING_NODES) List<String> precedingNodes,
 						CamelContext context){
 		
@@ -34,7 +35,7 @@ public class CheckMergeRouter {
 		//go to next node - otherwise stay in wait 
 		//state...
 		if(hits == awaitedHits){
-			this.setState(precedingNodes, instanceId, context);
+			this.setState(precedingNodes, instanceId, processName, context);
 			return String.format("direct:cleannode-%s", taskId);
 		}
 		
@@ -45,23 +46,24 @@ public class CheckMergeRouter {
 		return result;
 	}
 	
-	private void setState(List<String> precedingNodes, String instanceId, CamelContext context){
+	private void setState(List<String> precedingNodes, String instanceId, String processName, CamelContext context){
 		
 		Iterator<String> it = precedingNodes.iterator();
 		
 		while (it.hasNext()) {	
 			
 			//set all non idempotent nodes to 'done' state
-			context.createProducerTemplate().sendBodyAndHeaders("direct:done", "", this.getHeaders(instanceId, it.next()));			
+			context.createProducerTemplate().sendBodyAndHeaders("direct:done", "", this.getHeaders(instanceId, it.next(), processName));			
 		}
 		
 	}
 	
-	private Map<String,Object> getHeaders(String instanceId, String taskId){
+	private Map<String,Object> getHeaders(String instanceId, String taskId, String processName){
 		Map<String,Object> headers = new HashMap<String, Object>();
 		
 		headers.put(MessageConstants.INSTANCE_ID, instanceId);
 		headers.put(MessageConstants.TASK_ID, taskId);
+		headers.put(MessageConstants.PROCESS_NAME, processName);
 		
 		return headers;
 	}

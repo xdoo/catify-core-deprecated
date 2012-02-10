@@ -149,7 +149,7 @@ public class XmlProcessBuilder {
 		List<String> ids = this.addNodes(node.getNodes());
 		
 		//set line end node
-		String id = this.addNodeWithoutCurrent(new LineEndNode(this.definition.getProcessId(), UUID.randomUUID().toString()), ids);
+		String id = this.addNodeWithoutCurrent(new LineEndNode(this.definition.getProcessId(), String.format("lineend.%s", node.getName())), ids);
 		
 		return id;
 	}
@@ -187,7 +187,7 @@ public class XmlProcessBuilder {
 		}
 		
 		//merge node
-		this.current = this.definition.addNodeFrom(new MergeNode(this.definition.getProcessId(), null, awaitedHits), ids);
+		this.current = this.definition.addNodeFrom(new MergeNode(this.definition.getProcessId(), String.format("merge.%s", definition.getNode(nodeId).getNodeName()), awaitedHits), ids);
 	}
 
 	private String addEndNode(End node) {

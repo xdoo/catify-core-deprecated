@@ -21,12 +21,12 @@
        http://activemq.apache.org/schema/core http://activemq.apache.org/schema/core/activemq-core.xsd">
 
 	<!-- This creates an embedded ActiveMQ Broker -->
-	<import resource="activemq-config.xml" />
+	<!-- <import resource="activemq-config.xml" /> -->
 
 	<!-- Lets connect the Camel ActiveMQ component to the embedded broker. See 
 		http://camel.apache.org/activemq.html for more information. -->
 	<bean id="activemq" class="org.apache.activemq.camel.component.ActiveMQComponent">
-		<property name="brokerURL" value="failover:vm://internal:61616" />
+		<property name="brokerURL" value="failover:tcp://localhost:61616" />
 	</bean>
 
 	<bean id="txManager"
@@ -34,7 +34,7 @@
 		<property name="connectionFactory" ref="jmsConnectionFactory" />
 	</bean>
 	<bean id="jmsConnectionFactory" class="org.apache.activemq.ActiveMQConnectionFactory">
-		<property name="brokerURL" value="vm://internal:61616" />
+		<property name="brokerURL" value="tcp://localhost:61616" />
 	</bean>
 
 	<!-- catify -->

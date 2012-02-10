@@ -34,9 +34,11 @@ public class ProcessDefinition implements Serializable {
 	private MultiMap rightTransitions;
 	private MultiMap precedingNodes;
 	private Map<String, Node> nodes;
-	
+ 	
 	private MultiMap pipelines;
 	private Map<String, String> correlationRules;
+	
+	private List<String> mergeNodes;
 	
 	static final Logger LOG = LoggerFactory.getLogger(ProcessDefinition.class);
 
@@ -64,6 +66,11 @@ public class ProcessDefinition implements Serializable {
 		
 		//create the correlation rule map
 		this.correlationRules = new HashMap<String,String>();
+		
+		// create a list of merge nodes
+		// we need this to reset the awaited hits number
+		// if we reinitialize a process
+		this.mergeNodes = new ArrayList<String>();
 	}
 	
 	public void addTransition(String from, String to){
@@ -76,6 +83,12 @@ public class ProcessDefinition implements Serializable {
 		LOG.debug(String.format("addNode() --> nodeId: %s, nodeName: %s", node.getNodeId(), node.getNodeName()));
 		
 		nodes.put(node.getNodeId(), node);
+		
+		// check if the node is a merge node
+		if(node.getNodeType() == ProcessConstants.MERGE) {
+			this.mergeNodes.add(node.getNodeId());
+		}
+		
 		return node.getNodeId();
 	}
 	
@@ -102,8 +115,7 @@ public class ProcessDefinition implements Serializable {
 	 * @return
 	 */
 	public String addNodeFrom(Node node, String fromNodeId, List<String> precedingNodes){
-		
-		LOG.debug(String.format("addNodeFrom() --> nodeId: %s, nodeName: %s, fromNodeId: %s, precedingNodes: %s", node.getNodeId(), node.getNodeName(), fromNodeId, precedingNodes.toString()));
+		LOG.debug(String.format("addNodeFrom() --> nodeId: %s, nodeName: %s, nodeType: %s, fromNodeId: %s, precedingNodes: %s", node.getNodeId(), node.getNodeName(), this.mapNodeType(node.getNodeType()), fromNodeId, precedingNodes.toString()));
 		
 		Iterator<String> it = precedingNodes.iterator();
 		while (it.hasNext()) {
@@ -114,8 +126,7 @@ public class ProcessDefinition implements Serializable {
 	}
 	
 	public String addNodeFrom(Node node, List<String> fromNodeIds){
-		
-		LOG.debug(String.format("addNodeFrom() --> nodeId: %s, nodeName: %s, fromNodeIds: %s", node.getNodeId(), node.getNodeName(), fromNodeIds.toString()));
+		LOG.debug(String.format("addNodeFrom() --> nodeId: %s, nodeName: %s, nodeType: %s, fromNodeIds: %s", node.getNodeId(), node.getNodeName(), this.mapNodeType(node.getNodeType()), fromNodeIds.toString()));
 		
 		this.addNode(node);
 		
@@ -283,6 +294,10 @@ public class ProcessDefinition implements Serializable {
 		this.startNodeId = startNodeId;
 	}
 	
+	public List<String> getMergeNodes() {
+		return mergeNodes;
+	}
+
 	@Override
 	public String toString() {
 		

@@ -65,6 +65,7 @@ public class ProcessRoutes extends RouteBuilder {
 		.routeId("doneState")
 		.to("direct://set_put_headers")
 		.setHeader(ProcessConstants.STATE, constant(ProcessConstants.STATE_DONE))
+		.to("log://SET_STATE_DONE?showAll=true")
 		.bean(StateEvent.class)
 		.to(hazelcastNodeCache);
 		

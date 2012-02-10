@@ -24,6 +24,7 @@
 			</id>
 			<basic name="instanceId" optional="false" />
 			<basic name="state" optional="false" />
+			<basic name="processName" optional="false" />
 		</attributes>
 	</entity>
 	<entity class="com.catify.persistence.beans.PayloadCache">

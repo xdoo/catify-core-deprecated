@@ -115,7 +115,7 @@ public class XmlPipelineBuilder {
 		closeRoutes(builder);
 		
 		//FIXME
-		System.out.println(builder.toString());
+//		System.out.println(builder.toString());
 		
 		return builder.toString();
 	}
@@ -220,7 +220,7 @@ public class XmlPipelineBuilder {
 		this.closeRoutes(builder);
 		
 		//FIXME
-		System.out.println(builder.toString());
+//		System.out.println(builder.toString());
 		
 		return builder.toString();
 	}

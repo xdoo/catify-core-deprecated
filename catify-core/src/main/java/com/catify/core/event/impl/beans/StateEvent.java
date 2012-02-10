@@ -32,6 +32,7 @@ public class StateEvent implements Serializable {
 	private String id;
 	private String instanceId;
 	private int state;
+	private String processName;
 
 	public StateEvent(){}
 	
@@ -42,10 +43,15 @@ public class StateEvent implements Serializable {
 	
 	@Handler
 	public StateEvent proxy(	@Header(MessageConstants.INSTANCE_ID) String instanceId,
-								@Header(ProcessConstants.STATE) int state){
+								@Header(ProcessConstants.STATE) int state,
+								@Header(MessageConstants.PROCESS_NAME) String processName,
+								@Header(MessageConstants.TASK_ID) String taskid){
 		
-		this.instanceId = instanceId;
-		this.state 		= state;
+		this.instanceId 	= instanceId;
+		this.state 			= state;
+		this.processName 	= processName;
+		
+//		System.out.println(String.format("StateEvent: state --> %s || process name --> %s || task id --> %s", state, processName, taskid));
 		
 		return this;
 	}
@@ -72,6 +78,14 @@ public class StateEvent implements Serializable {
 
 	public void setState(int state) {
 		this.state = state;
+	}
+
+	public String getProcessName() {
+		return processName;
+	}
+
+	public void setProcessName(String processName) {
+		this.processName = processName;
 	}
 	
 }

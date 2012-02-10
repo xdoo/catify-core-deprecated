@@ -122,8 +122,6 @@ public class BaseProcessBuilder {
 	 */
 	protected String createNodeName(String type){
 		String id = new String(DigestUtils.md5(UUID.randomUUID().toString()));
-		// TODO delete
-		System.out.println(String.format("%s.%s", type, id));
 		return String.format("%s.%s", type, id);
 	}
 	
