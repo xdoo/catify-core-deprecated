@@ -271,8 +271,11 @@ public class ProcessDeployer {
 								nodename)
 						.transacted()
 						.routeId(
-								String.format("process-%s",
-										definition.getProcessId()))
+								String.format("process-%s.%s.%s.%s",
+										account,
+										process,
+										version,
+										nodename))
 						.processRef("initProcessProcessor")
 						.log(LEVEL,
 								"PROCESS",
@@ -301,8 +304,8 @@ public class ProcessDeployer {
 				fromF(NEXT, account, process, version, nodename)
 						.transacted()
 						.routeId(
-								String.format("node-%s",
-										definition.getStartNodeId()))
+								String.format("node-%s.%s.%s.%s",
+										account, process, version, nodename))
 						.onCompletion()
 							.to("direct://done")
 						.end()
@@ -351,7 +354,8 @@ public class ProcessDeployer {
 				fromF(NEXT, account, process
 						, version, nodename)
 						.transacted()
-						.routeId(String.format("node-%s", nodeId))
+						.routeId(String.format("node-%s.%s.%s.%s", 
+								account, process, version, nodename))
 						.onCompletion()
 							.to("direct://waiting")
 						.end()
@@ -389,7 +393,7 @@ public class ProcessDeployer {
 				// ----------------------------------------
 				fromF("%sevent.%s.%s.%s.%s", QUEUE, account, process, version, nodename)
 						.transacted()
-						.routeId(String.format("waekup-%s", nodeId))
+						.routeId(String.format("waekup-%s.%s.%s.%s", account, process, version, nodename))
 						.onCompletion()
 							.to("direct://done")
 						.end()
@@ -441,7 +445,7 @@ public class ProcessDeployer {
 			public void configure() throws Exception {
 				fromF(NEXT, account, process, version, nodename)
 						.transacted()
-						.routeId(String.format("node-%s", nodeId))
+						.routeId(String.format("node-%s.%s.%s.%s", account, process, version, nodename))
 						.onCompletion()
 							.to("direct://done")
 						.end()
@@ -486,7 +490,7 @@ public class ProcessDeployer {
 				//
 				fromF(NEXT, account, process, version, nodename)
 						.transacted()
-						.routeId(String.format("node-%s", nodeId))
+						.routeId(String.format("node-%s.%s.%s.%s", account, process, version, nodename))
 						.onCompletion()
 							.to("direct://done")
 						.end()
@@ -544,7 +548,7 @@ public class ProcessDeployer {
 			public void configure() throws Exception {
 				fromF(NEXT, account, process, version, nodename)
 						.transacted()
-						.routeId(String.format("node-%s", nodeId))
+						.routeId(String.format("node-%s.%s.%s.%s", account, process, version, nodename))
 						.onCompletion()
 							.to("direct://done")
 						.end()
@@ -579,7 +583,7 @@ public class ProcessDeployer {
 			public void configure() throws Exception {
 				fromF(NEXT, account, process, version, nodename)
 						.transacted()
-						.routeId(String.format("node-%s", nodeId))
+						.routeId(String.format("node-%s.%s.%s.%s", account, process, version, nodename))
 						.setHeader(MessageConstants.TASK_ID, constant(nodeId))
 						.setHeader(MessageConstants.TASK_NAME, constant(nodename))
 						// create a task instance id...
@@ -627,7 +631,7 @@ public class ProcessDeployer {
 			public void configure() throws Exception {
 				fromF(NEXT, account, process, version, nodename)
 						.transacted()
-						.routeId(String.format("node-%s", nodeId))
+						.routeId(String.format("node-%s.%s.%s.%s", account, process, version, nodename))
 						.setHeader(MessageConstants.TASK_ID, constant(nodeId))
 						.setHeader(MessageConstants.TASK_NAME, constant(nodename))
 						// create a task instance id...
@@ -729,7 +733,7 @@ public class ProcessDeployer {
 			public void configure() throws Exception {
 				from(String.format(NEXT, account, process, version, nodename))
 						.transacted()
-						.routeId(String.format("check-node-%s", nodeId))
+						.routeId(String.format("check-node-%s.%s.%s.%s", account, process, version, nodename))
 						.setHeader(MessageConstants.TASK_ID, constant(nodeId))
 						.setHeader(MessageConstants.TASK_NAME, constant(nodename))
 						// create a task instance id...
@@ -742,7 +746,7 @@ public class ProcessDeployer {
 						 */
 						.choice()
 							.when(body().isNotEqualTo(ProcessConstants.STATE_DONE))
-								.toF("direct:node-%s", nodeId)
+								.toF("direct:node-%s.%s.%s.%s", account, process, version, nodename)
 							.otherwise()
 								.log(LEVEL,
 								String.format("REQUEST NODE '%s' (%s)", definition
@@ -756,8 +760,8 @@ public class ProcessDeployer {
 							
 						
 						
-				fromF("direct:node-%s", nodeId)
-						.routeId(String.format("node-%s", nodeId))
+				fromF("direct:node-%s.%s.%s.%s", account, process, version, nodename)
+						.routeId(String.format("node-%s.%s.%s.%s", account, process, version, nodename))
 						.onCompletion()
 							.to("direct://destroy")
 						.end()
@@ -835,7 +839,7 @@ public class ProcessDeployer {
 				// then set state to wait...
 				fromF(NEXT ,account, process, version, nodename)
 						.transacted()
-						.routeId(String.format("node-%s", nodeId))
+						.routeId(String.format("node-%s.%s.%s.%s", account, process, version, nodename))
 						.onCompletion()
 							.to("direct://waiting")
 						.end()
@@ -866,7 +870,7 @@ public class ProcessDeployer {
 				// the initialization from the process
 				fromF("%sin.%s.%s.%s.%s", QUEUE, account, process, version, nodename)
 						.transacted()
-						.routeId(String.format("aqnode-%s", nodeId))
+						.routeId(String.format("aqnode-%s.%s.%s.%s", account, process, version, nodename))
 						.onCompletion()
 							.to("direct://working")
 						.end()
@@ -886,7 +890,7 @@ public class ProcessDeployer {
 				// go! case
 				// --------------
 				fromF("direct:go-%s", nodeId)
-						.routeId(String.format("go-%s", nodeId))
+						.routeId(String.format("go-%s.%s.%s.%s",  account, process, version, nodename))
 						.onCompletion()
 							.to("direct://done")
 						.end()
@@ -906,7 +910,7 @@ public class ProcessDeployer {
 				// wait! case
 				// --------------
 				fromF("direct:wait-%s", nodeId)
-						.routeId(String.format("wait-%s", nodeId))
+						.routeId(String.format("wait-%s.%s.%s.%s", account, process, version, nodename))
 						.onCompletion()
 							.to("direct://waiting")
 						.end()
@@ -951,7 +955,7 @@ public class ProcessDeployer {
 				// time out event node
 				// ----------------------------------------
 				fromF("%sevent.%s.%s.%s.%s", QUEUE, account, process, version, definition.getNode(parentNodeId).getNodeName())
-						.routeId(String.format("event-%s", parentNodeId))
+						.routeId(String.format("event-%s.%s.%s.%s", account, process, version, definition.getNode(parentNodeId).getNodeName()))
 						.onCompletion()
 							.to("direct://done")
 						.end()
@@ -1007,7 +1011,7 @@ public class ProcessDeployer {
 			public void configure() throws Exception {
 				fromF(NEXT, account, process, version, nodename)
 				   		.transacted()
-						.routeId(String.format("node-%s", nodeId))
+						.routeId(String.format("node-%s.%s.%s.%s", account, process, version, nodename))
 						.onCompletion()
 							.to("seda://destroy")
 						.end()
